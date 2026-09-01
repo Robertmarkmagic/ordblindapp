@@ -57,6 +57,9 @@ jobs:
       - name: Set custom domain
         run: echo "reliefread.com" > site/dist/CNAME
 
+      - name: Add app route fallback
+        run: cp site/dist/index.html site/dist/404.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
