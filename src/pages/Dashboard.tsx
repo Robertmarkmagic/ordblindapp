@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, BookOpen, RefreshCw } from "lucide-react";
+import { Plus, BookOpen, RefreshCw, PenLine, Camera, Brain, Files, NotebookText, Sparkles } from "lucide-react";
 import { overskill, useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { ReliefHeader } from "@/components/ReliefHeader";
@@ -23,6 +23,7 @@ export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const documentsRef = useRef<HTMLDivElement>(null);
 
   const [docs, setDocs] = useState<DocumentRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,34 +65,80 @@ export default function Dashboard() {
 
   usePageTitle(t("dashboard.title", "My Reading Space"));
 
+  const openRiley = () => window.dispatchEvent(new Event("reliefread:open-riley"));
+  const actionCards = [
+    { key: "dashboard.read", english: "Read something", icon: <BookOpen className="h-6 w-6" />, sticker: "📖", onClick: () => navigate("/new") },
+    { key: "dashboard.write", english: "Write something", icon: <PenLine className="h-6 w-6" />, sticker: "✍️", onClick: () => navigate("/new") },
+    { key: "dashboard.scan", english: "Scan something", icon: <Camera className="h-6 w-6" />, sticker: "📸", onClick: () => navigate("/new") },
+    { key: "dashboard.explain", english: "Explain something", icon: <Brain className="h-6 w-6" />, sticker: "🧠", onClick: openRiley },
+    { key: "dashboard.documents", english: "My documents", icon: <Files className="h-6 w-6" />, sticker: "📚", onClick: () => documentsRef.current?.scrollIntoView({ behavior: "smooth" }) },
+    { key: "dashboard.notes", english: "My notes", icon: <NotebookText className="h-6 w-6" />, sticker: "📝", onClick: () => documentsRef.current?.scrollIntoView({ behavior: "smooth" }) },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <ReliefHeader />
 
-      <main className="mx-auto max-w-4xl px-5 pb-24 pt-8 sm:px-8">
+      <main className="mx-auto max-w-5xl px-5 pb-28 pt-8 sm:px-8">
         {/* Greeting + primary action */}
-        <div className="rr-fade-up flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="rr-fade-up relative overflow-hidden rounded-[2rem] border border-border bg-card px-6 py-7 shadow-paper sm:px-8 sm:py-9">
+          <div className="rr-decoration pointer-events-none absolute right-5 top-4 select-none text-3xl opacity-80 sm:right-9 sm:top-7" aria-hidden="true">
+            🍓 ✨
+          </div>
           <div>
-            <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {t("dashboard.title", "My Reading Space")}
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+              {t("dashboard.title", "My ReliefRead")}
+            </p>
+            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              {t("dashboard.hello", "Hello")}{firstName ? `, ${firstName}` : ""} ✨
             </h1>
             <p className="mt-2 text-lg text-muted-foreground">
-              {firstName
-                ? t("dashboard.welcomeName", `Welcome back, ${firstName}. Let's make reading easy today.`, { name: firstName })
-                : t("dashboard.welcome", "Welcome back. Let's make reading easy today.")}
+              {t("dashboard.today", "What can we help with today?")}
             </p>
           </div>
-          <Button
-            className="h-12 rounded-full bg-sage px-6 text-base font-semibold text-sage-foreground shadow-paper hover:bg-sage/90"
-            onClick={() => navigate("/new")}
-            aria-label={t("dashboard.newAria", "Start a new reading session")}
-          >
-            <Plus className="mr-1 h-5 w-5" aria-hidden="true" />
-            {t("dashboard.new", "New Reading Session")}
-          </Button>
         </div>
 
-        <div className="mt-10">
+        <section className="rr-settle mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4" aria-label={t("dashboard.today", "What can we help with today?")}>
+          {actionCards.map((card) => (
+            <button
+              key={card.key}
+              type="button"
+              onClick={card.onClick}
+              className="group relative flex min-h-32 flex-col justify-between overflow-hidden rounded-3xl border border-border bg-card p-4 text-left shadow-paper outline-none transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent/45 focus-visible:ring-2 focus-visible:ring-ring sm:min-h-36 sm:p-5"
+            >
+              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-accent text-primary transition group-hover:scale-105" aria-hidden="true">{card.icon}</span>
+              <span className="mt-4 text-base font-semibold text-foreground sm:text-lg">{t(card.key, card.english)}</span>
+              <span className="absolute right-3 top-3 text-xl opacity-70 rr-decoration" aria-hidden="true">{card.sticker}</span>
+            </button>
+          ))}
+        </section>
+
+        <button
+          type="button"
+          onClick={openRiley}
+          className="mt-5 flex w-full items-center justify-between gap-4 rounded-3xl border border-primary/20 bg-accent/70 px-5 py-4 text-left shadow-paper outline-none transition hover:border-primary/40 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring sm:px-6"
+        >
+          <span className="flex items-center gap-3">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground"><Sparkles className="h-5 w-5" aria-hidden="true" /></span>
+            <span>
+              <span className="block text-lg font-semibold text-foreground">{t("dashboard.askRiley", "Ask Riley")} ✨</span>
+              <span className="block text-sm text-muted-foreground">{t("dashboard.askRileyHelp", "Ask with text or voice")}</span>
+            </span>
+          </span>
+          <span className="text-2xl text-primary" aria-hidden="true">→</span>
+        </button>
+
+        <div ref={documentsRef} className="mt-12 scroll-mt-24">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <h2 className="font-display text-2xl font-semibold text-foreground">{t("dashboard.documents", "My documents")}</h2>
+            <Button
+              className="h-11 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-paper hover:bg-primary/90"
+              onClick={() => navigate("/new")}
+            >
+              <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
+              {t("dashboard.new", "New reading")}
+            </Button>
+          </div>
           <DemoSeedCard onSeeded={loadDocuments} />
 
           {/* Error state — soft amber, warm, retryable. Never red. */}

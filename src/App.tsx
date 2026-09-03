@@ -8,6 +8,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthHeader } from "@/components/AuthHeader";
 import { LanguageProvider } from "@/lib/i18n";
+import { RileyAssistant } from "@/components/RileyAssistant";
 // OS-V7HMWA (#3756): app-wide "your push subscription died — re-enable" prompt.
 // Renders null unless the signed-in user's device push is actually dead, so it
 // is inert for everyone else. Mounted globally (below) because a user with no
@@ -176,6 +177,7 @@ function App() {
 
           {/* Global UI elements */}
           <PushHealthBanner />
+          <RileyAssistant />
           <Toaster />
           <Sonner />
           <OverSkillBadge />

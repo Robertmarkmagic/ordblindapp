@@ -63,6 +63,16 @@ const da: Dictionary = {
   "dashboard.saved": "Dine gemte tekster",
   "dashboard.emptyTitle": "Her er tomt endnu",
   "dashboard.emptyText": "Indsæt din første tekst, så gør vi den lettere at læse.",
+  "dashboard.hello": "Goddag",
+  "dashboard.today": "Hvad skal vi hjælpe med i dag?",
+  "dashboard.read": "Læs noget",
+  "dashboard.write": "Skriv noget",
+  "dashboard.scan": "Scan noget",
+  "dashboard.explain": "Forklar noget",
+  "dashboard.documents": "Mine dokumenter",
+  "dashboard.notes": "Mine noter",
+  "dashboard.askRiley": "Spørg Riley",
+  "dashboard.askRileyHelp": "Spørg med tekst eller stemme",
   "new.title": "Ny læsning",
   "new.back": "Tilbage til mit læserum",
   "new.intro": "Indsæt en tekst eller upload en fil. Vi gør den lettere at læse og læser den højt.",
@@ -148,6 +158,8 @@ const da: Dictionary = {
   "lookup.translation": "Oversættelse",
   "lookup.explained": "Forklaret",
   "lookup.readAloud": "Læs dette højt",
+  "settings.title": "Indstillinger",
+  "settings.intro": "Gør ReliefRead til dit eget. Du kan altid ændre dine valg igen.",
 };
 
 const dictionaries: Record<AppLanguage, Dictionary> = { da, en: {} };

@@ -21,6 +21,9 @@ import "./lib/preview-auth";
 
 // Initialize theme preview listener for OverSkill editor integration
 import "./lib/theme-preview";
+import { applyAppPreferences, loadAppPreferences } from "./lib/app-preferences";
+
+applyAppPreferences(loadAppPreferences());
 
 // PWA post-deploy update flow (FM-2, Jul 2026). Registers the Workbox service
 // worker (vite.config.ts sets injectRegister: false — registration is owned

@@ -29,6 +29,8 @@ import {
 import { usePremium } from "@/hooks/usePremium";
 import { getMonthlyUsage } from "@/lib/usage";
 import { aiMinutesRemaining, nextResetLabel, downgradeToFree, PRICING } from "@/lib/billing";
+import { PersonalisationSettings } from "@/components/PersonalisationSettings";
+import { useLanguage } from "@/lib/i18n";
 
 const VOICE_OPTIONS = [
   { value: "default", label: "System default" },
@@ -47,6 +49,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { settings, setSettings, save, loading, error } = useReadingSettings();
   const { premium, loading: premiumLoading, refresh: refreshPremium } = usePremium();
+  const { t } = useLanguage();
 
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
@@ -108,10 +111,10 @@ export default function SettingsPage() {
       <main className="mx-auto max-w-2xl px-5 pb-32 pt-8 sm:px-8">
         <div className="rr-fade-up">
           <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
-            Reading settings
+            {t("settings.title", "Reading settings")}
           </h1>
           <p className="mt-2 text-lg text-muted-foreground">
-            Set your comfortable defaults. We'll use them every time you start a new reading.
+            {t("settings.intro", "Make ReliefRead your own. You can change your choices at any time.")}
           </p>
         </div>
 
@@ -127,6 +130,7 @@ export default function SettingsPage() {
           </div>
         ) : (
           <div className="rr-settle mt-8 space-y-5">
+            <PersonalisationSettings />
             {/* Your plan — discreet, warm; AI minutes shown quietly (never a reader countdown) */}
             <section className="rounded-2xl border border-border bg-card p-6 shadow-paper">
               <div className="flex items-center gap-2">

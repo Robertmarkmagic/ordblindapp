@@ -135,6 +135,187 @@
     --sidebar-border: 217 20% 24%;
     --sidebar-ring: 150 20% 58%;
   }
+
+  :root[data-aesthetic]:not([data-aesthetic="midnight"]) {
+    color-scheme: light;
+    --foreground: 217 33% 17%;
+    --card-foreground: 217 33% 17%;
+    --popover-foreground: 217 33% 17%;
+    --secondary: 40 30% 94%;
+    --secondary-foreground: 217 33% 25%;
+    --muted: 40 30% 94%;
+    --muted-foreground: 215 16% 45%;
+    --destructive: 38 92% 50%;
+    --destructive-foreground: 217 33% 17%;
+    --highlight: 53 98% 77%;
+    --highlight-foreground: 217 33% 17%;
+    --amber: 38 92% 50%;
+    --amber-foreground: 217 33% 17%;
+    --shadow-paper: 0 1px 2px hsl(217 33% 17% / 0.04), 0 8px 24px -12px hsl(217 33% 17% / 0.12);
+    --sidebar-background: 40 43% 98%;
+    --sidebar-foreground: 217 33% 25%;
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--accent);
+    --sidebar-accent-foreground: var(--accent-foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
+  }
+
+  :root[data-aesthetic="strawberry"] {
+    --background: 350 60% 98%;
+    --card: 348 55% 99%;
+    --popover: 348 55% 99%;
+    --primary: 343 43% 43%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 348 54% 92%;
+    --accent-foreground: 343 46% 25%;
+    --border: 346 32% 88%;
+    --input: 346 30% 84%;
+    --ring: 343 43% 43%;
+    --sage: 343 43% 43%;
+    --sage-foreground: 0 0% 100%;
+    --gradient-calm: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(348 65% 91% / 0.75), transparent 70%);
+  }
+
+  :root[data-aesthetic="sage"] {
+    --background: 40 43% 98%;
+    --card: 40 50% 99%;
+    --primary: 150 15% 36%;
+    --primary-foreground: 40 43% 98%;
+    --accent: 150 22% 92%;
+    --accent-foreground: 150 25% 24%;
+    --ring: 150 15% 36%;
+    --sage: 150 15% 36%;
+    --sage-foreground: 40 43% 98%;
+  }
+
+  :root[data-aesthetic="cloud"] {
+    --background: 207 65% 98%;
+    --card: 205 62% 99%;
+    --primary: 205 37% 39%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 205 52% 91%;
+    --accent-foreground: 207 42% 25%;
+    --border: 205 33% 87%;
+    --input: 205 31% 83%;
+    --ring: 205 37% 39%;
+    --sage: 205 37% 39%;
+    --sage-foreground: 0 0% 100%;
+    --gradient-calm: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(205 72% 91% / 0.72), transparent 70%);
+  }
+
+  :root[data-aesthetic="lavender"] {
+    --background: 282 56% 98%;
+    --card: 282 45% 99%;
+    --primary: 281 27% 38%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 281 42% 92%;
+    --accent-foreground: 281 33% 25%;
+    --border: 281 25% 87%;
+    --input: 281 25% 83%;
+    --ring: 281 27% 38%;
+    --sage: 281 27% 38%;
+    --sage-foreground: 0 0% 100%;
+    --gradient-calm: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(281 60% 91% / 0.72), transparent 70%);
+  }
+
+  :root[data-aesthetic="cozy"] {
+    --background: 36 67% 98%;
+    --card: 36 55% 99%;
+    --primary: 27 32% 34%;
+    --primary-foreground: 40 65% 98%;
+    --accent: 34 39% 90%;
+    --accent-foreground: 27 36% 23%;
+    --border: 33 27% 84%;
+    --input: 33 25% 80%;
+    --ring: 27 32% 34%;
+    --sage: 27 32% 34%;
+    --sage-foreground: 40 65% 98%;
+    --gradient-calm: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(34 55% 88% / 0.72), transparent 70%);
+  }
+
+  :root[data-aesthetic="minimal"] {
+    --background: 0 0% 99%;
+    --card: 0 0% 100%;
+    --primary: 216 25% 28%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 216 20% 94%;
+    --accent-foreground: 216 25% 24%;
+    --border: 216 15% 87%;
+    --input: 216 15% 82%;
+    --ring: 216 25% 28%;
+    --sage: 216 25% 28%;
+    --sage-foreground: 0 0% 100%;
+    --gradient-calm: none;
+  }
+
+  :root[data-aesthetic="midnight"] {
+    color-scheme: dark;
+    --background: 230 30% 12%;
+    --foreground: 225 36% 95%;
+    --card: 230 27% 16%;
+    --card-foreground: 225 36% 95%;
+    --popover: 230 27% 16%;
+    --popover-foreground: 225 36% 95%;
+    --primary: 226 52% 72%;
+    --primary-foreground: 230 32% 12%;
+    --secondary: 229 24% 21%;
+    --secondary-foreground: 225 36% 95%;
+    --muted: 229 24% 21%;
+    --muted-foreground: 225 18% 72%;
+    --accent: 229 29% 24%;
+    --accent-foreground: 226 55% 91%;
+    --border: 229 20% 27%;
+    --input: 229 20% 30%;
+    --ring: 226 52% 72%;
+    --sage: 226 52% 72%;
+    --sage-foreground: 230 32% 12%;
+    --highlight: 49 68% 60%;
+    --highlight-foreground: 230 32% 12%;
+    --gradient-calm: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(226 45% 31% / 0.65), transparent 70%);
+    --shadow-paper: 0 1px 2px hsl(0 0% 0% / 0.25), 0 12px 28px -12px hsl(0 0% 0% / 0.65);
+  }
+
+  /* Keep the existing dark-mode switch authoritative for every light preset. */
+  :root.dark:not([data-aesthetic="midnight"]) {
+    color-scheme: dark;
+    --background: 217 33% 11%;
+    --foreground: 40 40% 95%;
+    --card: 217 30% 15%;
+    --card-foreground: 40 40% 95%;
+    --popover: 217 30% 15%;
+    --popover-foreground: 40 40% 95%;
+    --primary: 150 20% 58%;
+    --primary-foreground: 217 33% 11%;
+    --secondary: 217 25% 20%;
+    --secondary-foreground: 40 40% 95%;
+    --muted: 217 25% 20%;
+    --muted-foreground: 215 16% 68%;
+    --accent: 150 18% 24%;
+    --accent-foreground: 150 25% 88%;
+    --destructive: 38 84% 58%;
+    --destructive-foreground: 217 33% 11%;
+    --border: 217 20% 24%;
+    --input: 217 20% 24%;
+    --ring: 150 20% 58%;
+    --sage: 150 20% 58%;
+    --sage-foreground: 217 33% 11%;
+    --highlight: 53 70% 62%;
+    --highlight-foreground: 217 33% 11%;
+    --amber: 38 84% 58%;
+    --amber-foreground: 217 33% 11%;
+    --gradient-calm: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(150 18% 24% / 0.5), transparent 70%);
+    --shadow-paper: 0 1px 2px hsl(0 0% 0% / 0.2), 0 8px 24px -12px hsl(0 0% 0% / 0.5);
+    --sidebar-background: 217 33% 13%;
+    --sidebar-foreground: 40 40% 90%;
+    --sidebar-primary: 150 20% 58%;
+    --sidebar-primary-foreground: 217 33% 11%;
+    --sidebar-accent: 150 18% 24%;
+    --sidebar-accent-foreground: 150 25% 88%;
+    --sidebar-border: 217 20% 24%;
+    --sidebar-ring: 150 20% 58%;
+  }
 }
 
 @layer base {
@@ -152,6 +333,8 @@
     color: hsl(var(--foreground));
     font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
     text-wrap: pretty;
+    background-image: var(--gradient-calm);
+    background-attachment: fixed;
   }
 
   h1, h2, h3 {
@@ -244,6 +427,17 @@
   .rr-settle > *:nth-child(8) { animation-delay: 0.46s; }
 
   .rr-fade-up { animation: rr-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+  :root[data-decorations="off"] .rr-decoration {
+    display: none;
+  }
+
+  :root[data-decorations="off"] .rr-settle > *,
+  :root[data-decorations="off"] .rr-fade-up {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
 
   /* Note editor: the textarea and its underline backdrop MUST share identical
      text metrics so the dotted underlines land exactly under the words. */

@@ -36,6 +36,7 @@ import { isFreshTtsExhausted } from "@/lib/billing";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { ReaderAdjust } from "@/components/reader/ReaderAdjust";
 import { useLanguage } from "@/lib/i18n";
+import { PersonalToolbar } from "@/components/reader/PersonalToolbar";
 
 /**
  * Reader — the calm reading sanctuary with the listening experience, now with
@@ -50,7 +51,7 @@ export default function Reader() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { premium } = usePremium();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [ttsSecondsUsed, setTtsSecondsUsed] = useState(0);
 
   const [doc, setDoc] = useState<DocumentRecord | null>(null);
@@ -381,6 +382,27 @@ export default function Reader() {
             </div>
           )}
         </div>
+
+        {doc && (
+          <PersonalToolbar
+            onRead={() => toggle()}
+            onWords={openHistory}
+            onNotes={() => setNotesOpen(true)}
+            onHighlight={() =>
+              toast(
+                language === "da"
+                  ? "Markér først den tekst, du vil fremhæve."
+                  : "First select the text you want to highlight.",
+                {
+                  description:
+                    language === "da"
+                      ? "Farvede highlights bliver tilføjet i næste udviklingstrin."
+                      : "Colored highlights are coming in the next development step.",
+                }
+              )
+            }
+          />
+        )}
 
         <div className="lg:grid lg:grid-cols-[65fr_35fr] lg:gap-8">
           {/* Document column (65%) */}
