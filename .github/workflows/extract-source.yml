@@ -20,8 +20,6 @@ jobs:
         run: |
           unzip -q reliefread-app-public-github-pages.zip -d source
           rsync -a --exclude='.github' source/ ./
-          cp source/.github/workflows/deploy.yml .github/workflows/deploy.yml
-          git rm .github/workflows/deploy-from-zip.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add --all
