@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { MiniReader } from "@/components/landing/MiniReader";
 import { FeatureDemos } from "@/components/landing/FeatureDemos";
 import { PRICING } from "@/lib/billing";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * ReliefRead landing page — ALWAYS public. A vertical story arc built to make a
@@ -21,20 +23,6 @@ import { PRICING } from "@/lib/billing";
  * headline, then a LIVE mini-reader they can touch. Warm cream + sage, no red,
  * no pity, no stock photos of sad children.
  */
-
-const OLD_TOOLS = [
-  "Robotic, 2005-era text-to-speech voices",
-  "Rigid, clinical interfaces",
-  "Hundreds of dollars every year",
-  "Often locked behind a formal diagnosis",
-];
-
-const RELIEFREAD = [
-  "Natural, human-like AI voices",
-  "OpenDyslexic, Bionic Reading & tints built in",
-  "A shame-free phonetic writing coach",
-  "$7 a month, open to everyone",
-];
 
 function setMeta(name: string, content: string, attr: "name" | "property" = "name") {
   let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
@@ -49,6 +37,20 @@ function setMeta(name: string, content: string, attr: "name" | "property" = "nam
 export default function Index() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { language, t } = useLanguage();
+
+  const oldTools = [
+    t("landing.old1", "Robotic, 2005-era text-to-speech voices"),
+    t("landing.old2", "Rigid, clinical interfaces"),
+    t("landing.old3", "Hundreds of dollars every year"),
+    t("landing.old4", "Often locked behind a formal diagnosis"),
+  ];
+  const reliefRead = [
+    t("landing.new1", "Natural, human-like AI voices"),
+    t("landing.new2", "OpenDyslexic, Bionic Reading & tints built in"),
+    t("landing.new3", "A shame-free phonetic writing coach"),
+    t("landing.new4", "$7 a month, open to everyone"),
+  ];
 
   // Already signed in → quietly continue to the reading space.
   useEffect(() => {
@@ -57,15 +59,15 @@ export default function Index() {
 
   // Lightweight SEO / Open Graph for the landing page.
   useEffect(() => {
-    document.title = "ReliefRead — Reading shouldn't feel like a battle";
+    document.title = `ReliefRead | ${t("landing.title", "Reading shouldn't feel like a battle.")}`;
     const desc =
-      "The readability-first AI workspace for dyslexic and borderline readers. Natural audio, fonts and spacing tuned for your eyes, and a writing coach that never uses red ink.";
+      t("landing.intro", "The readability-first AI workspace for dyslexic and borderline readers. Natural audio, fonts and spacing tuned for your eyes, and a writing coach that never uses red ink.");
     setMeta("description", desc);
-    setMeta("og:title", "ReliefRead — Reading shouldn't feel like a battle", "property");
+    setMeta("og:title", document.title, "property");
     setMeta("og:description", desc, "property");
     setMeta("og:type", "website", "property");
     setMeta("twitter:card", "summary_large_image");
-  }, []);
+  }, [language, t]);
 
   const goSignUp = () => overskill.auth.login("/dashboard");
   const scrollToDemo = () => {
@@ -88,18 +90,19 @@ export default function Index() {
           <span className="font-display text-lg font-semibold tracking-tight">ReliefRead</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
+          <LanguageSwitcher compact />
           <Link
             to="/pricing"
             className="hidden h-11 items-center rounded-full px-4 text-sm font-medium text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring sm:inline-flex"
           >
-            Pricing
+            {t("nav.pricing", "Pricing")}
           </Link>
           <Button
             variant="ghost"
             className="h-11 rounded-full px-5 text-foreground hover:bg-accent"
             onClick={() => overskill.auth.login("/dashboard")}
           >
-            Log in
+            {t("nav.login", "Log in")}
           </Button>
         </div>
       </header>
@@ -110,22 +113,20 @@ export default function Index() {
           <div className="rr-settle">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-1.5 text-xs font-medium text-muted-foreground shadow-paper">
               <Heart className="h-3.5 w-3.5 text-sage" aria-hidden="true" />
-              Made for dyslexic &amp; borderline readers
+              {t("landing.badge", "Made for dyslexic & borderline readers")}
             </span>
             <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.4rem]">
-              Reading shouldn't feel like a battle.
+              {t("landing.title", "Reading shouldn't feel like a battle.")}
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              ReliefRead is the readability-first AI workspace for dyslexic and borderline readers.
-              Natural human-like audio, fonts and spacing tuned for your eyes, and a writing coach
-              that never uses red ink.
+              {t("landing.intro", "ReliefRead is the readability-first AI workspace for dyslexic and borderline readers. Natural human-like audio, fonts and spacing tuned for your eyes, and a writing coach that never uses red ink.")}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button
                 className="h-12 rounded-full bg-sage px-7 text-base font-semibold text-sage-foreground shadow-paper hover:bg-sage/90"
                 onClick={goSignUp}
               >
-                Try ReliefRead free
+                {t("landing.tryFree", "Try ReliefRead free")}
                 <ArrowRight className="ml-1 h-5 w-5" aria-hidden="true" />
               </Button>
               <Button
@@ -134,11 +135,11 @@ export default function Index() {
                 className="h-12 rounded-full border border-border bg-card px-7 text-base font-medium text-foreground hover:bg-accent"
               >
                 <Play className="mr-1 h-4 w-4 text-sage" aria-hidden="true" />
-                See it in action
+                {t("landing.demo", "See it in action")}
               </Button>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              No diagnosis required. No password to remember.
+              {t("landing.noDiagnosis", "No diagnosis required. No password to remember.")}
             </p>
           </div>
 
@@ -152,16 +153,13 @@ export default function Index() {
         <section className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
           <div className="rr-fade-up rounded-3xl border border-border bg-card p-8 shadow-paper sm:p-10">
             <p className="text-sm font-semibold uppercase tracking-wide text-sage">
-              Built for those on the edge
+              {t("landing.edgeLabel", "Built for those on the edge")}
             </p>
             <p className="mt-5 font-display text-xl leading-relaxed text-foreground sm:text-2xl">
-              Thousands of students score just above the line for an official dyslexia diagnosis.
-              They get no public support, no tools, no extra time — yet they fight with every page,
-              every day.
+              {t("landing.edgeStory", "Thousands of students score just above the line for an official dyslexia diagnosis. They get no public support, no tools, no extra time, yet they fight with every page, every day.")}
             </p>
             <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-              ReliefRead was built for one of them: the founder's daughter. She didn't need a
-              diagnosis to deserve relief.
+              {t("landing.daughter", "ReliefRead was built for one of them: the founder's daughter. She didn't need a diagnosis to deserve relief.")}
             </p>
           </div>
         </section>
@@ -169,15 +167,15 @@ export default function Index() {
         {/* ---------- COMPARISON STRIP ---------- */}
         <section className="mx-auto max-w-5xl px-5 py-8 sm:px-8">
           <h2 className="text-center font-display text-3xl font-semibold tracking-tight text-foreground">
-            Why ReliefRead?
+            {t("landing.why", "Why ReliefRead?")}
           </h2>
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="rounded-3xl border border-border bg-muted/50 p-7">
               <h3 className="font-display text-lg font-semibold text-muted-foreground">
-                The old way
+                {t("landing.oldWay", "The old way")}
               </h3>
               <ul className="mt-5 space-y-3">
-                {OLD_TOOLS.map((item) => (
+                {oldTools.map((item) => (
                   <li key={item} className="flex items-start gap-3 text-muted-foreground">
                     <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
                       <X className="h-3.5 w-3.5" aria-hidden="true" />
@@ -190,7 +188,7 @@ export default function Index() {
             <div className="rounded-3xl border-2 border-sage bg-card p-7 shadow-paper">
               <h3 className="font-display text-lg font-semibold text-sage">ReliefRead</h3>
               <ul className="mt-5 space-y-3">
-                {RELIEFREAD.map((item) => (
+                {reliefRead.map((item) => (
                   <li key={item} className="flex items-start gap-3 text-foreground">
                     <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-sage text-sage-foreground">
                       <Check className="h-3.5 w-3.5" aria-hidden="true" />
@@ -207,10 +205,10 @@ export default function Index() {
         <section id="demo" className="mx-auto max-w-6xl scroll-mt-8 px-5 py-16 sm:px-8">
           <div className="mx-auto mb-10 max-w-2xl text-center">
             <h2 className="font-display text-3xl font-semibold tracking-tight text-foreground">
-              Listen. See. Write.
+              {t("landing.listenSeeWrite", "Listen. See. Write.")}
             </h2>
             <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
-              Three ways ReliefRead meets you where you are — watch them move.
+              {t("landing.threeWays", "Three ways ReliefRead meets you where you are. Watch them move.")}
             </p>
           </div>
           <FeatureDemos />
@@ -220,27 +218,27 @@ export default function Index() {
         <section className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
           <div className="mx-auto mb-10 max-w-2xl text-center">
             <h2 className="font-display text-3xl font-semibold tracking-tight text-foreground">
-              Simple, kind pricing
+              {t("landing.pricingTitle", "Simple, kind pricing")}
             </h2>
             <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
-              Start free forever. Upgrade when you're ready, step back anytime.
+              {t("landing.pricingIntro", "Start free forever. Upgrade when you're ready, step back anytime.")}
             </p>
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="flex flex-col rounded-3xl border border-border bg-card p-7 shadow-paper">
-              <h3 className="font-display text-lg font-semibold text-foreground">Monthly</h3>
+              <h3 className="font-display text-lg font-semibold text-foreground">{t("landing.monthly", "Monthly")}</h3>
               <p className="mt-3 flex items-baseline gap-1">
                 <span className="font-display text-4xl font-semibold tracking-tight text-foreground tabular-nums">
                   {PRICING.monthly.price}
                 </span>
                 <span className="text-muted-foreground">{PRICING.monthly.cadence}</span>
               </p>
-              <p className="mt-2 text-sm text-muted-foreground">Flexible — cancel anytime.</p>
+              <p className="mt-2 text-sm text-muted-foreground">{t("landing.flexible", "Flexible. Cancel anytime.")}</p>
               <Button
                 onClick={() => navigate("/pricing")}
                 className="mt-6 h-12 w-full rounded-full border border-sage/40 bg-background text-base font-semibold text-foreground shadow-paper hover:bg-accent"
               >
-                Choose monthly
+                {t("landing.chooseMonthly", "Choose monthly")}
               </Button>
             </div>
             <div className="relative flex flex-col rounded-3xl border-2 border-sage bg-card p-7 shadow-paper">
@@ -248,25 +246,25 @@ export default function Index() {
                 <Sparkles className="h-3 w-3" aria-hidden="true" />
                 {PRICING.annual.note}
               </span>
-              <h3 className="font-display text-lg font-semibold text-foreground">Annual</h3>
+              <h3 className="font-display text-lg font-semibold text-foreground">{t("landing.annual", "Annual")}</h3>
               <p className="mt-3 flex items-baseline gap-1">
                 <span className="font-display text-4xl font-semibold tracking-tight text-foreground tabular-nums">
                   {PRICING.annual.price}
                 </span>
                 <span className="text-muted-foreground">{PRICING.annual.cadence}</span>
               </p>
-              <p className="mt-2 text-sm text-sage">Best value — two months free.</p>
+              <p className="mt-2 text-sm text-sage">{t("landing.bestValue", "Best value. Two months free.")}</p>
               <Button
                 onClick={() => navigate("/pricing")}
                 className="mt-6 h-12 w-full rounded-full bg-sage text-base font-semibold text-sage-foreground hover:bg-sage/90"
               >
                 <Sparkles className="mr-1 h-5 w-5" aria-hidden="true" />
-                Choose annual
+                {t("landing.chooseAnnual", "Choose annual")}
               </Button>
             </div>
           </div>
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Free forever includes 3 readings a month and the standard voice.
+            {t("landing.freeIncludes", "Free forever includes 3 readings a month and the standard voice.")}
           </p>
         </section>
 
@@ -274,16 +272,16 @@ export default function Index() {
         <section className="px-5 py-16 sm:px-8">
           <div className="mx-auto max-w-4xl rounded-[2rem] bg-sage px-6 py-14 text-center shadow-paper sm:px-12">
             <h2 className="font-display text-3xl font-semibold leading-tight tracking-tight text-sage-foreground sm:text-4xl">
-              Give someone you love an easier way to read.
+              {t("landing.finalTitle", "Give someone you love an easier way to read.")}
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-sage-foreground/90">
-              It takes one minute to start, and it's free. No diagnosis, no pressure — just relief.
+              {t("landing.finalText", "It takes one minute to start, and it's free. No diagnosis, no pressure. Just relief.")}
             </p>
             <Button
               onClick={goSignUp}
               className="mt-8 h-12 rounded-full bg-background px-8 text-base font-semibold text-foreground shadow-paper hover:bg-background/90"
             >
-              Try ReliefRead free
+              {t("landing.tryFree", "Try ReliefRead free")}
               <ArrowRight className="ml-1 h-5 w-5" aria-hidden="true" />
             </Button>
           </div>
@@ -302,19 +300,19 @@ export default function Index() {
             className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground"
           >
             <Link to="/privacy" className="rounded px-1 py-0.5 underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring">
-              Privacy
+              {t("nav.privacy", "Privacy")}
             </Link>
             <Link to="/terms" className="rounded px-1 py-0.5 underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring">
-              Terms
+              {t("nav.terms", "Terms")}
             </Link>
             <a
               href="mailto:hello@reliefread.com"
               className="rounded px-1 py-0.5 underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
             >
-              Contact
+              {t("nav.contact", "Contact")}
             </a>
           </nav>
-          <p className="text-sm text-muted-foreground">Proudly built in Denmark 🇩🇰</p>
+          <p className="text-sm text-muted-foreground">{t("landing.denmark", "Proudly built in Denmark 🇩🇰")}</p>
         </div>
       </footer>
     </div>

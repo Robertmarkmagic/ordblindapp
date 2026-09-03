@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthHeader } from "@/components/AuthHeader";
+import { LanguageProvider } from "@/lib/i18n";
 // OS-V7HMWA (#3756): app-wide "your push subscription died — re-enable" prompt.
 // Renders null unless the signed-in user's device push is actually dead, so it
 // is inert for everyone else. Mounted globally (below) because a user with no
@@ -67,6 +68,7 @@ function App() {
    */
 
   return (
+    <LanguageProvider>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <BrowserRouter>
@@ -180,6 +182,7 @@ function App() {
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
+    </LanguageProvider>
   );
 }
 

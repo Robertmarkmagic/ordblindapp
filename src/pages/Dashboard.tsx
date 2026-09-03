@@ -11,6 +11,7 @@ import { firstNameFrom } from "@/lib/text-utils";
 import { listMyShareLinks } from "@/lib/share";
 import { DemoSeedCard } from "@/components/DemoSeedCard";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * My Reading Space — the calm home for a signed-in reader.
@@ -21,6 +22,7 @@ export default function Dashboard() {
   // Auth guard: prevents a 401 flash when the OAuth token is still settling.
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [docs, setDocs] = useState<DocumentRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,12 +48,12 @@ export default function Dashboard() {
       }
     } catch (err) {
       console.error("Failed to load documents:", err);
-      setError("We couldn't load your readings just now. Take a breath and try again.");
+      setError(t("dashboard.error", "We couldn't load your readings just now. Take a breath and try again."));
       setDocs([]);
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, t]);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -60,7 +62,7 @@ export default function Dashboard() {
 
   const firstName = firstNameFrom(user?.name, "");
 
-  usePageTitle("My Reading Space");
+  usePageTitle(t("dashboard.title", "My Reading Space"));
 
   return (
     <div className="min-h-screen bg-background">
@@ -71,21 +73,21 @@ export default function Dashboard() {
         <div className="rr-fade-up flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              My Reading Space
+              {t("dashboard.title", "My Reading Space")}
             </h1>
             <p className="mt-2 text-lg text-muted-foreground">
               {firstName
-                ? `Welcome back, ${firstName}. Let's make reading easy today.`
-                : "Welcome back. Let's make reading easy today."}
+                ? t("dashboard.welcomeName", `Welcome back, ${firstName}. Let's make reading easy today.`, { name: firstName })
+                : t("dashboard.welcome", "Welcome back. Let's make reading easy today.")}
             </p>
           </div>
           <Button
             className="h-12 rounded-full bg-sage px-6 text-base font-semibold text-sage-foreground shadow-paper hover:bg-sage/90"
             onClick={() => navigate("/new")}
-            aria-label="Start a new reading session"
+            aria-label={t("dashboard.newAria", "Start a new reading session")}
           >
             <Plus className="mr-1 h-5 w-5" aria-hidden="true" />
-            New Reading Session
+            {t("dashboard.new", "New Reading Session")}
           </Button>
         </div>
 
@@ -103,7 +105,7 @@ export default function Dashboard() {
                   onClick={loadDocuments}
                 >
                   <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Try again
+                  {t("dashboard.retry", "Try again")}
                 </Button>
               </div>
             </SoftNotice>
@@ -116,7 +118,7 @@ export default function Dashboard() {
             /* Empty state — warmth, not emptiness. */
             <EmptyState onStart={() => navigate("/new")} />
           ) : docs.length > 0 ? (
-            <section aria-label="Your saved readings" className="rr-settle grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <section aria-label={t("dashboard.saved", "Your saved readings")} className="rr-settle grid grid-cols-1 gap-5 sm:grid-cols-2">
               {docs.map((doc) => (
                 <DocumentCard key={doc.id} doc={doc} shared={sharedDocIds.has(doc.id)} />
               ))}
@@ -129,6 +131,7 @@ export default function Dashboard() {
 }
 
 function EmptyState({ onStart }: { onStart: () => void }) {
+  const { t } = useLanguage();
   return (
     <div className="rr-fade-up mx-auto flex max-w-lg flex-col items-center rounded-3xl border border-dashed border-border bg-card/60 px-8 py-14 text-center shadow-paper">
       {/* Gentle illustration-style placeholder */}
@@ -138,17 +141,17 @@ function EmptyState({ onStart }: { onStart: () => void }) {
         <BookOpen className="relative h-12 w-12 text-sage" />
       </div>
       <h2 className="mt-7 font-display text-2xl font-semibold text-foreground">
-        Nothing here yet
+        {t("dashboard.emptyTitle", "Nothing here yet")}
       </h2>
       <p className="mt-3 max-w-sm leading-relaxed text-muted-foreground">
-        Paste your first text and let's make it easy to read.
+        {t("dashboard.emptyText", "Paste your first text and let's make it easy to read.")}
       </p>
       <Button
         className="mt-7 h-12 rounded-full bg-sage px-7 text-base font-semibold text-sage-foreground shadow-paper hover:bg-sage/90"
         onClick={onStart}
       >
         <Plus className="mr-1 h-5 w-5" aria-hidden="true" />
-        New Reading Session
+        {t("dashboard.new", "New Reading Session")}
       </Button>
     </div>
   );

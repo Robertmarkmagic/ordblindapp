@@ -15,6 +15,7 @@ import {
   nextResetLabel,
   FREE_MONTHLY_DOCUMENTS,
 } from "@/lib/billing";
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * New Reading Session — paste text OR upload a .txt/.pdf, auto-titled and
@@ -26,8 +27,9 @@ export default function NewSession() {
   const { user, loading: authLoading } = useAuth();
   const { premium, loading: premiumLoading } = usePremium();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
-  usePageTitle("New reading session");
+  usePageTitle(t("new.title", "New reading session"));
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export default function NewSession() {
       navigate(`/read/${doc.id}`);
     } catch (err) {
       console.error("Failed to create document:", err);
-      setError("We couldn't save that just now. Your text is still here — try once more.");
+      setError(t("new.saveError", "We couldn't save that just now. Your text is still here. Try once more."));
       setSaving(false);
     }
   };
@@ -79,34 +81,34 @@ export default function NewSession() {
         <button
           onClick={() => navigate("/dashboard")}
           className="mb-6 inline-flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          aria-label="Back to My Reading Space"
+          aria-label={t("new.back", "Back to My Reading Space")}
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to my space
+          {t("new.back", "Back to my space")}
         </button>
 
         {gatesResolved && atLimit ? (
           <UpgradeInvite
-            heading="You've used your 3 free texts this month"
-            message="Upgrade for unlimited reading, or come back on the 1st — your readings and saved audio are waiting for you either way."
-            primaryLabel="See Premium"
+            heading={t("new.limitTitle", "You've used your 3 free texts this month")}
+            message={t("new.limitText", "Upgrade for unlimited reading, or come back on the 1st. Your readings and saved audio are waiting for you either way.")}
+            primaryLabel={t("new.seePremium", "See Premium")}
             onPrimary={() => navigate("/pricing")}
-            secondaryLabel="Back to my space"
+            secondaryLabel={t("new.back", "Back to my space")}
             onSecondary={() => navigate("/dashboard")}
-            footnote={`Your free readings reset on ${nextResetLabel()}.`}
+            footnote={t("new.reset", `Your free readings reset on ${nextResetLabel()}.`, { date: nextResetLabel() })}
           />
         ) : (
           <>
             <div className="rr-fade-up">
               <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
-                New reading session
+                {t("new.title", "New reading session")}
               </h1>
               <p className="mt-2 text-lg text-muted-foreground">
-                Paste anything or upload a file. We'll make it easy to read — and read it aloud.
+                {t("new.intro", "Paste anything or upload a file. We'll make it easy to read and read it aloud.")}
               </p>
               {gatesResolved && !premium && (
                 <p className="mt-3 text-sm text-muted-foreground">
-                  {remaining} of {FREE_MONTHLY_DOCUMENTS} free readings left this month.
+                  {t("new.remaining", `${remaining} of ${FREE_MONTHLY_DOCUMENTS} free readings left this month.`, { remaining, total: FREE_MONTHLY_DOCUMENTS })}
                 </p>
               )}
             </div>

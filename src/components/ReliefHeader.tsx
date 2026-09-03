@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * Calm app header used on all signed-in pages.
@@ -21,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export function ReliefHeader() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const displayName = user?.name || user?.email || "";
   const initial =
@@ -36,7 +39,7 @@ export function ReliefHeader() {
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
         <Link
           to="/dashboard"
-          aria-label="ReliefRead home"
+          aria-label={t("header.home", "ReliefRead home")}
           className="flex items-center gap-3 rounded-2xl px-1 py-1 outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <span
@@ -50,14 +53,16 @@ export function ReliefHeader() {
               ReliefRead
             </span>
             <span className="hidden text-xs text-muted-foreground sm:block">
-              Your reading space
+              {t("header.tagline", "Your reading space")}
             </span>
           </span>
         </Link>
 
+        <div className="ml-auto flex items-center gap-2">
+        <LanguageSwitcher compact />
         <DropdownMenu>
           <DropdownMenuTrigger
-            aria-label="Account menu"
+            aria-label={t("header.account", "Account menu")}
             className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-2 pr-3 outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <Avatar className="h-8 w-8">
@@ -73,7 +78,7 @@ export function ReliefHeader() {
           <DropdownMenuContent align="end" className="w-60 rounded-2xl">
             <DropdownMenuLabel className="flex flex-col gap-0.5">
               <span className="text-sm font-medium text-foreground">
-                {displayName ? displayName : "Signed in"}
+                {displayName ? displayName : t("header.signedIn", "Signed in")}
               </span>
               {user?.email && displayName !== user.email && (
                 <span className="text-xs font-normal text-muted-foreground">
@@ -87,17 +92,18 @@ export function ReliefHeader() {
               onSelect={() => navigate("/settings")}
             >
               <SettingsIcon className="h-4 w-4" aria-hidden="true" />
-              Reading settings
+              {t("header.settings", "Reading settings")}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="min-h-[44px] cursor-pointer gap-2 rounded-xl"
               onSelect={handleLogout}
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />
-              Sign out
+              {t("header.signOut", "Sign out")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
     </header>
   );
