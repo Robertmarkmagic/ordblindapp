@@ -13,6 +13,7 @@ import {
 import { usePhoneticCheck } from "@/hooks/usePhoneticCheck";
 import { useDictation } from "@/hooks/useDictation";
 import { SuggestionCard } from "@/components/notes/SuggestionCard";
+import { useLanguage } from "@/lib/i18n";
 
 interface NoteEditorProps {
   value: string;
@@ -24,6 +25,9 @@ interface NoteEditorProps {
   onKeepWord: (word: string) => void;
   /** Premium-only: the phonetic writing coach (suggestions + Polish). Free readers still write freely. */
   coachEnabled?: boolean;
+  /** Hide the built-in mic/check row when a parent workspace supplies its own toolbar. */
+  showToolbar?: boolean;
+  placeholder?: string;
 }
 
 /**
@@ -33,7 +37,17 @@ interface NoteEditorProps {
  * flagged word — opens a gentle suggestion card. Includes hands-free dictation
  * and a "Polish my note" batch review.
  */
-export function NoteEditor({ value, onChange, lang, dictionary, onKeepWord, coachEnabled = true }: NoteEditorProps) {
+export function NoteEditor({
+  value,
+  onChange,
+  lang,
+  dictionary,
+  onKeepWord,
+  coachEnabled = true,
+  showToolbar = true,
+  placeholder,
+}: NoteEditorProps) {
+  const { language } = useLanguage();
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const backdropRef = useRef<HTMLDivElement | null>(null);
   const [caret, setCaret] = useState(0);
@@ -122,9 +136,14 @@ export function NoteEditor({ value, onChange, lang, dictionary, onKeepWord, coac
     (range: FlaggedRange) => {
       onKeepWord(normalizeWord(range.original));
       setActive(null);
-      toast("Kept your spelling.", { description: `"${range.original}" won't be flagged again.` });
+      toast(language === "da" ? "Din stavning er gemt." : "Kept your spelling.", {
+        description:
+          language === "da"
+            ? `"${range.original}" bliver ikke markeret igen.`
+            : `"${range.original}" won't be flagged again.`,
+      });
     },
-    [onKeepWord]
+    [language, onKeepWord]
   );
 
   const handlePolish = useCallback(async () => {
@@ -133,12 +152,14 @@ export function NoteEditor({ value, onChange, lang, dictionary, onKeepWord, coac
       const all = await checkAll();
       setBatch(all);
       if (all.length === 0) {
-        toast("Nothing to change.", { description: "Your note reads just fine." });
+        toast(language === "da" ? "Intet at ændre." : "Nothing to change.", {
+          description: language === "da" ? "Din tekst ser fin ud." : "Your note reads just fine.",
+        });
       }
     } finally {
       setPolishing(false);
     }
-  }, [checkAll]);
+  }, [checkAll, language]);
 
   // Batch accept/reject. Apply from the END so earlier offsets stay valid.
   const acceptBatch = useCallback(
@@ -173,7 +194,7 @@ export function NoteEditor({ value, onChange, lang, dictionary, onKeepWord, coac
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar: dictate + polish */}
-      <div className="mb-2 flex items-center gap-2">
+      {showToolbar && <div className="mb-2 flex items-center gap-2">
         {dictationSupported && (
           <button
             type="button"
@@ -187,7 +208,11 @@ export function NoteEditor({ value, onChange, lang, dictionary, onKeepWord, coac
             }`}
           >
             {listening ? <MicOff className="h-4 w-4" aria-hidden="true" /> : <Mic className="h-4 w-4" aria-hidden="true" />}
-            {requesting ? "Allow mic…" : listening ? "Listening…" : "Dictate"}
+            {requesting
+              ? language === "da" ? "Tillad mikrofon…" : "Allow mic…"
+              : listening
+                ? language === "da" ? "Lytter…" : "Listening…"
+                : language === "da" ? "Diktér" : "Dictate"}
           </button>
         )}
         {coachEnabled && (
@@ -198,15 +223,17 @@ export function NoteEditor({ value, onChange, lang, dictionary, onKeepWord, coac
             className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50"
           >
             <Sparkles className="h-4 w-4 text-sage" aria-hidden="true" />
-            {polishing ? "Reading…" : "Polish my note"}
+            {polishing
+              ? language === "da" ? "Læser…" : "Reading…"
+              : language === "da" ? "Tjek min note" : "Polish my note"}
           </button>
         )}
         {checking && !polishing && (
           <span className="text-xs text-muted-foreground" aria-live="polite">
-            checking…
+            {language === "da" ? "tjekker…" : "checking…"}
           </span>
         )}
-      </div>
+      </div>}
 
       {/* Live dictation caption — always-correct, shows what the mic is hearing right now */}
       {listening && (
@@ -220,7 +247,9 @@ export function NoteEditor({ value, onChange, lang, dictionary, onKeepWord, coac
               interim
             ) : (
               <span className="text-muted-foreground">
-                Listening… speak naturally and your words appear here, then drop into your note.
+                {language === "da"
+                  ? "Lytter… tal naturligt, så kommer ordene ind i din tekst."
+                  : "Listening… speak naturally and your words appear here, then drop into your note."}
               </span>
             )}
           </p>
@@ -247,7 +276,9 @@ export function NoteEditor({ value, onChange, lang, dictionary, onKeepWord, coac
               className="mt-3 inline-flex h-9 items-center gap-2 rounded-full bg-sage px-4 text-xs font-semibold text-sage-foreground outline-none transition hover:bg-sage/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60"
             >
               <Mic className="h-4 w-4" aria-hidden="true" />
-              {requesting ? "Requesting…" : "Try again"}
+              {requesting
+                ? language === "da" ? "Anmoder…" : "Requesting…"
+                : language === "da" ? "Prøv igen" : "Try again"}
             </button>
           </div>
         </div>
@@ -285,7 +316,9 @@ export function NoteEditor({ value, onChange, lang, dictionary, onKeepWord, coac
           onClick={updateCaret}
           onKeyUp={updateCaret}
           onSelect={updateCaret}
-          placeholder="Write freely. We'll gently help with spelling — never grammar, never your voice."
+          placeholder={placeholder || (language === "da"
+            ? "Skriv frit. Vi hjælper roligt med stavning uden at ændre din stemme."
+            : "Write freely. We'll gently help with spelling, never your voice.")}
           className="rr-note-layer relative h-full w-full resize-none rounded-2xl border border-input bg-transparent p-4 text-lg leading-relaxed text-foreground caret-sage outline-none placeholder:text-muted-foreground/70 focus:border-sage/50 focus:ring-2 focus:ring-sage/20"
           aria-label="Note text"
           spellCheck={false}

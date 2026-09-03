@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { Volume2, Check, X } from "lucide-react";
 import type { FlaggedRange } from "@/lib/phonetics";
+import { useLanguage } from "@/lib/i18n";
 
 /** Speak a single word in the note's language. Best-effort, never throws. */
 function speakWord(word: string, langTag: string) {
@@ -35,6 +36,7 @@ interface SuggestionCardProps {
  * must never feel like the wrong answer. No red, anywhere.
  */
 export function SuggestionCard({ suggestion, langTag, onUse, onKeepMine, onDismiss }: SuggestionCardProps) {
+  const { language } = useLanguage();
   const speak = useCallback(() => speakWord(suggestion.suggestion, langTag), [suggestion.suggestion, langTag]);
 
   return (
@@ -46,7 +48,7 @@ export function SuggestionCard({ suggestion, langTag, onUse, onKeepMine, onDismi
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Did you mean
+            {language === "da" ? "Mente du" : "Did you mean"}
           </p>
           <div className="mt-1 flex items-center gap-2">
             <span className="font-display text-3xl font-semibold leading-tight text-sage">
@@ -62,7 +64,7 @@ export function SuggestionCard({ suggestion, langTag, onUse, onKeepMine, onDismi
             </button>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            You wrote <span className="font-medium text-foreground">{suggestion.original}</span>
+            {language === "da" ? "Du skrev" : "You wrote"} <span className="font-medium text-foreground">{suggestion.original}</span>
           </p>
         </div>
         <button
@@ -82,14 +84,14 @@ export function SuggestionCard({ suggestion, langTag, onUse, onKeepMine, onDismi
           className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-sage px-4 text-sm font-semibold text-sage-foreground outline-none transition hover:bg-sage/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Check className="h-4 w-4" aria-hidden="true" />
-          Use this
+          {language === "da" ? "Brug dette" : "Use this"}
         </button>
         <button
           type="button"
           onClick={onKeepMine}
           className="inline-flex h-11 items-center justify-center rounded-full border border-sage/40 bg-card px-4 text-sm font-semibold text-foreground outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          Keep mine
+          {language === "da" ? "Behold mit" : "Keep mine"}
         </button>
       </div>
     </div>

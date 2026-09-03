@@ -68,7 +68,7 @@ export default function Dashboard() {
   const openRiley = () => window.dispatchEvent(new Event("reliefread:open-riley"));
   const actionCards = [
     { key: "dashboard.read", english: "Read something", icon: <BookOpen className="h-6 w-6" />, sticker: "📖", onClick: () => navigate("/new") },
-    { key: "dashboard.write", english: "Write something", icon: <PenLine className="h-6 w-6" />, sticker: "✍️", onClick: () => navigate("/new") },
+    { key: "dashboard.write", english: "Write something", icon: <PenLine className="h-6 w-6" />, sticker: "✍️", onClick: () => navigate("/write") },
     { key: "dashboard.scan", english: "Scan something", icon: <Camera className="h-6 w-6" />, sticker: "📸", onClick: () => navigate("/new") },
     { key: "dashboard.explain", english: "Explain something", icon: <Brain className="h-6 w-6" />, sticker: "🧠", onClick: openRiley },
     { key: "dashboard.documents", english: "My documents", icon: <Files className="h-6 w-6" />, sticker: "📚", onClick: () => documentsRef.current?.scrollIntoView({ behavior: "smooth" }) },

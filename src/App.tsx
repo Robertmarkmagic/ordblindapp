@@ -34,6 +34,7 @@ const SettingsPage = lazy(() => import("@/routes/settings").catch(() => ({ defau
 const CheckoutCompletePage = lazy(() => import("@/routes/checkout-complete").catch(() => ({ default: () => <div>Redirecting...</div> })));
 // ReliefRead authenticated pages
 const NewSession = lazy(() => import("@/pages/NewSession").catch(() => ({ default: () => <div>New session unavailable</div> })));
+const WritingStudio = lazy(() => import("@/pages/WritingStudio").catch(() => ({ default: () => <div>Writing studio unavailable</div> })));
 const Reader = lazy(() => import("@/pages/Reader").catch(() => ({ default: () => <div>Reader unavailable</div> })));
 const PublicRead = lazy(() => import("@/pages/PublicRead").catch(() => ({ default: () => <div>Shared reading unavailable</div> })));
 const Pricing = lazy(() => import("@/pages/Pricing").catch(() => ({ default: () => <div>Pricing unavailable</div> })));
@@ -116,6 +117,15 @@ function App() {
               <ProtectedRoute>
                 <Suspense fallback={<LoadingScreen text="Opening your workspace..." />}>
                   <NewSession />
+                </Suspense>
+              </ProtectedRoute>
+            } />
+
+            {/* Writing studio - protected, with a device-local safety draft. */}
+            <Route path="/write" element={
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingScreen text="Opening your writing studio..." />}>
+                  <WritingStudio />
                 </Suspense>
               </ProtectedRoute>
             } />
