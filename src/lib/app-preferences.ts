@@ -17,11 +17,24 @@ export type ToolbarTool =
   | "comma"
   | "riley";
 
+export type HighlightMode = "word" | "line" | "sentence";
+export type FocusScope = "off" | "word" | "line" | "two-lines" | "sentence" | "paragraph";
+export type HighlightColor = "yellow" | "pink" | "blue" | "green" | "lavender";
+
 export interface AppPreferences {
   aesthetic: AestheticChoice;
   decorations: boolean;
   gentleMessages: boolean;
   toolbar: ToolbarTool[];
+  highlightMode: HighlightMode;
+  focusScope: FocusScope;
+  highlightColor: HighlightColor;
+  readerFontSize: number;
+  readerFontWeight: number;
+  readerLineHeight: number;
+  readerLetterSpacing: number;
+  readerWordSpacing: number;
+  readerTextColor: string;
 }
 
 export const DEFAULT_APP_PREFERENCES: AppPreferences = {
@@ -29,7 +42,24 @@ export const DEFAULT_APP_PREFERENCES: AppPreferences = {
   decorations: true,
   gentleMessages: true,
   toolbar: ["read", "highlight", "words", "dictate", "riley"],
+  highlightMode: "word",
+  focusScope: "off",
+  highlightColor: "yellow",
+  readerFontSize: 20,
+  readerFontWeight: 400,
+  readerLineHeight: 1.9,
+  readerLetterSpacing: 0,
+  readerWordSpacing: 0.08,
+  readerTextColor: "#1E293B",
 };
+
+export const HIGHLIGHT_COLORS: Array<{ value: HighlightColor; hex: string; label: { da: string; en: string } }> = [
+  { value: "yellow", hex: "#FEF08A", label: { da: "Gul", en: "Yellow" } },
+  { value: "pink", hex: "#FBCFE8", label: { da: "Pink", en: "Pink" } },
+  { value: "blue", hex: "#BFDBFE", label: { da: "Blå", en: "Blue" } },
+  { value: "green", hex: "#BBF7D0", label: { da: "Grøn", en: "Green" } },
+  { value: "lavender", hex: "#DDD6FE", label: { da: "Lavendel", en: "Lavender" } },
+];
 
 export const AESTHETIC_OPTIONS: Array<{
   value: AestheticChoice;
@@ -65,6 +95,12 @@ export const TOOL_OPTIONS: Array<{
 const STORAGE_KEY = "reliefread-app-preferences-v1";
 export const PREFERENCES_EVENT = "reliefread:preferences";
 
+function numberInRange(value: unknown, fallback: number, min: number, max: number): number {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.min(max, Math.max(min, value))
+    : fallback;
+}
+
 function normalize(value: Partial<AppPreferences> | null): AppPreferences {
   const toolbar = Array.isArray(value?.toolbar)
     ? value.toolbar.filter((tool): tool is ToolbarTool => TOOL_OPTIONS.some((item) => item.value === tool))
@@ -76,6 +112,25 @@ function normalize(value: Partial<AppPreferences> | null): AppPreferences {
     decorations: value?.decorations !== false,
     gentleMessages: value?.gentleMessages !== false,
     toolbar: toolbar.length ? toolbar : DEFAULT_APP_PREFERENCES.toolbar,
+    highlightMode: ["word", "line", "sentence"].includes(value?.highlightMode || "")
+      ? (value?.highlightMode as HighlightMode)
+      : DEFAULT_APP_PREFERENCES.highlightMode,
+    focusScope: ["off", "word", "line", "two-lines", "sentence", "paragraph"].includes(value?.focusScope || "")
+      ? (value?.focusScope as FocusScope)
+      : DEFAULT_APP_PREFERENCES.focusScope,
+    highlightColor: HIGHLIGHT_COLORS.some((item) => item.value === value?.highlightColor)
+      ? (value?.highlightColor as HighlightColor)
+      : DEFAULT_APP_PREFERENCES.highlightColor,
+    readerFontSize: numberInRange(value?.readerFontSize, DEFAULT_APP_PREFERENCES.readerFontSize, 16, 32),
+    readerFontWeight: [300, 400, 500, 700, 800].includes(value?.readerFontWeight || 0)
+      ? (value?.readerFontWeight as number)
+      : DEFAULT_APP_PREFERENCES.readerFontWeight,
+    readerLineHeight: numberInRange(value?.readerLineHeight, DEFAULT_APP_PREFERENCES.readerLineHeight, 1.4, 2.6),
+    readerLetterSpacing: numberInRange(value?.readerLetterSpacing, DEFAULT_APP_PREFERENCES.readerLetterSpacing, 0, 0.12),
+    readerWordSpacing: numberInRange(value?.readerWordSpacing, DEFAULT_APP_PREFERENCES.readerWordSpacing, 0, 0.3),
+    readerTextColor: ["#1E293B", "#111827", "#4B3621", "#203B5B"].includes(value?.readerTextColor || "")
+      ? (value?.readerTextColor as string)
+      : DEFAULT_APP_PREFERENCES.readerTextColor,
   };
 }
 

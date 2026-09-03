@@ -37,6 +37,11 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { ReaderAdjust } from "@/components/reader/ReaderAdjust";
 import { useLanguage } from "@/lib/i18n";
 import { PersonalToolbar } from "@/components/reader/PersonalToolbar";
+import { ReaderFocusControls } from "@/components/reader/ReaderFocusControls";
+import { ReadingVersionControls } from "@/components/reader/ReadingVersionControls";
+import { createReadingVersion, type ReadingVersion } from "@/lib/reading-versions";
+import { HIGHLIGHT_COLORS } from "@/lib/app-preferences";
+import { useAppPreferences } from "@/hooks/useAppPreferences";
 
 /**
  * Reader — the calm reading sanctuary with the listening experience, now with
@@ -52,6 +57,7 @@ export default function Reader() {
   const navigate = useNavigate();
   const { premium } = usePremium();
   const { t, language } = useLanguage();
+  const { preferences, setPreferences } = useAppPreferences();
   const [ttsSecondsUsed, setTtsSecondsUsed] = useState(0);
 
   const [doc, setDoc] = useState<DocumentRecord | null>(null);
@@ -69,6 +75,12 @@ export default function Reader() {
   const [bionic, setBionic] = useState(false);
   const [fontOverride, setFontOverride] = useState<FontChoice | null>(null);
   const [tintOverride, setTintOverride] = useState<TintChoice | null>(null);
+  const [focusControlsOpen, setFocusControlsOpen] = useState(false);
+  const [readingVersion, setReadingVersion] = useState<ReadingVersion>("original");
+  const [versionLoading, setVersionLoading] = useState<ReadingVersion | null>(null);
+  const [versionError, setVersionError] = useState<string | null>(null);
+  const [readingVersions, setReadingVersions] = useState<Partial<Record<ReadingVersion, string>>>({});
+  const versionRequestRef = useRef(0);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -105,8 +117,20 @@ export default function Reader() {
     };
   }, [authLoading, user, id, t]);
 
-  // Build the word model once per document (stable across re-renders).
-  const model = useMemo(() => buildReaderModel(doc?.content_raw || ""), [doc?.content_raw]);
+  useEffect(() => {
+    versionRequestRef.current += 1;
+    setReadingVersion("original");
+    setReadingVersions({});
+    setVersionLoading(null);
+    setVersionError(null);
+  }, [doc?.id]);
+
+  const displayedText = readingVersion === "original"
+    ? doc?.content_raw || ""
+    : readingVersions[readingVersion] || doc?.content_raw || "";
+
+  // The audio and visual word model always use the version currently on screen.
+  const model = useMemo(() => buildReaderModel(displayedText), [displayedText]);
   const lang = useMemo<"en" | "da">(() => {
     const stored = doc?.language;
     if (stored === "en" || stored === "da") return stored;
@@ -180,6 +204,38 @@ export default function Reader() {
   });
 
   const following = status === "playing" || status === "paused";
+
+  const handleReadingVersion = useCallback(async (next: ReadingVersion) => {
+    if (!doc?.content_raw || next === readingVersion) return;
+    stop();
+    setVersionError(null);
+    if (next === "original" || readingVersions[next]) {
+      setReadingVersion(next);
+      return;
+    }
+    setVersionLoading(next);
+    const requestId = ++versionRequestRef.current;
+    try {
+      const transformed = await createReadingVersion({
+        text: doc.content_raw,
+        mode: next,
+        lang,
+      });
+      if (requestId !== versionRequestRef.current) return;
+      setReadingVersions((current) => ({ ...current, [next]: transformed }));
+      setReadingVersion(next);
+    } catch (err) {
+      if (requestId !== versionRequestRef.current) return;
+      console.error("Reading version failed:", err);
+      setVersionError(
+        language === "da"
+          ? "Den lettere version kunne ikke laves lige nu. Originalen er stadig sikker. Prøv igen om lidt."
+          : "We couldn't create the easier version just now. Your original is still safe. Try again shortly."
+      );
+    } finally {
+      if (requestId === versionRequestRef.current) setVersionLoading(null);
+    }
+  }, [doc?.content_raw, readingVersion, readingVersions, stop, lang, language]);
 
   // Gently mark the document as listened once playback begins (best-effort).
   useEffect(() => {
@@ -363,6 +419,12 @@ export default function Reader() {
                 bionic={bionic}
                 setBionic={setBionic}
               />
+              <ReaderFocusControls
+                open={focusControlsOpen}
+                onOpenChange={setFocusControlsOpen}
+                preferences={preferences}
+                onChange={setPreferences}
+              />
               <button
                 onClick={() => setShareOpen(true)}
                 className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground shadow-paper outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -388,19 +450,7 @@ export default function Reader() {
             onRead={() => toggle()}
             onWords={openHistory}
             onNotes={() => setNotesOpen(true)}
-            onHighlight={() =>
-              toast(
-                language === "da"
-                  ? "Markér først den tekst, du vil fremhæve."
-                  : "First select the text you want to highlight.",
-                {
-                  description:
-                    language === "da"
-                      ? "Farvede highlights bliver tilføjet i næste udviklingstrin."
-                      : "Colored highlights are coming in the next development step.",
-                }
-              )
-            }
+            onHighlight={() => setFocusControlsOpen(true)}
           />
         )}
 
@@ -438,16 +488,32 @@ export default function Reader() {
                   {` · ${lang === "da" ? "Dansk" : "English"}`}
                 </p>
 
-                <div className="mt-8">
+                <ReadingVersionControls
+                  value={readingVersion}
+                  loading={versionLoading}
+                  onChange={handleReadingVersion}
+                />
+                {versionError && <div className="mt-3"><SoftNotice>{versionError}</SoftNotice></div>}
+
+                <div className="mt-5">
                   {model.words.length > 0 ? (
                     <ReaderContent
                       model={model}
-                      currentWordIndex={following ? currentWordIndex : -1}
+                      currentWordIndex={currentWordIndex}
                       following={following}
                       bionic={bionic}
                       fontFamily={fontFamily}
                       tintColor={tintColor}
                       onWordClick={seekToWord}
+                      fontSize={preferences.readerFontSize}
+                      lineHeight={preferences.readerLineHeight}
+                      letterSpacing={preferences.readerLetterSpacing}
+                      wordSpacing={preferences.readerWordSpacing}
+                      fontWeight={preferences.readerFontWeight}
+                      textColor={preferences.readerTextColor}
+                      highlightMode={preferences.highlightMode}
+                      focusScope={preferences.focusScope}
+                      highlightColor={HIGHLIGHT_COLORS.find((color) => color.value === preferences.highlightColor)?.hex}
                     />
                   ) : (
                     <div
