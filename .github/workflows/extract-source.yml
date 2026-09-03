@@ -1,0 +1,29 @@
+name: Extract ReliefRead source into repository
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/extract-source.yml
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    if: github.event.head_commit.message == 'Extract ReliefRead source into repository'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Extract application source
+        run: |
+          unzip -q reliefread-app-public-github-pages.zip -d source
+          rsync -a --exclude='.github' source/ ./
+          cp source/.github/workflows/deploy.yml .github/workflows/deploy.yml
+          git rm .github/workflows/deploy-from-zip.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "chore: track ReliefRead source in repository"
+          git push
