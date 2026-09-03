@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Pencil, BookMarked, Share2 } from "lucide-react";
+import { ArrowLeft, Pencil, BookMarked, Share2, ClipboardList } from "lucide-react";
 import { overskill, useAuth } from "@/lib/auth";
 import { toast } from "@/components/ui/sonner";
 import { ReliefHeader } from "@/components/ReliefHeader";
@@ -42,6 +42,8 @@ import { ReadingVersionControls } from "@/components/reader/ReadingVersionContro
 import { createReadingVersion, type ReadingVersion } from "@/lib/reading-versions";
 import { HIGHLIGHT_COLORS } from "@/lib/app-preferences";
 import { useAppPreferences } from "@/hooks/useAppPreferences";
+import { DocumentInsightsSheet } from "@/components/reader/DocumentInsightsSheet";
+import { insightsAsText, type DocumentInsights } from "@/lib/document-insights";
 
 /**
  * Reader — the calm reading sanctuary with the listening experience, now with
@@ -81,6 +83,7 @@ export default function Reader() {
   const [versionError, setVersionError] = useState<string | null>(null);
   const [readingVersions, setReadingVersions] = useState<Partial<Record<ReadingVersion, string>>>({});
   const versionRequestRef = useRef(0);
+  const [insightsOpen, setInsightsOpen] = useState(false);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -236,6 +239,24 @@ export default function Reader() {
       if (requestId === versionRequestRef.current) setVersionLoading(null);
     }
   }, [doc?.content_raw, readingVersion, readingVersions, stop, lang, language]);
+
+  const openInsights = useCallback(() => {
+    stop();
+    setInsightsOpen(true);
+  }, [stop]);
+
+  const askRileyAboutDocument = useCallback((insights: DocumentInsights) => {
+    if (!doc?.content_raw) return;
+    const overview = insightsAsText(insights, lang);
+    const prompt = language === "da"
+      ? "Hvad vil du gerne vide om dokumentet?"
+      : "What would you like to know about the document?";
+    const context = `${language === "da" ? "Overblik" : "Overview"}:\n${overview}\n\n${language === "da" ? "Originaltekst" : "Original text"}:\n${doc.content_raw.slice(0, 30000)}`;
+    setInsightsOpen(false);
+    window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("reliefread:open-riley", { detail: { prompt, context } }));
+    }, 0);
+  }, [doc?.content_raw, lang, language]);
 
   // Gently mark the document as listened once playback begins (best-effort).
   useEffect(() => {
@@ -488,11 +509,26 @@ export default function Reader() {
                   {` · ${lang === "da" ? "Dansk" : "English"}`}
                 </p>
 
-                <ReadingVersionControls
-                  value={readingVersion}
-                  loading={versionLoading}
-                  onChange={handleReadingVersion}
-                />
+                <div className="mt-6 space-y-3">
+                  <button
+                    type="button"
+                    onClick={openInsights}
+                    className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-accent/65 px-4 text-left font-semibold text-foreground shadow-paper outline-none transition hover:border-primary/40 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring sm:px-5"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground" aria-hidden="true">
+                        <ClipboardList className="h-4 w-4" />
+                      </span>
+                      {language === "da" ? "Fortæl mig det vigtigste" : "Tell me what matters most"}
+                    </span>
+                    <span className="text-xl text-primary" aria-hidden="true">→</span>
+                  </button>
+                  <ReadingVersionControls
+                    value={readingVersion}
+                    loading={versionLoading}
+                    onChange={handleReadingVersion}
+                  />
+                </div>
                 {versionError && <div className="mt-3"><SoftNotice>{versionError}</SoftNotice></div>}
 
                 <div className="mt-5">
@@ -623,6 +659,19 @@ export default function Reader() {
           language={lang}
           snapshot={shareSnapshot}
           sharerPremium={premium}
+        />
+      )}
+
+      {doc && (
+        <DocumentInsightsSheet
+          open={insightsOpen}
+          onOpenChange={setInsightsOpen}
+          documentId={doc.id}
+          title={doc.title || t("reader.reading", "Reading")}
+          text={doc.content_raw || ""}
+          lang={lang}
+          fontFamily={fontFamily}
+          onAskRiley={askRileyAboutDocument}
         />
       )}
     </div>

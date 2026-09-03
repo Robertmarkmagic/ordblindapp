@@ -19,7 +19,7 @@ const OPTIONS: Array<{ value: ReadingVersion; da: string; en: string }> = [
 export function ReadingVersionControls({ value, loading, onChange }: ReadingVersionControlsProps) {
   const { language } = useLanguage();
   return (
-    <section className="mt-6 rounded-2xl border border-border bg-card/70 p-3 shadow-paper" aria-label={language === "da" ? "Tekstniveau" : "Reading level"}>
+    <section className="rounded-2xl border border-border bg-card/70 p-3 shadow-paper" aria-label={language === "da" ? "Tekstniveau" : "Reading level"}>
       <div className="mb-2 flex items-center gap-2 px-1 text-sm font-semibold text-foreground">
         <Sparkles className="h-4 w-4 text-sage" aria-hidden="true" />
         {language === "da" ? "Vælg hvordan teksten vises" : "Choose how the text is shown"}

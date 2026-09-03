@@ -71,6 +71,8 @@ export function RileyAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [selection, setSelection] = useState("");
+  const [providedContext, setProvidedContext] = useState("");
+  const [contextAttached, setContextAttached] = useState(false);
   const [listening, setListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -89,9 +91,11 @@ export function RileyAssistant() {
 
   useEffect(() => {
     const openRiley = (event: Event) => {
-      const detail = (event as CustomEvent<{ prompt?: string }>).detail;
+      const detail = (event as CustomEvent<{ prompt?: string; context?: string }>).detail;
       setSelection(getSelectedText());
       if (detail?.prompt) setInput(detail.prompt);
+      setProvidedContext(detail?.context || "");
+      setContextAttached(false);
       setOpen(true);
     };
     window.addEventListener("reliefread:open-riley", openRiley);
@@ -112,12 +116,17 @@ export function RileyAssistant() {
 
   const withContext = (prompt: string) => {
     const selected = selection.trim();
-    if (!selected) return prompt;
-    return `${prompt}\n\n${language === "da" ? "Tekst:" : "Text:"}\n${selected}`;
+    const parts = [prompt];
+    if (selected) parts.push(`${language === "da" ? "Markeret tekst:" : "Selected text:"}\n${selected}`);
+    if (providedContext && !contextAttached) {
+      parts.push(`${language === "da" ? "Dokumentkontekst:" : "Document context:"}\n${providedContext}`);
+    }
+    return parts.join("\n\n");
   };
 
   const submit = async (prompt = input) => {
     if (!prompt.trim() || loading) return;
+    if (providedContext && !contextAttached) setContextAttached(true);
     setInput("");
     await sendMessage(withContext(prompt.trim()));
   };
@@ -181,6 +190,14 @@ export function RileyAssistant() {
               <div className="mb-4 rounded-2xl border border-primary/20 bg-accent/70 p-3 text-sm text-foreground">
                 <p className="font-semibold">{language === "da" ? "Markeret tekst" : "Selected text"}</p>
                 <p className="mt-1 line-clamp-3 leading-relaxed text-muted-foreground">{selection}</p>
+              </div>
+            )}
+            {providedContext && !contextAttached && (
+              <div className="mb-4 rounded-2xl border border-primary/20 bg-accent/70 p-3 text-sm text-foreground">
+                <p className="font-semibold">{language === "da" ? "Dokumentet er klar" : "Document ready"}</p>
+                <p className="mt-1 leading-relaxed text-muted-foreground">
+                  {language === "da" ? "Riley bruger dokumentet som baggrund for dit næste spørgsmål." : "Riley will use the document for your next question."}
+                </p>
               </div>
             )}
 
