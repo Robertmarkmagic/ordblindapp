@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useEntitlement } from "overskill-sdk";
 import { useAuth } from "@/lib/auth";
 import { loadReadingSettings } from "@/lib/reading-settings";
+import { TESTER_MODE } from "@/lib/billing";
 
 /**
  * usePremium — the single source of truth for "is this user Premium?".
@@ -51,9 +52,9 @@ export function usePremium() {
   }, [authLoading, user, refresh]);
 
   const entitled = !ent.isLoading && !!ent.activePlan();
-  const premium = planPremium || entitled;
+  const premium = TESTER_MODE || planPremium || entitled;
 
-  return { premium, loading: loadingPlan || ent.isLoading, refresh };
+  return { premium, loading: TESTER_MODE ? false : loadingPlan || ent.isLoading, refresh };
 }
 
 export default usePremium;
