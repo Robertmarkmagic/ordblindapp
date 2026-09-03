@@ -1,0 +1,11 @@
+{
+  "name": "overskill-sdk",
+  "version": "0.2.0",
+  "description": "Official SDK for OverSkill generated apps",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  }
+}

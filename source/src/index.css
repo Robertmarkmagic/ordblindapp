@@ -1,0 +1,290 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+
+/* OpenDyslexic — a reader font option for later prompts. Loaded from a public
+   CDN with a graceful Lexend fallback, so if the CDN is ever unreachable the
+   app still renders cleanly in Lexend (never a broken/blank state). */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5.0.5/files/opendyslexic-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5.0.5/files/opendyslexic-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ReliefRead design system.
+   background #FDFBF7 (warm cream), text #1E293B (slate),
+   accent #5B7B6B (soft sage), highlight #FEF08A (soft yellow),
+   warnings/errors soft amber #F59E0B — never red, anywhere.
+   All colors are HSL (H S% L%), no hsl() wrapper. */
+
+@layer base {
+  :root {
+    --background: 40 43% 98%;
+    --foreground: 217 33% 17%;
+
+    --card: 40 50% 99%;
+    --card-foreground: 217 33% 17%;
+
+    --popover: 40 50% 99%;
+    --popover-foreground: 217 33% 17%;
+
+    /* Soft sage green — primary actions */
+    --primary: 150 15% 42%;
+    --primary-foreground: 40 43% 98%;
+
+    --secondary: 40 30% 94%;
+    --secondary-foreground: 217 33% 25%;
+
+    --muted: 40 30% 94%;
+    --muted-foreground: 215 16% 45%;
+
+    --accent: 150 22% 92%;
+    --accent-foreground: 150 25% 24%;
+
+    /* Amber, NEVER red. destructive-foreground is slate for AA contrast on amber. */
+    --destructive: 38 92% 50%;
+    --destructive-foreground: 217 33% 17%;
+
+    --border: 40 22% 90%;
+    --input: 40 22% 88%;
+    --ring: 150 15% 42%;
+
+    --radius: 1rem;
+
+    /* ReliefRead brand tokens */
+    --sage: 150 15% 42%;
+    --sage-foreground: 40 43% 98%;
+    --highlight: 53 98% 77%;
+    --highlight-foreground: 217 33% 17%;
+    --amber: 38 92% 50%;
+    --amber-foreground: 217 33% 17%;
+
+    --gradient-calm: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(150 22% 92% / 0.7), transparent 70%);
+    --shadow-paper: 0 1px 2px hsl(217 33% 17% / 0.04), 0 8px 24px -12px hsl(217 33% 17% / 0.12);
+
+    --sidebar-background: 40 43% 98%;
+    --sidebar-foreground: 217 33% 25%;
+    --sidebar-primary: 150 15% 42%;
+    --sidebar-primary-foreground: 40 43% 98%;
+    --sidebar-accent: 150 22% 92%;
+    --sidebar-accent-foreground: 150 25% 24%;
+    --sidebar-border: 40 22% 90%;
+    --sidebar-ring: 150 15% 42%;
+
+    --task-complete: 150 15% 42%;
+    --task-pending: 215 16% 55%;
+    --task-high: 38 92% 50%;
+  }
+
+  .dark {
+    --background: 217 33% 11%;
+    --foreground: 40 40% 95%;
+
+    --card: 217 30% 15%;
+    --card-foreground: 40 40% 95%;
+
+    --popover: 217 30% 15%;
+    --popover-foreground: 40 40% 95%;
+
+    --primary: 150 20% 58%;
+    --primary-foreground: 217 33% 11%;
+
+    --secondary: 217 25% 20%;
+    --secondary-foreground: 40 40% 95%;
+
+    --muted: 217 25% 20%;
+    --muted-foreground: 215 16% 68%;
+
+    --accent: 150 18% 24%;
+    --accent-foreground: 150 25% 88%;
+
+    /* Amber, never red — softened for dark surfaces. */
+    --destructive: 38 84% 58%;
+    --destructive-foreground: 217 33% 11%;
+
+    --border: 217 20% 24%;
+    --input: 217 20% 24%;
+    --ring: 150 20% 58%;
+
+    --sage: 150 20% 58%;
+    --sage-foreground: 217 33% 11%;
+    --highlight: 53 70% 62%;
+    --highlight-foreground: 217 33% 11%;
+    --amber: 38 84% 58%;
+    --amber-foreground: 217 33% 11%;
+
+    --shadow-paper: 0 1px 2px hsl(0 0% 0% / 0.2), 0 8px 24px -12px hsl(0 0% 0% / 0.5);
+
+    --sidebar-background: 217 33% 13%;
+    --sidebar-foreground: 40 40% 90%;
+    --sidebar-primary: 150 20% 58%;
+    --sidebar-primary-foreground: 217 33% 11%;
+    --sidebar-accent: 150 18% 24%;
+    --sidebar-accent-foreground: 150 25% 88%;
+    --sidebar-border: 217 20% 24%;
+    --sidebar-ring: 150 20% 58%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+    text-wrap: pretty;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  img {
+    outline: 1px solid rgb(0 0 0 / 0.06);
+    outline-offset: -1px;
+  }
+  .dark img {
+    outline-color: rgb(255 255 255 / 0.08);
+  }
+}
+
+/* Calm scrollbar */
+@layer base {
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(150 15% 42% / 0.3);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background-color: hsl(150 15% 42% / 0.5); }
+  * { scrollbar-width: thin; scrollbar-color: hsl(150 15% 42% / 0.3) transparent; }
+}
+
+@layer utilities {
+  /* Soft yellow reading highlight (used by the reader in later prompts). */
+  .rr-highlight {
+    background-color: hsl(var(--highlight));
+    color: hsl(var(--highlight-foreground));
+    border-radius: 0.25rem;
+    padding: 0 0.15em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  /* Per-word span in the reader. Clickable (jump playback here) with a soft
+     100ms fade into the live-highlight color #FEF08A. The active word keeps a
+     solid highlight; Bionic bold (<b>) inside stays intact because the span
+     wraps the whole word. */
+  .rr-word {
+    border-radius: 0.25rem;
+    padding: 0 0.05em;
+    cursor: pointer;
+    background-color: transparent;
+    transition: background-color 100ms ease;
+  }
+  .rr-word:hover {
+    background-color: hsl(var(--highlight) / 0.35);
+  }
+  .rr-word-active {
+    background-color: hsl(var(--highlight));
+    color: hsl(var(--highlight-foreground));
+  }
+
+  /* Skeleton shimmer — calmer than a spinner. */
+  .rr-skeleton {
+    position: relative;
+    overflow: hidden;
+    background-color: hsl(var(--muted));
+  }
+  .rr-skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.45), transparent);
+    animation: rr-shimmer 1.6s ease-in-out infinite;
+  }
+  .dark .rr-skeleton::after {
+    background-image: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.08), transparent);
+  }
+
+  /* Gentle staggered "settle-in" reveal. */
+  .rr-settle > * {
+    opacity: 0;
+    animation: rr-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .rr-settle > *:nth-child(1) { animation-delay: 0.04s; }
+  .rr-settle > *:nth-child(2) { animation-delay: 0.10s; }
+  .rr-settle > *:nth-child(3) { animation-delay: 0.16s; }
+  .rr-settle > *:nth-child(4) { animation-delay: 0.22s; }
+  .rr-settle > *:nth-child(5) { animation-delay: 0.28s; }
+  .rr-settle > *:nth-child(6) { animation-delay: 0.34s; }
+  .rr-settle > *:nth-child(7) { animation-delay: 0.40s; }
+  .rr-settle > *:nth-child(8) { animation-delay: 0.46s; }
+
+  .rr-fade-up { animation: rr-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+  /* Note editor: the textarea and its underline backdrop MUST share identical
+     text metrics so the dotted underlines land exactly under the words. */
+  .rr-note-layer {
+    font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: normal;
+    word-spacing: normal;
+    tab-size: 4;
+  }
+
+  /* Soft sage DOTTED underline for phonetically-flagged words — calm, never
+     red, never wavy. This is the emotional heart of the coach: help, not alarm. */
+  .rr-misspelled {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: hsl(var(--sage));
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    border-radius: 0.2rem;
+  }
+}
+
+@keyframes rr-shimmer {
+  100% { transform: translateX(100%); }
+}
+@keyframes rr-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Safety floor: content is never hidden if animation is missing or the
+   reader prefers reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .rr-settle > *,
+  .rr-fade-up {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .rr-skeleton::after { animation: none; }
+}
+
+/* OverSkill Remix Badge styles are imported by src/App.tsx from
+   src/lib/overskill-badge.css (platform-owned). Do not re-add here. */
