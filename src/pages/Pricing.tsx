@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
 import { usePremium } from "@/hooks/usePremium";
-import { redeemDemoCode, PRICING } from "@/lib/billing";
+import { redeemDemoCode, PRICING, TESTER_MODE } from "@/lib/billing";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 const MONTHLY_PLAN = import.meta.env.VITE_PLAN_PREMIUM_MONTHLY as string | undefined;
@@ -147,7 +147,9 @@ export default function Pricing() {
         {premium && (
           <div className="rr-fade-up mx-auto mt-8 max-w-md rounded-2xl border border-sage/30 bg-accent/60 p-4 text-center text-sm text-foreground shadow-paper">
             <Sparkles className="mr-1 inline h-4 w-4 text-sage" aria-hidden="true" />
-            You're already on Premium — thank you. Everything below is yours.
+            {TESTER_MODE
+              ? "Tester access is active. Every premium feature is open while we improve ReliefRead together."
+              : "You're already on Premium — thank you. Everything below is yours."}
           </div>
         )}
 
@@ -249,7 +251,11 @@ export default function Pricing() {
                 {redeeming ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : "Apply"}
               </Button>
             </div>
-            {!checkoutConfigured && (
+            {TESTER_MODE ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                Tester access is active. No payment details are collected during this phase.
+              </p>
+            ) : !checkoutConfigured && (
               <p className="mt-3 text-xs text-muted-foreground">
                 Card checkout is being set up — a code unlocks Premium instantly in the meantime.
               </p>
