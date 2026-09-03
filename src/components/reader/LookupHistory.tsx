@@ -4,6 +4,7 @@ import { useSpeech } from "@/hooks/useSpeech";
 import { bcp47For } from "@/lib/reader-tokens";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import type { LookupRow, Lang } from "@/lib/lookups";
+import { useLanguage } from "@/lib/i18n";
 
 interface LookupHistoryProps {
   open: boolean;
@@ -21,6 +22,7 @@ interface LookupHistoryProps {
  */
 export function LookupHistory({ open, onOpenChange, items, loading, fontFamily }: LookupHistoryProps) {
   const speech = useSpeech();
+  const { t } = useLanguage();
 
   // Stop audio when the sheet closes.
   React.useEffect(() => {
@@ -62,9 +64,9 @@ export function LookupHistory({ open, onOpenChange, items, loading, fontFamily }
           ) : items.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border bg-card/60 p-8 text-center">
               <BookMarked className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
-              <p className="mt-3 text-base font-medium text-foreground">Nothing here yet</p>
+              <p className="mt-3 text-base font-medium text-foreground">{t("lookup.empty", "Nothing here yet")}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Select any word or line, then tap "Explain simply" or "Translate" — it'll be saved here.
+                {t("lookup.emptyHelp", "Select any word or line, then tap Explain simply or Translate. It will be saved here.")}
               </p>
             </div>
           ) : (
@@ -76,11 +78,11 @@ export function LookupHistory({ open, onOpenChange, items, loading, fontFamily }
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
                       <Icon className="h-3.5 w-3.5 text-sage" aria-hidden="true" />
-                      {isTranslate ? "Translation" : "Explained"}
+                      {isTranslate ? t("lookup.translation", "Translation") : t("lookup.explained", "Explained")}
                     </span>
                     <button
                       onClick={() => speak(row)}
-                      aria-label="Read this aloud"
+                      aria-label={t("lookup.readAloud", "Read this aloud")}
                       className="grid h-9 w-9 place-items-center rounded-full text-sage outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
                     >
                       {speech.speaking ? (

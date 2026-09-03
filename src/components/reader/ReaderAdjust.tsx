@@ -11,6 +11,7 @@ import {
   type FontChoice,
   type TintChoice,
 } from "@/lib/reading-settings";
+import { useLanguage } from "@/lib/i18n";
 
 interface ReaderAdjustProps {
   font: FontChoice;
@@ -35,22 +36,23 @@ export function ReaderAdjust({
   bionic,
   setBionic,
 }: ReaderAdjustProps) {
+  const { t } = useLanguage();
   return (
     <Popover>
       <PopoverTrigger asChild>
         <button
           className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground shadow-paper outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          aria-label="Adjust reading appearance"
+          aria-label={t("reader.adjustAria", "Adjust reading appearance")}
         >
           <Type className="h-4 w-4 text-sage" aria-hidden="true" />
-          <span className="hidden sm:inline">Adjust</span>
+          <span className="hidden sm:inline">{t("reader.adjust", "Adjust")}</span>
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 rounded-2xl p-5">
         {/* Font */}
         <div className="flex items-center gap-2">
           <Type className="h-4 w-4 text-sage" aria-hidden="true" />
-          <span className="text-sm font-semibold text-foreground">Reading font</span>
+          <span className="text-sm font-semibold text-foreground">{t("reader.font", "Reading font")}</span>
         </div>
         <div className="mt-2 grid gap-2">
           {FONT_OPTIONS.map((opt) => {
@@ -76,7 +78,7 @@ export function ReaderAdjust({
         {/* Tint */}
         <div className="mt-4 flex items-center gap-2">
           <Palette className="h-4 w-4 text-sage" aria-hidden="true" />
-          <span className="text-sm font-semibold text-foreground">Background</span>
+          <span className="text-sm font-semibold text-foreground">{t("reader.background", "Background")}</span>
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
           {TINT_OPTIONS.map((opt) => {
@@ -113,7 +115,7 @@ export function ReaderAdjust({
         >
           <span className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Sparkles className="h-4 w-4 text-sage" aria-hidden="true" />
-            Bionic reading
+            {t("reader.bionic", "Bionic reading")}
           </span>
           <span
             className={`grid h-6 w-11 items-center rounded-full px-0.5 transition ${

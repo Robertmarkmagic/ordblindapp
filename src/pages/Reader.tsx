@@ -35,6 +35,7 @@ import { getMonthlyUsage } from "@/lib/usage";
 import { isFreshTtsExhausted } from "@/lib/billing";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { ReaderAdjust } from "@/components/reader/ReaderAdjust";
+import { useLanguage } from "@/lib/i18n";
 
 /**
  * Reader — the calm reading sanctuary with the listening experience, now with
@@ -49,6 +50,7 @@ export default function Reader() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { premium } = usePremium();
+  const { t } = useLanguage();
   const [ttsSecondsUsed, setTtsSecondsUsed] = useState(0);
 
   const [doc, setDoc] = useState<DocumentRecord | null>(null);
@@ -92,7 +94,7 @@ export default function Reader() {
       })
       .catch((err) => {
         console.error("Failed to load reading:", err);
-        if (active) setError("We couldn't open this reading just now. Try again in a moment.");
+        if (active) setError(t("reader.openError", "We couldn't open this reading just now. Try again in a moment."));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -100,7 +102,7 @@ export default function Reader() {
     return () => {
       active = false;
     };
-  }, [authLoading, user, id]);
+  }, [authLoading, user, id, t]);
 
   // Build the word model once per document (stable across re-renders).
   const model = useMemo(() => buildReaderModel(doc?.content_raw || ""), [doc?.content_raw]);
@@ -335,7 +337,7 @@ export default function Reader() {
     [doc?.id, lang, user?.id, playRange, refreshHistory]
   );
 
-  usePageTitle(doc?.title || "Reading");
+  usePageTitle(doc?.title || t("reader.reading", "Reading"));
 
   return (
     <div className="min-h-screen bg-background">
@@ -345,10 +347,10 @@ export default function Reader() {
           <button
             onClick={() => navigate("/dashboard")}
             className="inline-flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            aria-label="Back to My Reading Space"
+            aria-label={t("reader.back", "Back to My Reading Space")}
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Back to my space
+            {t("reader.back", "Back to my space")}
           </button>
           {doc && (
             <div className="flex items-center gap-2">
@@ -363,18 +365,18 @@ export default function Reader() {
               <button
                 onClick={() => setShareOpen(true)}
                 className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground shadow-paper outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                aria-label="Share this formatted reading"
+                aria-label={t("reader.shareAria", "Share this formatted reading")}
               >
                 <Share2 className="h-4 w-4 text-sage" aria-hidden="true" />
-                <span className="hidden sm:inline">Share</span>
+                <span className="hidden sm:inline">{t("reader.share", "Share")}</span>
               </button>
               <button
                 onClick={openHistory}
                 className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground shadow-paper outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                aria-label="Open your looked-up words"
+                aria-label={t("reader.lookedUpAria", "Open your looked-up words")}
               >
                 <BookMarked className="h-4 w-4 text-sage" aria-hidden="true" />
-                <span className="hidden sm:inline">Looked up</span>
+                <span className="hidden sm:inline">{t("reader.lookedUp", "Looked up")}</span>
               </button>
             </div>
           )}
@@ -395,9 +397,9 @@ export default function Reader() {
               </div>
             ) : notFound ? (
               <SoftNotice>
-                We couldn't find that reading. It may have been removed.{" "}
+                {t("reader.notFound", "We couldn't find that reading. It may have been removed.")}{" "}
                 <button className="underline" onClick={() => navigate("/dashboard")}>
-                  Back to your space
+                  {t("reader.backShort", "Back to your space")}
                 </button>
                 .
               </SoftNotice>
@@ -410,7 +412,7 @@ export default function Reader() {
                 </h1>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {doc.created_at ? formatShortDate(doc.created_at) : ""}
-                  {doc.content_raw ? ` · ${estimateReadingMinutes(doc.content_raw)} min read` : ""}
+                  {doc.content_raw ? ` · ${t("reader.minutes", `${estimateReadingMinutes(doc.content_raw)} min read`, { minutes: estimateReadingMinutes(doc.content_raw) })}` : ""}
                   {` · ${lang === "da" ? "Dansk" : "English"}`}
                 </p>
 
@@ -430,7 +432,7 @@ export default function Reader() {
                       className="rounded-3xl border border-border p-8 text-lg italic opacity-70 shadow-paper"
                       style={{ backgroundColor: tintColor, color: "#1E293B" }}
                     >
-                      This reading is empty.
+                      {t("reader.empty", "This reading is empty.")}
                     </div>
                   )}
                 </div>
@@ -477,13 +479,13 @@ export default function Reader() {
           <button
             onClick={() => setNotesOpen(true)}
             className="fixed bottom-24 right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-sage text-sage-foreground shadow-lg outline-none transition hover:bg-sage/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
-            aria-label="Open my notes"
+            aria-label={t("reader.openNotes", "Open my notes")}
           >
             <Pencil className="h-6 w-6" aria-hidden="true" />
           </button>
           <Sheet open={notesOpen} onOpenChange={setNotesOpen}>
             <SheetContent side="bottom" className="h-[92vh] rounded-t-3xl p-5">
-              <SheetTitle className="sr-only">My Notes</SheetTitle>
+              <SheetTitle className="sr-only">{t("reader.myNotes", "My Notes")}</SheetTitle>
               <div className="h-full pt-2">
                 <NotesPanel
                   documentId={doc.id}
@@ -528,7 +530,7 @@ export default function Reader() {
           open={shareOpen}
           onOpenChange={setShareOpen}
           documentId={doc.id}
-          title={doc.title || "Shared reading"}
+          title={doc.title || t("reader.sharedReading", "Shared reading")}
           contentRaw={doc.content_raw || ""}
           language={lang}
           snapshot={shareSnapshot}

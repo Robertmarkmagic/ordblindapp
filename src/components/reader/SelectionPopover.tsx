@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Sparkles, Languages, Volume2 } from "lucide-react";
+import { useLanguage } from "@/lib/i18n";
 
 export type LookupAction = "explain" | "translate" | "read";
 
@@ -19,6 +20,7 @@ const GAP = 10;
  * touch long-press (native selection fires the same events).
  */
 export function SelectionPopover({ containerRef, onAction }: SelectionPopoverProps) {
+  const { t } = useLanguage();
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [text, setText] = useState("");
   const popRef = useRef<HTMLDivElement>(null);
@@ -114,21 +116,21 @@ export function SelectionPopover({ containerRef, onAction }: SelectionPopoverPro
       onMouseDown={(e) => e.preventDefault()}
       className="flex items-stretch gap-1 rounded-2xl border border-border bg-card p-1.5 shadow-lg animate-in fade-in zoom-in-95 duration-150"
       role="dialog"
-      aria-label="Selection tools"
+      aria-label={t("lookup.tools", "Selection tools")}
     >
       <PopButton
         icon={<Sparkles className="h-5 w-5 text-sage" aria-hidden="true" />}
-        label="Explain simply"
+        label={t("lookup.explain", "Explain simply")}
         onClick={() => fire("explain")}
       />
       <PopButton
         icon={<Languages className="h-5 w-5 text-sage" aria-hidden="true" />}
-        label="Translate"
+        label={t("lookup.translate", "Translate")}
         onClick={() => fire("translate")}
       />
       <PopButton
         icon={<Volume2 className="h-5 w-5 text-sage" aria-hidden="true" />}
-        label="Read this"
+        label={t("lookup.read", "Read this")}
         onClick={() => fire("read")}
       />
     </div>

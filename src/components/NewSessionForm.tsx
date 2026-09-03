@@ -9,6 +9,7 @@ import { SoftNotice } from "@/components/SoftNotice";
 import { firstWords, wordCount, estimateReadingMinutes } from "@/lib/text-utils";
 import { detectLanguage } from "@/lib/reader-tokens";
 import { extractTextFromFile, isSupportedFile } from "@/lib/import-text";
+import { useLanguage } from "@/lib/i18n";
 
 export interface NewSessionSubmit {
   title: string;
@@ -31,6 +32,7 @@ interface NewSessionFormProps {
  * Language is auto-detected (en/da) and stored with the document.
  */
 export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
+  const { t } = useLanguage();
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
   const [titleEdited, setTitleEdited] = useState(false);
@@ -40,7 +42,7 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
 
   const words = wordCount(content);
   const minutes = estimateReadingMinutes(content);
-  const autoTitle = firstWords(content, 6) || "Untitled reading";
+  const autoTitle = firstWords(content, 6) || t("form.untitled", "Untitled reading");
   const effectiveTitle = titleEdited ? title : autoTitle;
 
   // Apply extracted/pasted text and refresh the auto-title unless the user has
@@ -58,7 +60,7 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
       if (!file) return;
       setNotice(null);
       if (!isSupportedFile(file)) {
-        setNotice("Please choose a .txt or .pdf file.");
+        setNotice(t("form.chooseFile", "Please choose a .txt or .pdf file."));
         return;
       }
       setExtracting(true);
@@ -66,12 +68,12 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
         const result = await extractTextFromFile(file);
         if (result.kind === "pdf" && result.scanned) {
           setNotice(
-            "This PDF is a scanned image. Try pasting the text instead. Photo scanning is coming soon."
+            t("form.scannedPdf", "This PDF is a scanned image. Try pasting the text instead. Photo scanning is coming soon.")
           );
           return;
         }
         if (!result.text.trim()) {
-          setNotice("We couldn't find any text in that file. Try pasting it instead.");
+          setNotice(t("form.noText", "We couldn't find any text in that file. Try pasting it instead."));
           return;
         }
         applyContent(result.text);
@@ -82,23 +84,23 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
       } catch (err) {
         console.error("File import failed:", err);
         setNotice(
-          "We couldn't read that file just now. Try pasting the text instead — that always works."
+          t("form.readError", "We couldn't read that file just now. Try pasting the text instead. That always works.")
         );
       } finally {
         setExtracting(false);
         if (fileInputRef.current) fileInputRef.current.value = "";
       }
     },
-    [applyContent, title, titleEdited]
+    [applyContent, title, titleEdited, t]
   );
 
   const submit = () => {
     if (!content.trim()) {
-      setNotice("Paste or upload some text first, and we'll take it from there.");
+      setNotice(t("form.addText", "Paste or upload some text first, and we'll take it from there."));
       return;
     }
     onSubmit({
-      title: (effectiveTitle || "Untitled reading").trim(),
+      title: (effectiveTitle || t("form.untitled", "Untitled reading")).trim(),
       content: content.trim(),
       language: detectLanguage(content),
     });
@@ -110,22 +112,22 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
         <TabsList className="grid w-full grid-cols-2 rounded-2xl bg-muted p-1">
           <TabsTrigger value="paste" className="rounded-xl">
             <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
-            Paste text
+            {t("form.paste", "Paste text")}
           </TabsTrigger>
           <TabsTrigger value="upload" className="rounded-xl">
             <Upload className="mr-2 h-4 w-4" aria-hidden="true" />
-            Upload file
+            {t("form.upload", "Upload file")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="paste" className="mt-5 space-y-2.5">
           <div className="flex items-end justify-between gap-3">
             <Label htmlFor="content" className="text-base font-medium">
-              Your text
+              {t("form.yourText", "Your text")}
             </Label>
             {words > 0 && (
               <span className="text-sm tabular-nums text-muted-foreground">
-                {words} {words === 1 ? "word" : "words"} · ~{minutes} min
+                {words} {words === 1 ? t("form.word", "word") : t("form.words", "words")} · ~{minutes} min
               </span>
             )}
           </div>
@@ -133,11 +135,11 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
             id="content"
             value={content}
             onChange={(e) => applyContent(e.target.value)}
-            placeholder="Paste your text here — an email, an article, a letter…"
+            placeholder={t("form.placeholder", "Paste your text here. An email, an article, a letter...")}
             className="min-h-[220px] resize-y rounded-2xl border-input bg-card p-4 text-base leading-relaxed"
           />
           <p className="text-sm text-muted-foreground">
-            English and Danish are detected automatically.
+            {t("form.detected", "English and Danish are detected automatically.")}
           </p>
         </TabsContent>
 
@@ -151,7 +153,7 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
             {extracting ? (
               <>
                 <Loader2 className="h-8 w-8 animate-spin text-sage" aria-hidden="true" />
-                <span className="text-base font-medium text-foreground">Reading your file…</span>
+                <span className="text-base font-medium text-foreground">{t("form.readingFile", "Reading your file...")}</span>
               </>
             ) : (
               <>
@@ -159,10 +161,10 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
                   <Upload className="h-6 w-6" aria-hidden="true" />
                 </span>
                 <span className="text-base font-medium text-foreground">
-                  Choose a .txt or .pdf file
+                  {t("form.chooseUpload", "Choose a .txt or .pdf file")}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  We'll pull the text out for you.
+                  {t("form.extract", "We'll pull the text out for you.")}
                 </span>
               </>
             )}
@@ -176,7 +178,10 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
           />
           {content.trim() && !extracting && (
             <p className="text-sm text-sage">
-              Got it — {words} {words === 1 ? "word" : "words"} ready to read.
+              {t("form.ready", `Got it. ${words} ${words === 1 ? "word" : "words"} ready to read.`, {
+                words,
+                wordLabel: words === 1 ? t("form.word", "word") : t("form.words", "words"),
+              })}
             </p>
           )}
         </TabsContent>
@@ -188,7 +193,7 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
       <div className="space-y-2.5">
         <Label htmlFor="title" className="flex items-center gap-2 text-base font-medium">
           <Pencil className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          Title
+          {t("form.title", "Title")}
         </Label>
         <Input
           id="title"
@@ -197,12 +202,12 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
             setTitle(e.target.value);
             setTitleEdited(true);
           }}
-          placeholder="A name for this reading"
+          placeholder={t("form.titlePlaceholder", "A name for this reading")}
           className="h-12 rounded-xl border-input bg-card text-base"
           autoComplete="off"
         />
         <p className="text-sm text-muted-foreground">
-          We named it from your first few words — change it if you like.
+          {t("form.titleHelp", "We named it from your first few words. Change it if you like.")}
         </p>
       </div>
 
@@ -215,12 +220,12 @@ export function NewSessionForm({ saving, onSubmit }: NewSessionFormProps) {
           {saving ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
-              Preparing…
+              {t("form.preparing", "Preparing...")}
             </>
           ) : (
             <>
               <Sparkles className="mr-1 h-5 w-5" aria-hidden="true" />
-              Start reading
+              {t("form.start", "Start reading")}
             </>
           )}
         </Button>
