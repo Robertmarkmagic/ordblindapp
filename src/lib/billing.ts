@@ -14,6 +14,42 @@ import {
 } from "@/lib/reading-settings";
 import { getMonthlyUsage } from "@/lib/usage";
 
+export type BillingProvider = "none" | "overskill" | "stripe";
+
+const configuredProvider = import.meta.env.VITE_BILLING_PROVIDER as BillingProvider | undefined;
+
+/**
+ * Test mode grants signed-in testers all premium features without collecting
+ * payment details. It is intentionally controlled at build time, so it can be
+ * switched off before the public paid launch.
+ */
+export const TESTER_MODE = import.meta.env.VITE_TESTER_MODE === "true";
+
+/**
+ * Stripe is only enabled once a server-side Checkout endpoint exists. Secret
+ * keys and webhook secrets must never be added to this browser application.
+ */
+export const BILLING_PROVIDER: BillingProvider =
+  configuredProvider === "stripe" || configuredProvider === "overskill"
+    ? configuredProvider
+    : "none";
+
+export const STRIPE_CONFIG = {
+  publishableKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined,
+  monthlyPriceId: import.meta.env.VITE_STRIPE_PRICE_PREMIUM_MONTHLY as string | undefined,
+  annualPriceId: import.meta.env.VITE_STRIPE_PRICE_PREMIUM_ANNUAL as string | undefined,
+  checkoutEndpoint: import.meta.env.VITE_STRIPE_CHECKOUT_ENDPOINT as string | undefined,
+} as const;
+
+export const stripeCheckoutReady =
+  BILLING_PROVIDER === "stripe" &&
+  Boolean(
+    STRIPE_CONFIG.publishableKey &&
+      STRIPE_CONFIG.monthlyPriceId &&
+      STRIPE_CONFIG.annualPriceId &&
+      STRIPE_CONFIG.checkoutEndpoint
+  );
+
 /** Free plan: 3 fresh documents per calendar month. */
 export const FREE_MONTHLY_DOCUMENTS = 3;
 /** Free plan: 1 active public share link at a time. */
