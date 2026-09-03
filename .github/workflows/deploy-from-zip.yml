@@ -22,48 +22,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Unpack app export
-        run: |
-          rm -rf site
-          mkdir site
-          unzip -q reliefread-app-public-github-pages.zip -d site
-
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: site/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Install dependencies
-        working-directory: site
         run: npm ci
 
       - name: Type check
-        working-directory: site
         run: npm run type-check
 
       - name: Test
-        working-directory: site
         run: npx vitest run
 
       - name: Build
-        working-directory: site
         run: npm run build
 
-      - name: Set custom domain
-        run: echo "reliefread.com" > site/dist/CNAME
-
       - name: Add app route fallback
-        run: cp site/dist/index.html site/dist/404.html
+        run: cp dist/index.html dist/404.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: site/dist
+          path: dist
 
   deploy:
     environment:
