@@ -1,0 +1,234 @@
+name: Apply ReliefRead tester billing setup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-tester-billing.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.event.head_commit.message == 'Apply ReliefRead tester billing setup'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Apply tested billing changes
+        run: |
+          cat > /tmp/tester-billing.patch <<'PATCH'
+diff --git a/.env.example b/.env.example
+index f8c4c4d..8e9b14d 100644
+--- a/.env.example
++++ b/.env.example
+@@ -6,7 +6,21 @@ VITE_APP_VISIBILITY=public
+ VITE_PLATFORM_URL=https://www.overskill.com
+ VITE_POST_LOGIN_ROUTE=/dashboard
+ 
+-# Optional paid-plan ids from OverSkill Payments / Whop.
++# Tester rollout. Keep true while invited testers should receive all features
++# without payment. Set to false before the paid public launch.
++VITE_TESTER_MODE=true
++
++# Billing provider: none during testing, stripe for the paid production launch.
++VITE_BILLING_PROVIDER=none
++
++# Stripe browser-safe configuration. Do not add Stripe secret keys or webhook
++# secrets to this file, GitHub Pages, or any other frontend environment.
++VITE_STRIPE_PUBLISHABLE_KEY=
++VITE_STRIPE_PRICE_PREMIUM_MONTHLY=
++VITE_STRIPE_PRICE_PREMIUM_ANNUAL=
++VITE_STRIPE_CHECKOUT_ENDPOINT=
++
++# Legacy optional paid-plan ids from OverSkill Payments / Whop.
+ VITE_PLAN_PREMIUM_MONTHLY=
+ VITE_PLAN_PREMIUM_ANNUAL=
+ 
+diff --git a/STRIPE_SETUP.md b/STRIPE_SETUP.md
+new file mode 100644
+index 0000000..ada69a2
+--- /dev/null
++++ b/STRIPE_SETUP.md
+@@ -0,0 +1,54 @@
++# ReliefRead Stripe rollout
++
++## Current tester phase
++
++ReliefRead is running with `VITE_TESTER_MODE=true` and
++`VITE_BILLING_PROVIDER=none`. Signed-in testers can use premium features with
++no payment details and no subscription.
++
++Before opening payments, set tester mode to `false` and enable Stripe only
++after the checkout endpoint and webhook described below are live.
++
++## Stripe products to create
++
++Create one product named **ReliefRead Premium** with two recurring prices:
++
++| Price | Billing period | Suggested launch price |
++| --- | --- | --- |
++| Premium Monthly | Monthly | 49 DKK |
++| Premium Annual | Yearly | 490 DKK |
++
++Save the two Stripe Price IDs. They are safe to use in browser build
++configuration, but Stripe secret keys are not.
++
++## Required secure backend
++
++GitHub Pages is static, so it cannot safely create checkout sessions or verify
++webhooks. Add a small server-side endpoint before enabling billing:
++
++1. `POST /api/stripe/create-checkout-session` accepts a selected Price ID and
++   the signed-in ReliefRead user ID.
++2. The endpoint creates a Stripe Checkout subscription session and returns its
++   URL.
++3. `POST /api/stripe/webhook` verifies Stripe's signature.
++4. On `checkout.session.completed`, `customer.subscription.updated`, and
++   `customer.subscription.deleted`, it updates the user's ReliefRead plan.
++5. The Stripe secret key and webhook secret live only in that backend's secret
++   store.
++
++## Frontend configuration after the backend exists
++
++Set these production build values:
++
++```text
++VITE_TESTER_MODE=false
++VITE_BILLING_PROVIDER=stripe
++VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
++VITE_STRIPE_PRICE_PREMIUM_MONTHLY=price_...
++VITE_STRIPE_PRICE_PREMIUM_ANNUAL=price_...
++VITE_STRIPE_CHECKOUT_ENDPOINT=https://api.reliefread.com/api/stripe/create-checkout-session
++```
++
++Use Stripe test mode first with `pk_test_...` and test Price IDs. Verify that a
++successful payment grants Premium and cancellation returns the user to Free at
++the end of the paid period.
+diff --git a/src/hooks/usePremium.ts b/src/hooks/usePremium.ts
+index a632fed..4d5f39f 100644
+--- a/src/hooks/usePremium.ts
++++ b/src/hooks/usePremium.ts
+@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
+ import { useEntitlement } from "overskill-sdk";
+ import { useAuth } from "@/lib/auth";
+ import { loadReadingSettings } from "@/lib/reading-settings";
++import { TESTER_MODE } from "@/lib/billing";
+ 
+ /**
+  * usePremium — the single source of truth for "is this user Premium?".
+@@ -9,8 +10,8 @@ import { loadReadingSettings } from "@/lib/reading-settings";
+  * A reader is Premium if EITHER:
+  *   • their user_setting.plan === "premium" (set by the demo code, or a future
+  *     server-side upgrade), OR
+- *   • they hold an active paid entitlement (a real Overskill Payments
+- *     subscription — recognised via useEntitlement without any webhook plumbing).
++ *   • they hold an active paid entitlement, or
++ *   • the app is running in build-time tester mode.
+  *
+  * The auth guard prevents a 401 flash before the OAuth token settles.
+  */
+@@ -51,9 +52,9 @@ export function usePremium() {
+   }, [authLoading, user, refresh]);
+ 
+   const entitled = !ent.isLoading && !!ent.activePlan();
+-  const premium = planPremium || entitled;
++  const premium = TESTER_MODE || planPremium || entitled;
+ 
+-  return { premium, loading: loadingPlan || ent.isLoading, refresh };
++  return { premium, loading: TESTER_MODE ? false : loadingPlan || ent.isLoading, refresh };
+ }
+ 
+ export default usePremium;
+diff --git a/src/lib/billing.ts b/src/lib/billing.ts
+index 17fdd46..2bb4c70 100644
+--- a/src/lib/billing.ts
++++ b/src/lib/billing.ts
+@@ -14,6 +14,42 @@ import {
+ } from "@/lib/reading-settings";
+ import { getMonthlyUsage } from "@/lib/usage";
+ 
++export type BillingProvider = "none" | "overskill" | "stripe";
++
++const configuredProvider = import.meta.env.VITE_BILLING_PROVIDER as BillingProvider | undefined;
++
++/**
++ * Test mode grants signed-in testers all premium features without collecting
++ * payment details. It is intentionally controlled at build time, so it can be
++ * switched off before the public paid launch.
++ */
++export const TESTER_MODE = import.meta.env.VITE_TESTER_MODE === "true";
++
++/**
++ * Stripe is only enabled once a server-side Checkout endpoint exists. Secret
++ * keys and webhook secrets must never be added to this browser application.
++ */
++export const BILLING_PROVIDER: BillingProvider =
++  configuredProvider === "stripe" || configuredProvider === "overskill"
++    ? configuredProvider
++    : "none";
++
++export const STRIPE_CONFIG = {
++  publishableKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined,
++  monthlyPriceId: import.meta.env.VITE_STRIPE_PRICE_PREMIUM_MONTHLY as string | undefined,
++  annualPriceId: import.meta.env.VITE_STRIPE_PRICE_PREMIUM_ANNUAL as string | undefined,
++  checkoutEndpoint: import.meta.env.VITE_STRIPE_CHECKOUT_ENDPOINT as string | undefined,
++} as const;
++
++export const stripeCheckoutReady =
++  BILLING_PROVIDER === "stripe" &&
++  Boolean(
++    STRIPE_CONFIG.publishableKey &&
++      STRIPE_CONFIG.monthlyPriceId &&
++      STRIPE_CONFIG.annualPriceId &&
++      STRIPE_CONFIG.checkoutEndpoint
++  );
++
+ /** Free plan: 3 fresh documents per calendar month. */
+ export const FREE_MONTHLY_DOCUMENTS = 3;
+ /** Free plan: 1 active public share link at a time. */
+diff --git a/src/pages/Pricing.tsx b/src/pages/Pricing.tsx
+index 40ec264..7599066 100644
+--- a/src/pages/Pricing.tsx
++++ b/src/pages/Pricing.tsx
+@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { CheckoutDialog } from "@/components/CheckoutDialog";
+ import { usePremium } from "@/hooks/usePremium";
+-import { redeemDemoCode, PRICING } from "@/lib/billing";
++import { redeemDemoCode, PRICING, TESTER_MODE } from "@/lib/billing";
+ import { usePageTitle } from "@/hooks/usePageTitle";
+ 
+ const MONTHLY_PLAN = import.meta.env.VITE_PLAN_PREMIUM_MONTHLY as string | undefined;
+@@ -147,7 +147,9 @@ export default function Pricing() {
+         {premium && (
+           <div className="rr-fade-up mx-auto mt-8 max-w-md rounded-2xl border border-sage/30 bg-accent/60 p-4 text-center text-sm text-foreground shadow-paper">
+             <Sparkles className="mr-1 inline h-4 w-4 text-sage" aria-hidden="true" />
+-            You're already on Premium — thank you. Everything below is yours.
++            {TESTER_MODE
++              ? "Tester access is active. Every premium feature is open while we improve ReliefRead together."
++              : "You're already on Premium — thank you. Everything below is yours."}
+           </div>
+         )}
+ 
+@@ -249,7 +251,11 @@ export default function Pricing() {
+                 {redeeming ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : "Apply"}
+               </Button>
+             </div>
+-            {!checkoutConfigured && (
++            {TESTER_MODE ? (
++              <p className="mt-3 text-xs text-muted-foreground">
++                Tester access is active. No payment details are collected during this phase.
++              </p>
++            ) : !checkoutConfigured && (
+               <p className="mt-3 text-xs text-muted-foreground">
+                 Card checkout is being set up — a code unlocks Premium instantly in the meantime.
+               </p>
+PATCH
+          git apply --whitespace=nowarn /tmp/tester-billing.patch
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .env.example STRIPE_SETUP.md src/hooks/usePremium.ts src/lib/billing.ts src/pages/Pricing.tsx
+          git commit -m "feat: enable free tester access and prepare Stripe"
+          git push
