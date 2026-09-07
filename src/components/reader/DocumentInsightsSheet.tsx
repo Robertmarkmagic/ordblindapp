@@ -23,6 +23,7 @@ import {
   loadDocumentInsights,
   type DocumentInsights,
 } from "@/lib/document-insights";
+import { ReplyComposer } from "@/components/reader/ReplyComposer";
 
 interface DocumentInsightsSheetProps {
   open: boolean;
@@ -215,6 +216,12 @@ export function DocumentInsightsSheet({
                 {insights.replyReason}
               </SoftNotice>
             )}
+
+            <ReplyComposer
+              documentTitle={title}
+              documentText={text}
+              lang={lang}
+            />
 
             <div className="grid grid-cols-2 gap-2 border-t border-border pt-5">
               {speechSupported && (

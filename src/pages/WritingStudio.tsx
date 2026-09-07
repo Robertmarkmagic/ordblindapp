@@ -41,29 +41,17 @@ import { firstWords, wordCount } from "@/lib/text-utils";
 import { getMonthlyUsage, recordDocumentCreated } from "@/lib/usage";
 import { canCreateDocument } from "@/lib/billing";
 import { usePremium } from "@/hooks/usePremium";
-
-const DRAFT_KEY = "reliefread-writing-draft-v1";
-
-interface LocalDraft {
-  title: string;
-  text: string;
-}
+import {
+  clearIncomingWritingDraft,
+  clearWritingDraft,
+  loadIncomingWritingDraft,
+  loadWritingDraft,
+  saveWritingDraft,
+  type WritingDraft,
+} from "@/lib/writing-draft";
 
 interface ReviewWithOriginal extends WritingReview {
   originalText: string;
-}
-
-function loadDraft(): LocalDraft {
-  if (typeof window === "undefined") return { title: "", text: "" };
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(DRAFT_KEY) || "null") as Partial<LocalDraft> | null;
-    return {
-      title: typeof parsed?.title === "string" ? parsed.title : "",
-      text: typeof parsed?.text === "string" ? parsed.text : "",
-    };
-  } catch {
-    return { title: "", text: "" };
-  }
 }
 
 const CHECK_OPTIONS: Array<{ type: WritingIssueType; emoji: string; en: string; da: string }> = [
@@ -91,7 +79,10 @@ function speak(text: string, language: "da" | "en", rate = 0.9, spell = false) {
 }
 
 export default function WritingStudio() {
-  const initial = useMemo(loadDraft, []);
+  const storedInitial = useMemo(loadWritingDraft, []);
+  const pendingInitial = useMemo(loadIncomingWritingDraft, []);
+  const usePendingImmediately = Boolean(pendingInitial?.text.trim() && !storedInitial.text.trim());
+  const initial = (usePendingImmediately ? pendingInitial : storedInitial) as WritingDraft;
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { premium } = usePremium();
@@ -111,6 +102,9 @@ export default function WritingStudio() {
   const [dictionary, setDictionary] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [incomingDraft, setIncomingDraft] = useState<WritingDraft | null>(
+    usePendingImmediately ? null : pendingInitial
+  );
   const [documentsCreated, setDocumentsCreated] = useState(0);
   const [usageLoading, setUsageLoading] = useState(true);
   const { review, loading: reviewing, error: reviewError } = useWritingReview(language);
@@ -118,8 +112,12 @@ export default function WritingStudio() {
   usePageTitle(language === "da" ? "Skriveværksted" : "Writing studio");
 
   useEffect(() => {
+    if (usePendingImmediately) clearIncomingWritingDraft();
+  }, [usePendingImmediately]);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
-      window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ title, text }));
+      saveWritingDraft({ title, text });
     }, 400);
     return () => window.clearTimeout(timer);
   }, [text, title]);
@@ -238,7 +236,7 @@ export default function WritingStudio() {
         listened: false,
       });
       await recordDocumentCreated();
-      window.localStorage.removeItem(DRAFT_KEY);
+      clearWritingDraft();
       navigate(`/read/${document.id}`);
     } catch {
       setNotice(
@@ -314,6 +312,48 @@ export default function WritingStudio() {
         {(notice || reviewError) && (
           <SoftNotice className="mb-5">
             {notice || (language === "da" ? "Riley kunne ikke tjekke teksten lige nu. Prøv igen om lidt." : "Riley could not check the text just now. Try again shortly.")}
+          </SoftNotice>
+        )}
+
+        {incomingDraft && (
+          <SoftNotice className="mb-5">
+            <div>
+              <p className="font-semibold">
+                {language === "da" ? "Du har allerede en kladde." : "You already have a draft."}
+              </p>
+              <p className="mt-1">
+                {language === "da"
+                  ? "Vælg om du vil beholde den eller åbne det nye svarforslag."
+                  : "Choose whether to keep it or open the new reply draft."}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-10 rounded-full"
+                  onClick={() => {
+                    clearIncomingWritingDraft();
+                    setIncomingDraft(null);
+                  }}
+                >
+                  {language === "da" ? "Behold min kladde" : "Keep my draft"}
+                </Button>
+                <Button
+                  type="button"
+                  className="h-10 rounded-full"
+                  onClick={() => {
+                    setHistory((current) => [...current.slice(-19), text]);
+                    setTitle(incomingDraft.title);
+                    setText(incomingDraft.text);
+                    setReviewResult(null);
+                    clearIncomingWritingDraft();
+                    setIncomingDraft(null);
+                  }}
+                >
+                  {language === "da" ? "Brug svarforslaget" : "Use reply draft"}
+                </Button>
+              </div>
+            </div>
           </SoftNotice>
         )}
 
