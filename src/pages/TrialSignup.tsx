@@ -23,7 +23,7 @@ export default function TrialSignup() {
   const { language, t } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [forWhom, setForWhom] = useState("");
+  const [purpose, setPurpose] = useState("");
   const [message, setMessage] = useState("");
   const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -31,12 +31,13 @@ export default function TrialSignup() {
 
   usePageTitle(t("trial.title", "Try ReliefRead free"));
 
-  const audienceLabels = useMemo(
+  const purposeLabels = useMemo(
     () => ({
-      myself: t("trial.myself", "Myself"),
-      child: t("trial.child", "My child"),
-      student: t("trial.student", "A pupil or student"),
-      other: t("trial.other", "Someone else"),
+      work: t("trial.work", "Work"),
+      education: t("trial.education", "School or education"),
+      personal: t("trial.personal", "Personal use"),
+      child: t("trial.child", "Helping a child"),
+      other: t("trial.other", "Other"),
     }),
     [t]
   );
@@ -53,7 +54,7 @@ export default function TrialSignup() {
           "",
           `Navn: ${name}`,
           `E-mail: ${email}`,
-          `ReliefRead skal bruges af: ${audienceLabels[forWhom as keyof typeof audienceLabels] || forWhom}`,
+          `ReliefRead skal bruges til: ${purposeLabels[purpose as keyof typeof purposeLabels] || purpose}`,
           `Jeg vil især gerne have hjælp til: ${message.trim() || "Ikke angivet"}`,
           "",
           "Jeg accepterer, at ReliefRead kontakter mig om prøveadgangen.",
@@ -65,14 +66,14 @@ export default function TrialSignup() {
           "",
           `Name: ${name}`,
           `Email: ${email}`,
-          `ReliefRead is for: ${audienceLabels[forWhom as keyof typeof audienceLabels] || forWhom}`,
+          `ReliefRead will be used for: ${purposeLabels[purpose as keyof typeof purposeLabels] || purpose}`,
           `I would especially like help with: ${message.trim() || "Not specified"}`,
           "",
           "I agree that ReliefRead may contact me about trial access.",
         ].join("\n");
 
     return { subject, body };
-  }, [audienceLabels, email, forWhom, language, message, name]);
+  }, [email, language, message, name, purpose, purposeLabels]);
 
   const mailto = useMemo(
     () => `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(requestText.subject)}&body=${encodeURIComponent(requestText.body)}`,
@@ -86,7 +87,7 @@ export default function TrialSignup() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!name.trim() || !email.trim() || !forWhom || !consent) return;
+    if (!name.trim() || !email.trim() || !purpose || !consent) return;
     openMail();
   };
 
@@ -214,13 +215,13 @@ export default function TrialSignup() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="trial-audience" className="text-base">{t("trial.forWhom", "Who will use ReliefRead?")}</Label>
-                    <Select value={forWhom} onValueChange={setForWhom} required>
-                      <SelectTrigger id="trial-audience" className="h-12 rounded-xl text-base">
-                        <SelectValue placeholder={t("trial.forWhomPlaceholder", "Choose an option")} />
+                    <Label htmlFor="trial-purpose" className="text-base">{t("trial.purpose", "What will you use ReliefRead for?")}</Label>
+                    <Select value={purpose} onValueChange={setPurpose} required>
+                      <SelectTrigger id="trial-purpose" className="h-12 rounded-xl text-base">
+                        <SelectValue placeholder={t("trial.purposePlaceholder", "Choose an option")} />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(audienceLabels).map(([value, label]) => (
+                        {Object.entries(purposeLabels).map(([value, label]) => (
                           <SelectItem key={value} value={value} className="min-h-11 text-base">{label}</SelectItem>
                         ))}
                       </SelectContent>
@@ -257,7 +258,7 @@ export default function TrialSignup() {
 
                   <Button
                     type="submit"
-                    disabled={!name.trim() || !email.trim() || !forWhom || !consent}
+                    disabled={!name.trim() || !email.trim() || !purpose || !consent}
                     className="h-12 w-full rounded-full bg-sage px-7 text-base font-semibold text-sage-foreground shadow-paper hover:bg-sage/90"
                   >
                     {t("trial.submit", "Join the free trial")}
