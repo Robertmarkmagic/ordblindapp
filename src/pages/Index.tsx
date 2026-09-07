@@ -9,7 +9,7 @@ import {
   Sparkles,
   Heart,
 } from "lucide-react";
-import { overskill, useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { MiniReader } from "@/components/landing/MiniReader";
 import { FeatureDemos } from "@/components/landing/FeatureDemos";
@@ -69,7 +69,7 @@ export default function Index() {
     setMeta("twitter:card", "summary_large_image");
   }, [language, t]);
 
-  const goSignUp = () => overskill.auth.login("/dashboard");
+  const goSignUp = () => navigate("/trial");
   const scrollToDemo = () => {
     document.getElementById("demo")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -100,9 +100,9 @@ export default function Index() {
           <Button
             variant="ghost"
             className="h-11 rounded-full px-5 text-foreground hover:bg-accent"
-            onClick={() => overskill.auth.login("/dashboard")}
+            onClick={goSignUp}
           >
-            {t("nav.login", "Log in")}
+            {t("nav.trial", "Free trial")}
           </Button>
         </div>
       </header>

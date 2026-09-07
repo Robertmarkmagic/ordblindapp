@@ -40,6 +40,7 @@ const PublicRead = lazy(() => import("@/pages/PublicRead").catch(() => ({ defaul
 const Pricing = lazy(() => import("@/pages/Pricing").catch(() => ({ default: () => <div>Pricing unavailable</div> })));
 const Privacy = lazy(() => import("@/pages/Privacy").catch(() => ({ default: () => <div>Privacy unavailable</div> })));
 const Terms = lazy(() => import("@/pages/Terms").catch(() => ({ default: () => <div>Terms unavailable</div> })));
+const TrialSignup = lazy(() => import("@/pages/TrialSignup").catch(() => ({ default: () => <div>Trial signup unavailable</div> })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -162,6 +163,13 @@ function App() {
             <Route path="/terms" element={
               <Suspense fallback={<LoadingScreen text="Loading..." />}>
                 <Terms />
+              </Suspense>
+            } />
+
+            {/* Public trial signup. Uses email handoff, so it works without OverSkill auth. */}
+            <Route path="/trial" element={
+              <Suspense fallback={<LoadingScreen text="Opening free trial signup..." />}>
+                <TrialSignup />
               </Suspense>
             } />
 
