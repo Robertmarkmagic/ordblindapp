@@ -231,7 +231,7 @@ export default function TrialSignup() {
                   <div className="space-y-2">
                     <div className="flex items-baseline justify-between gap-3">
                       <Label htmlFor="trial-message" className="text-base">{t("trial.message", "What would you especially like help with?")}</Label>
-                      <span className="text-sm text-muted-foreground">{t("trial.messageOptional", "Optional")}</span>
+                      <span className="text-sm text-muted-foreground">{t("trial.messageOptional", "You can always change this later")}</span>
                     </div>
                     <Textarea
                       id="trial-message"

@@ -66,7 +66,7 @@ const da: Dictionary = {
   "trial.child": "Hjælp til et barn",
   "trial.other": "Andet",
   "trial.message": "Hvad vil du især gerne have hjælp til?",
-  "trial.messageOptional": "Valgfrit",
+  "trial.messageOptional": "Du kan altid ændre det senere",
   "trial.messagePlaceholder": "For eksempel oplæsning, skrivning eller lettere tekster",
   "trial.consent": "ReliefRead må kontakte mig om min prøveadgang.",
   "trial.submit": "Tilmeld mig gratis",
