@@ -8,7 +8,8 @@
 //
 // Model: the cheapest/fastest available model for these short lookups.
 
-import { overskill, getAuthToken } from "@/lib/auth";
+import { backend } from "@/lib/auth";
+import { fetchFunction } from "@/lib/supabase";
 import { detectLanguage } from "@/lib/reader-tokens";
 
 export type LookupKind = "explain" | "translate";
@@ -58,12 +59,10 @@ function translatePrompt(text: string, source: Lang, target: Lang): string {
 }
 
 async function callModel(system: string, user: string): Promise<string> {
-  const token = getAuthToken();
-  const res = await fetch("/api/ai/chat", {
+  const res = await fetchFunction("ai-chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({
       model: CHEAP_MODEL,
@@ -105,7 +104,7 @@ export async function lookupText(args: {
   // 1. Shared cache: any row for this document + exact text + kind + target.
   let existing: LookupRow[] = [];
   try {
-    existing = (await overskill.entities.lookup.filter({
+    existing = (await backend.entities.lookup.filter({
       document_id: documentId,
       source_text,
       kind,
@@ -131,7 +130,7 @@ export async function lookupText(args: {
   // Cache hit from another reader → reuse the answer (no AI), record for me.
   if (keyed.length) {
     const resultText = keyed[0].result_text || "";
-    void overskill.entities.lookup
+    void backend.entities.lookup
       .create({
         document_id: documentId,
         source_text,
@@ -151,7 +150,7 @@ export async function lookupText(args: {
       ? await callModel(EXPLAIN_SYSTEM, explainPrompt(source_text, targetLang))
       : await callModel(TRANSLATE_SYSTEM, translatePrompt(source_text, sourceLang, targetLang));
 
-  void overskill.entities.lookup
+  void backend.entities.lookup
     .create({
       document_id: documentId,
       source_text,
@@ -169,7 +168,7 @@ export async function lookupText(args: {
 /** The current user's look-ups for a document, newest first. */
 export async function listLookups(documentId: string, userId: string): Promise<LookupRow[]> {
   try {
-    const rows = (await overskill.entities.lookup.filter({
+    const rows = (await backend.entities.lookup.filter({
       document_id: documentId,
       looked_up_by: userId,
     })) as LookupRow[];

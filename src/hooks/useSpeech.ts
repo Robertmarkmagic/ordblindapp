@@ -6,11 +6,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
  *
  * ⚠️ USE THIS BY DEFAULT for LONG-FORM read-aloud / narration / "listen to
  * this article/summary/page" / any text the USER supplies or that is more
- * than ~1,000 characters. It is 100% FREE — zero network, zero OverSkill
+ * than ~1,000 characters. It is free and uses the browser's own voices
  * credits, no platform dependency. The audio is synthesized locally by the
  * user's own device/OS voices.
  *
- * Contrast with `useAiAudio()` (the PAID `/api/ai/audio/*` ElevenLabs path),
+ * Contrast with ReliefRead's optional natural voice,
  * which bills ~0.5–1 credit PER CHARACTER. Narrating a full page/summary with
  * ElevenLabs can cost thousands of credits (a whole credit pack) in a single
  * tap — DON'T do that for long-form read-aloud. Reserve `useAiAudio()` for:
@@ -20,7 +20,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
  *     cost is shown up front before generating.
  *
  * The typical hybrid pattern is: free `useSpeech()` by default, plus an
- * optional "HD Voice" toggle that routes to `useAiAudio().generateTts(...)`.
+ * optional natural voice toggle that routes to ReliefRead's backend.
  *
  * ─── Gotchas this hook handles for you (all non-negotiable) ─────────────────
  *

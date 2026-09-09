@@ -1,60 +1,51 @@
 import { useCallback, useEffect, useState } from "react";
-import { useEntitlement } from "overskill-sdk";
 import { useAuth } from "@/lib/auth";
-import { loadReadingSettings } from "@/lib/reading-settings";
 import { TESTER_MODE } from "@/lib/billing";
+import { supabase } from "@/lib/supabase";
 
-/**
- * usePremium — the single source of truth for "is this user Premium?".
- *
- * A reader is Premium if EITHER:
- *   • their user_setting.plan === "premium" (set by the demo code, or a future
- *     server-side upgrade), OR
- *   • they hold an active paid entitlement (a real Overskill Payments
- *     subscription — recognised via useEntitlement without any webhook plumbing).
- *
- * The auth guard prevents a 401 flash before the OAuth token settles.
- */
 export function usePremium() {
   const { user, loading: authLoading } = useAuth();
-  const ent = useEntitlement();
-  const [planPremium, setPlanPremium] = useState(false);
-  const [loadingPlan, setLoadingPlan] = useState(true);
+  const [premium, setPremium] = useState(TESTER_MODE);
+  const [loading, setLoading] = useState(!TESTER_MODE);
 
   const refresh = useCallback(async () => {
-    if (authLoading || !user) return;
-    try {
-      const s = await loadReadingSettings();
-      setPlanPremium(s.plan === "premium");
-    } catch {
-      setPlanPremium(false);
-    } finally {
-      setLoadingPlan(false);
+    if (TESTER_MODE) {
+      setPremium(true);
+      setLoading(false);
+      return;
     }
+    if (authLoading || !user) {
+      setPremium(false);
+      setLoading(authLoading);
+      return;
+    }
+
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .select("plan,status,trial_ends_at")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      setPremium(false);
+    } else {
+      const active = data?.status === "active" || data?.status === "trialing";
+      const paidPlan = data?.plan === "premium" || data?.plan === "team" || data?.plan === "tester";
+      const trialValid = !data?.trial_ends_at || new Date(data.trial_ends_at).getTime() > Date.now();
+      setPremium(Boolean(active && paidPlan && trialValid));
+    }
+    setLoading(false);
   }, [authLoading, user]);
 
   useEffect(() => {
-    if (authLoading || !user) return;
-    let active = true;
-    setLoadingPlan(true);
-    loadReadingSettings()
-      .then((s) => active && setPlanPremium(s.plan === "premium"))
-      .catch(() => active && setPlanPremium(false))
-      .finally(() => active && setLoadingPlan(false));
-
-    // Refresh when a demo code / checkout flips entitlement mid-session.
+    void refresh();
     const onChange = () => void refresh();
-    window.addEventListener("overskill:entitlement-changed", onChange);
-    return () => {
-      active = false;
-      window.removeEventListener("overskill:entitlement-changed", onChange);
-    };
-  }, [authLoading, user, refresh]);
+    window.addEventListener("reliefread:entitlement-changed", onChange);
+    return () => window.removeEventListener("reliefread:entitlement-changed", onChange);
+  }, [refresh]);
 
-  const entitled = !ent.isLoading && !!ent.activePlan();
-  const premium = TESTER_MODE || planPremium || entitled;
-
-  return { premium, loading: TESTER_MODE ? false : loadingPlan || ent.isLoading, refresh };
+  return { premium, loading, refresh };
 }
 
 export default usePremium;

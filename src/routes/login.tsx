@@ -1,375 +1,151 @@
-// Login Page - OAuth Redirect with Graceful Degradation
-// Redirects to OverSkill OAuth authorization endpoint
-// Shows friendly error if platform is unavailable
-//
-// CRITICAL: In iframe preview mode, waits for preview-auth-ready event
-// before checking session to avoid race conditions with async token delivery.
-// See: docs/ultrathink/preview-auth-loop-jan-2026/ROOT_CAUSE_ANALYSIS.md
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, BookOpen, Check, Loader2, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/lib/i18n";
+import { supabase, supabaseConfigured } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
-import React from 'react';
-import { overskill } from '@/lib/auth'
-import { useEffect, useState, useCallback } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-
-type LoginState = 'waiting-preview-auth' | 'checking' | 'redirecting' | 'error' | 'config-error' | 'iframe-no-auth'
+function safeReturnPath(value: string | null): string {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  return value;
+}
 
 export default function LoginPage() {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const [state, setState] = useState<LoginState>('waiting-preview-auth')
-  const [errorMessage, setErrorMessage] = useState<string>('')
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user, loading } = useAuth();
+  const { language, t } = useLanguage();
+  const [email, setEmail] = useState(searchParams.get("email") || "");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
-  // Auth-loop detector (Jun 2026): increments a counter each time we land on
-  // /login in real (non-iframe) production WHILE a token is already stored but
-  // the session check failed. Returns true once we've looped enough times to
-  // be confident it's a genuine reject-loop (worker rejecting valid tokens),
-  // not a one-off transient. Threshold of 2 means: first failure re-tries OAuth
-  // once (covers a legitimately expired/stale token), second failure breaks.
-  const detectAuthLoop = (): boolean => {
-    try {
-      const prev = parseInt(sessionStorage.getItem('overskill_auth_loop_count') || '0', 10) || 0
-      const next = prev + 1
-      sessionStorage.setItem('overskill_auth_loop_count', String(next))
-      return next >= 2
-    } catch {
-      return false
-    }
-  }
+  usePageTitle(t("auth.loginTitle", "Log in to ReliefRead"));
 
-  // Check session and redirect if already authenticated
-  const checkSessionAndRedirect = useCallback(() => {
-    const isInIframe = window.self !== window.top
-
-    overskill.auth.checkSession().then(user => {
-      if (user) {
-        // Already logged in, redirect to stored URL or dashboard
-        const storedRedirect = sessionStorage.getItem('overskill_post_login_redirect')
-        sessionStorage.removeItem('overskill_post_login_redirect')
-
-        // Clear the auth-loop guard on a successful session (Jun 2026 fix).
-        sessionStorage.removeItem('overskill_auth_loop_count')
-
-        // Always default to /dashboard (not /) — the landing page is for unauthenticated users.
-        // Defaulting to / caused redirect loops for login_required apps.
-        const defaultRedirect = '/dashboard'
-        const redirectTo = storedRedirect || defaultRedirect
-
-        console.log('[Login] Already authenticated, redirecting to:', redirectTo)
-        navigate(redirectTo)
-      } else if (!isInIframe && localStorage.getItem('overskill_token') && detectAuthLoop()) {
-        // ───────────────────────────────────────────────────────────────
-        // AUTH LOOP BREAKER (Jun 2026 — airlock OAuth redirect-loop fix)
-        //
-        // Loop signature: a token IS present in localStorage (the user just
-        // completed OAuth and /callback stored it), but checkSession() ->
-        // /api/auth/me still returns 401/null. Without this guard we bounce
-        // straight back to OAuth, get another valid-looking token, store it,
-        // and 401 again — an infinite ~1/sec spinner the user can never
-        // escape and that hides the real cause.
-        //
-        // Root cause this guards against: the deployed Cloudflare Worker's
-        // JWT_SECRET binding no longer matches the platform's current signing
-        // secret (e.g. secret rotated / stale deploy), so the worker rejects
-        // every freshly-issued token at signature verification. The right
-        // operator fix is to REDEPLOY the app so the worker re-binds the
-        // current JWT_SECRET — but the app itself can't do that, so the least
-        // it can do is STOP looping and surface a clear, debuggable error
-        // instead of spinning forever.
-        // ───────────────────────────────────────────────────────────────
-        console.error('[Login] Auth loop detected: token present but /api/auth/me keeps rejecting it. Breaking loop.')
-        // Drop the rejected token so a future fixed deploy gets a clean retry.
-        localStorage.removeItem('overskill_token')
-        sessionStorage.removeItem('overskill_auth_loop_count')
-        setState('error')
-        setErrorMessage(
-          'We could not verify your session after signing in. This usually means the app needs to be redeployed by its creator. Please try again in a few minutes or contact the app owner.'
-        )
-      } else if (isInIframe) {
-        // Apr 2026 fix (bug #3): NEVER auto-OAuth from inside the editor preview iframe.
-        // The OAuth redirect navigates the iframe to www.overskill.com and shows the
-        // platform sign-in form, which looks like the app is broken.
-        console.log('[Login] In iframe + not authenticated — showing preview-mode message')
-        setState('iframe-no-auth')
-      } else {
-        // Not in iframe (real production): start OAuth flow with health check
-        console.log('[Login] Not authenticated, starting OAuth flow')
-        startOAuthFlowWithHealthCheck()
-      }
-    }).catch((error) => {
-      console.error('[Login] Session check error:', error)
-      if (isInIframe) {
-        // See above — never OAuth from iframe.
-        setState('iframe-no-auth')
-      } else if (localStorage.getItem('overskill_token') && detectAuthLoop()) {
-        // Same auth-loop breaker as the not-authenticated branch above:
-        // token present but the session check keeps failing — stop bouncing.
-        console.error('[Login] Auth loop detected (catch path): breaking loop.')
-        localStorage.removeItem('overskill_token')
-        sessionStorage.removeItem('overskill_auth_loop_count')
-        setState('error')
-        setErrorMessage(
-          'We could not verify your session after signing in. This usually means the app needs to be redeployed by its creator. Please try again in a few minutes or contact the app owner.'
-        )
-      } else {
-        startOAuthFlowWithHealthCheck()
-      }
-    })
-  }, [navigate])
+  const returnTo = safeReturnPath(searchParams.get("redirect"));
 
   useEffect(() => {
-    // Store redirect URL if provided (from overskill.auth.login(redirectUrl))
-    const redirectUrl = searchParams.get('redirect')
-    if (redirectUrl) {
-      sessionStorage.setItem('overskill_post_login_redirect', redirectUrl)
-      console.log('[Login] Stored post-login redirect:', redirectUrl)
+    if (!loading && user) navigate(returnTo, { replace: true });
+  }, [loading, navigate, returnTo, user]);
+
+  const sendLink = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!email.trim() || sending) return;
+
+    if (!supabaseConfigured) {
+      setError(t("auth.configError", "Login is not available just now. Please try again shortly."));
+      return;
     }
 
-    // Post-purchase CLAIM flow (purchase -> login/signup -> access):
-    // an anonymous checkout sends the buyer here with their checkout
-    // email + claim=1. Forwarding the email as an OAuth login_hint lets
-    // the platform prefill signup with the SAME email the purchase was
-    // made under, so the entitlement reconciles to the new account by
-    // email. claim=1 is just a marker for logging — the reconciliation
-    // is automatic server-side on first app login. (GitHub #1604)
-    const claimEmail = searchParams.get('email')
-    if (claimEmail) {
-      sessionStorage.setItem('overskill_claim_email', claimEmail)
-      console.log('[Login] Stored post-purchase claim email for OAuth prefill')
+    setSending(true);
+    setError("");
+    sessionStorage.setItem("reliefread_post_login_redirect", returnTo);
+
+    const { error: authError } = await supabase.auth.signInWithOtp({
+      email: email.trim().toLowerCase(),
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: `${window.location.origin}/callback`,
+        data: { locale: language },
+      },
+    });
+
+    setSending(false);
+    if (authError) {
+      setError(t("auth.sendError", "We could not send the login email. Check the address and try again."));
+      return;
     }
-
-    const isInIframe = window.self !== window.top
-
-    if (isInIframe) {
-      // In iframe: Wait for preview-auth-ready event before checking session
-      // This prevents race condition where we start OAuth before token arrives
-      console.log('[Login] In iframe - waiting for preview auth...')
-
-      const handlePreviewAuthReady = () => {
-        console.log('[Login] Preview auth ready - now checking session')
-        setState('checking')
-        checkSessionAndRedirect()
-      }
-
-      window.addEventListener('preview-auth-ready', handlePreviewAuthReady)
-
-      // Check if token already exists (preview auth may have completed before mount)
-      if (localStorage.getItem('overskill_token')) {
-        console.log('[Login] Token already exists - checking session')
-        setState('checking')
-        checkSessionAndRedirect()
-      }
-
-      // 5-second timeout fallback - don't wait forever.
-      //
-      // CRITICAL (Apr 2026): In iframe context, NEVER auto-redirect to OAuth.
-      // Doing so navigates the iframe to www.overskill.com which shows the
-      // platform sign-in form INSIDE the editor preview frame — looks like
-      // the app is "broken" and asking the developer to sign in to Overskill
-      // to test their own app. See bug #3 from Todd's QA pass.
-      //
-      // Instead, show a clear "preview mode — open in new tab to test
-      // OAuth" message. Existing token + preview-auth-ready paths still
-      // work; this only kicks in when neither happens within the timeout.
-      //
-      // Apr 2026 (Todd QA #1 follow-up): bumped 2000ms → 5000ms. On iOS
-      // Hotwire Native (dev.overskill.com via ngrok), the parent's challenge
-      // postMessage + token fetch round-trip can exceed 2s on cellular,
-      // causing the spinner to flip to "Open in new tab" while the auth
-      // handshake was actually completing in the background. 5s is still
-      // well under any user-perceivable hang and gives slow mobile networks
-      // headroom to deliver the token.
-      const timeout = setTimeout(() => {
-        console.log('[Login] Preview auth timeout in iframe — showing preview-mode message (no auto-OAuth)')
-        setState('iframe-no-auth')
-      }, 5000)
-
-      return () => {
-        window.removeEventListener('preview-auth-ready', handlePreviewAuthReady)
-        clearTimeout(timeout)
-      }
-    } else {
-      // Not in iframe: check session immediately (production mode)
-      setState('checking')
-      checkSessionAndRedirect()
-    }
-  }, [navigate, searchParams, checkSessionAndRedirect])
-
-  const startOAuthFlowWithHealthCheck = async () => {
-    // Get OAuth configuration from Vite environment
-    const oauthClientId = import.meta.env.VITE_OAUTH_CLIENT_ID
-    const platformUrl = import.meta.env.VITE_PLATFORM_URL || 'https://www.overskill.com'
-
-    if (!oauthClientId) {
-      console.error('[Login] OAuth not configured - missing VITE_OAUTH_CLIENT_ID')
-      setState('config-error')
-      setErrorMessage('This app is not configured for authentication. Please contact the app creator.')
-      return
-    }
-
-    // Quick health check — but don't block login on CORS or network errors.
-    // The bounce redirect itself will fail gracefully if the platform is actually down.
-    let platformDown = false
-    try {
-      const healthCheck = await fetch(`${platformUrl}/api/health`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(5000)
-      })
-
-      if (!healthCheck.ok && healthCheck.status >= 500) {
-        platformDown = true
-      }
-    } catch (error) {
-      // CORS errors, network errors, timeouts — don't block login.
-      console.warn('[Login] Health check failed (non-blocking):', error instanceof Error ? error.message : error)
-    }
-
-    if (platformDown) {
-      console.warn('[Login] Platform returned 5xx — showing error')
-      setState('error')
-      setErrorMessage('The authentication service is temporarily unavailable. Please try again in a few minutes.')
-      return
-    }
-
-    setState('redirecting')
-
-    // Apr 2026 (Bug #4 from Todd's QA): use /oauth/bounce, NOT /oauth/authorize.
-    //
-    // Bounce is a same-domain hop on overskill.com that:
-    //   - Reads the platform session cookie in a first-party context
-    //     (where iOS Safari ITP delivers it reliably)
-    //   - If signed in: mints a JWT and redirects back to <return_to>
-    //     with #access_token=<jwt> in the URL fragment (the SDK already
-    //     handles this format from the existing callback_exchange flow)
-    //   - If not signed in: prompts sign-in, then completes the bounce
-    //     after Devise returns
-    //
-    // This works for ALL deployment domains including custom domains
-    // (where a shared parent-domain cookie strategy would NOT help).
-    const returnTo = `${window.location.origin}/callback`
-    let bounceUrl = `${platformUrl}/oauth/bounce?` +
-      `client_id=${encodeURIComponent(oauthClientId)}&` +
-      `return_to=${encodeURIComponent(returnTo)}`
-
-    // Forward the post-purchase claim email as an OAuth login_hint so
-    // signup prefills the buyer's checkout email (purchase -> login ->
-    // access). Best-effort: harmless if the platform ignores it.
-    const claimEmail = searchParams.get('email') || sessionStorage.getItem('overskill_claim_email')
-    if (claimEmail) {
-      bounceUrl += `&login_hint=${encodeURIComponent(claimEmail)}`
-    }
-
-    // Forward the explicit post-purchase CLAIM marker (postPurchaseRedirect
-    // sends `/login?...&claim=1`). The platform gates the co-branded auth page's
-    // "Your purchase is complete" banner on this marker — NOT on login_hint,
-    // which is a generic email-prefill hint set by many non-purchase flows. This
-    // is the clean signal; the platform also derives it from a purchase-only
-    // login_hint at the bounce for back-compat.
-    if (searchParams.get('claim') === '1') {
-      bounceUrl += `&claim=1`
-    }
-
-    console.log('[Login] Redirecting via /oauth/bounce:', bounceUrl)
-
-    setTimeout(() => {
-      window.location.href = bounceUrl
-    }, 500)
-  }
-
-  const retry = () => {
-    setState('checking')
-    setErrorMessage('')
-    startOAuthFlowWithHealthCheck()
-  }
-
-  // Apr 2026 — Editor preview iframe + not authenticated.
-  // Show a clear message instead of OAuth-redirecting the iframe to overskill.com
-  // (which previously made the editor look broken — bug #3).
-  if (state === 'iframe-no-auth') {
-    const openInNewTab = () => {
-      window.open(window.location.origin, '_blank', 'noopener,noreferrer')
-    }
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-muted p-4">
-        <div className="bg-card rounded-lg shadow-xl p-8 max-w-md text-center">
-          <div className="text-5xl mb-4">🔒</div>
-          <h1 className="text-xl font-semibold text-foreground mb-2">
-            This page requires sign-in
-          </h1>
-          <p className="text-muted-foreground mb-2">
-            You're viewing the editor preview, which can't complete the sign-in flow inside this iframe.
-          </p>
-          <p className="text-muted-foreground mb-6 text-sm">
-            Open in a new tab to sign in and test authenticated views, or browse the app's public pages here.
-          </p>
-          <button
-            onClick={openInNewTab}
-            className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto"
-          >
-            Open in new tab
-          </button>
-          <p className="text-muted-foreground/60 text-xs mt-6">
-            Editor preview mode · Powered by OverSkill
-          </p>
-        </div>
-      </div>
-    )
-  }
-
-  // Error state - platform unavailable
-  if (state === 'error' || state === 'config-error') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-muted p-4">
-        <div className="bg-card rounded-lg shadow-xl p-8 max-w-md text-center">
-          <div className="text-5xl mb-4">
-            {state === 'error' ? '🔧' : '⚠️'}
-          </div>
-          <h1 className="text-xl font-semibold text-foreground mb-2">
-            {state === 'error' ? 'Service Temporarily Unavailable' : 'Configuration Error'}
-          </h1>
-          <p className="text-muted-foreground mb-6">
-            {errorMessage}
-          </p>
-          {state === 'error' && (
-            <button
-              onClick={retry}
-              className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              Try Again
-            </button>
-          )}
-          <p className="text-muted-foreground/60 text-sm mt-6">
-            Powered by OverSkill
-          </p>
-        </div>
-      </div>
-    )
-  }
-
-  // Loading state
-  const getLoadingMessage = () => {
-    switch (state) {
-      case 'waiting-preview-auth':
-        return 'Waiting for preview authentication...'
-      case 'checking':
-        return 'Checking authentication...'
-      case 'redirecting':
-        return 'Redirecting to OverSkill...'
-      default:
-        return 'Loading...'
-    }
-  }
-
-  const showSubMessage = state === 'redirecting'
+    setSent(true);
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-foreground mx-auto mb-4" />
-        <p className="text-primary-foreground text-lg">{getLoadingMessage()}</p>
-        {showSubMessage && (
-          <p className="text-primary-foreground/80 text-sm mt-2">You'll be asked to authorize this app</p>
-        )}
-      </div>
+    <div className="min-h-screen bg-background">
+      <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6 sm:px-8">
+        <Link to="/" className="flex min-h-11 items-center gap-3 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-sage text-sage-foreground shadow-paper">
+            <BookOpen className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="font-display text-lg font-semibold">ReliefRead</span>
+        </Link>
+        <LanguageSwitcher compact />
+      </header>
+
+      <main className="mx-auto flex max-w-lg flex-col px-5 pb-20 pt-8 sm:px-8">
+        <Link to="/" className="mb-5 inline-flex min-h-11 items-center gap-2 self-start rounded-full px-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          {t("trial.back", "Back to the front page")}
+        </Link>
+
+        <section className="rounded-[2rem] border border-border bg-card p-6 shadow-paper sm:p-9">
+          {sent ? (
+            <div className="py-4 text-center">
+              <span className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-accent text-primary">
+                <Check className="h-7 w-7" aria-hidden="true" />
+              </span>
+              <h1 className="mt-6 font-display text-3xl font-semibold">
+                {t("auth.checkEmail", "Check your email")}
+              </h1>
+              <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                {language === "da"
+                  ? `Vi har sendt et sikkert loginlink til ${email}. Tryk på linket, så åbner din egen ReliefRead-profil.`
+                  : `We sent a secure sign-in link to ${email}. Use it to open your personal ReliefRead profile.`}
+              </p>
+              <Button variant="outline" onClick={() => setSent(false)} className="mt-7 h-12 rounded-full px-6">
+                {t("auth.useOtherEmail", "Use another email")}
+              </Button>
+            </div>
+          ) : (
+            <>
+              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-accent text-primary">
+                <Mail className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <h1 className="mt-6 font-display text-3xl font-semibold">
+                {t("auth.loginTitle", "Log in to ReliefRead")}
+              </h1>
+              <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                {language === "da"
+                  ? "Skriv din e-mail. Du får et sikkert loginlink og behøver ikke huske en adgangskode."
+                  : "Enter your email. We will send a secure sign-in link, so there is no password to remember."}
+              </p>
+
+              <form onSubmit={sendLink} className="mt-7 space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email" className="text-base">{t("trial.email", "Email")}</Label>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder={t("trial.emailPlaceholder", "you@example.com")}
+                    className="h-12 rounded-xl text-base"
+                  />
+                </div>
+                {error && (
+                  <p role="alert" className="rounded-2xl bg-amber/10 p-4 text-sm leading-relaxed text-foreground">{error}</p>
+                )}
+                <Button type="submit" disabled={!email.trim() || sending} className="h-12 w-full rounded-full bg-sage text-base font-semibold text-sage-foreground hover:bg-sage/90">
+                  {sending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" /> : <Mail className="mr-2 h-5 w-5" aria-hidden="true" />}
+                  {t("auth.sendLink", "Send me a login link")}
+                </Button>
+              </form>
+
+              <p className="mt-6 text-center text-sm text-muted-foreground">
+                {language === "da" ? "Ny bruger?" : "New here?"}{" "}
+                <Link to="/trial" className="font-semibold text-primary underline-offset-4 hover:underline">
+                  {t("trial.submit", "Join the free trial")}
+                </Link>
+              </p>
+            </>
+          )}
+        </section>
+      </main>
     </div>
-  )
+  );
 }

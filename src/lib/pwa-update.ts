@@ -48,7 +48,7 @@ const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
 /** Minimum gap between visibility-triggered update checks. */
 const VISIBILITY_CHECK_MIN_GAP_MS = 60 * 1000;
 
-export const UPDATE_BANNER_ID = "overskill-pwa-update-banner";
+export const UPDATE_BANNER_ID = "reliefread-pwa-update-banner";
 
 function readAutoReloadUsed(): boolean {
   try {
@@ -156,7 +156,7 @@ export function setupPwaUpdate(): void {
   // The Workbox SW only serves production builds (devOptions.enabled: false
   // in vite.config.ts keeps it out of the E2B dev preview, where it would
   // fight Vite HMR). Registering in dev would 404 on /sw.js and spam the
-  // fetch-interceptor's AI-debugging channel with phantom network errors.
+  // the browser console with phantom network errors.
   if (!import.meta.env.PROD) return;
 
   const handleControllerChange = createControllerChangeHandler({
@@ -178,7 +178,7 @@ export function setupPwaUpdate(): void {
   wb.addEventListener("activated", (event) => {
     if (!event.isUpdate) {
       // First install — precache is populated, offline works from here on.
-      console.info("[overskill:pwa] App is ready to work offline.");
+      console.info("[reliefread:pwa] App is ready to work offline.");
     }
   });
 
@@ -203,7 +203,7 @@ export function setupPwaUpdate(): void {
     })
     .catch((error) => {
       console.warn(
-        "[overskill:pwa] Service worker registration failed:",
+        "[reliefread:pwa] Service worker registration failed:",
         error
       );
     });

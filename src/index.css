@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Lora:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 
 /* OpenDyslexic — a reader font option for later prompts. Loaded from a public
    CDN with a graceful Lexend fallback, so if the CDN is ever unreachable the
@@ -21,6 +21,83 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Personal reading space from Robert's visual reference. The strong blue
+   selection rings and dark text remain deliberately high contrast. */
+.rr-personal-space {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 3% 12%, rgb(255 248 239 / .8) 0 7%, transparent 7.2%),
+    radial-gradient(circle at 96% 18%, rgb(239 224 209 / .72) 0 9%, transparent 9.2%),
+    linear-gradient(135deg, #d8c4b3, #cbb7a6 52%, #dfcfc0);
+}
+
+.rr-theme-chooser { padding: 1.25rem 1rem 1.4rem; }
+.rr-theme-card {
+  position: relative;
+  display: flex;
+  min-height: 5.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  border: 2px solid transparent;
+  border-radius: 1.15rem;
+  color: #17305c;
+  font-size: .85rem;
+  font-weight: 700;
+  box-shadow: 0 12px 25px -18px rgb(20 45 85 / .55);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.rr-theme-card:hover { transform: translateY(-2px); }
+.rr-theme-card.is-active { border-color: #1994ff; box-shadow: 0 0 0 3px rgb(255 255 255 / .9), 0 12px 25px -12px rgb(30 111 190 / .5); }
+.rr-theme-card-strawberry { background: linear-gradient(145deg, #ffe8ee, #facbd9); }
+.rr-theme-card-cloud { background: linear-gradient(145deg, #edf9ff, #c8e7fb); }
+.rr-theme-card-minimal { background: linear-gradient(145deg, #fffaf4, #f5e6d8); }
+.rr-theme-card-sage { background: linear-gradient(145deg, #eff6e9, #d9e5d3); }
+.rr-theme-card-midnight { background: linear-gradient(145deg, #263d5a, #10243f); color: white; }
+
+.rr-reader-shell {
+  overflow: hidden;
+  border: 1px solid rgb(163 202 228 / .75);
+  border-radius: 1.4rem;
+  background: rgb(245 252 255 / .93);
+  box-shadow: 0 20px 55px -26px rgb(29 64 104 / .65), 0 0 24px rgb(172 225 255 / .55);
+}
+.rr-reader-windowbar { display: flex; min-height: 4rem; align-items: center; justify-content: space-between; border-bottom: 1px solid #dbeaf4; padding: .65rem 1rem; background: rgb(255 255 255 / .7); }
+.rr-reader-main { min-width: 0; background: linear-gradient(135deg, rgb(255 255 255 / .86), rgb(237 248 255 / .74)); }
+.rr-workspace-sidebar { display: none; width: 9.5rem; flex: none; border-right: 1px solid #d7e9f5; padding: 1rem .7rem; background: rgb(226 244 255 / .75); }
+.rr-sidebar-link { display: flex; min-height: 2.75rem; width: 100%; align-items: center; gap: .65rem; border-radius: .65rem; padding: .55rem .7rem; color: #17386c; font-size: .82rem; font-weight: 600; text-align: left; transition: background-color .16s ease; }
+.rr-sidebar-link svg { width: 1.15rem; height: 1.15rem; flex: none; }
+.rr-sidebar-link:hover, .rr-sidebar-link.is-active { background: #bfe2fb; color: #0f4380; }
+
+.rr-reading-toolbar { display: flex; min-height: 4.4rem; align-items: center; gap: .55rem; overflow-x: auto; border-bottom: 1px solid #dceaf4; padding: .7rem 1rem; background: rgb(255 255 255 / .7); }
+.rr-reading-tool { display: inline-flex; min-height: 2.75rem; min-width: 2.75rem; align-items: center; justify-content: center; gap: .4rem; border: 1px solid #d8e8f2; border-radius: .8rem; background: #fff; color: #173b70; font-size: .8rem; font-weight: 600; box-shadow: 0 5px 18px -14px #24588d; }
+.rr-reading-tool:hover { background: #eef8ff; }
+.rr-reader-document { border-radius: 1rem; background: rgb(255 255 255 / .74); padding: clamp(1.1rem, 3vw, 2.35rem); box-shadow: inset 0 0 35px rgb(196 229 249 / .22); }
+.rr-reader-notes { border-radius: .75rem; background: linear-gradient(160deg, #fff0f1, #ffdce2); padding: 1rem; box-shadow: 0 16px 30px -20px rgb(95 43 59 / .4); transform: rotate(-1.2deg); }
+
+.rr-control-card { border: 1px solid rgb(255 255 255 / .65); border-radius: .75rem; background: rgb(255 252 249 / .92); padding: .8rem 1rem; color: #183563; box-shadow: 0 8px 24px -20px #4e382c; }
+.rr-control-card h2 { font-size: .82rem; font-weight: 800; }
+.rr-font-choice { display: flex; min-height: 2.75rem; align-items: center; gap: .55rem; border: 1px solid transparent; border-radius: .8rem; background: #f5f1ee; padding: .45rem .6rem; color: #17335f; font-size: .68rem; text-align: left; }
+.rr-font-choice b { font-size: 1rem; }
+.rr-font-choice.is-active { border-color: #168ff6; background: #edf8ff; box-shadow: 0 0 0 1px #168ff6; }
+.rr-control-label { display: block; margin-top: .25rem; font-size: .68rem; font-weight: 700; }
+.rr-range-row { display: flex; min-height: 2.1rem; align-items: center; gap: .5rem; color: #17345e; font-size: .72rem; font-weight: 700; }
+.rr-range-row input { width: 100%; accent-color: #258fea; }
+.rr-color-dot { width: 2.25rem; height: 2.25rem; border: 2px solid rgb(23 53 95 / .12); border-radius: 999px; box-shadow: inset 0 0 0 2px rgb(255 255 255 / .6); }
+.rr-color-dot.is-active { outline: 2px solid #178ff5; outline-offset: 3px; }
+.rr-tool-choice { position: relative; display: flex; min-width: 3.65rem; min-height: 3.8rem; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; border: 1px solid #d7e0e8; border-radius: .65rem; background: #f8f6f4; color: #17365f; font-size: .62rem; font-weight: 700; }
+.rr-tool-choice.is-active { border-color: #bfddf4; background: #e6f5ff; }
+
+@media (min-width: 768px) {
+  .rr-theme-chooser { padding-top: 1.6rem; }
+  .rr-workspace-sidebar { display: block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rr-theme-card { transition: none; }
+}
 
 /* ReliefRead design system.
    background #FDFBF7 (warm cream), text #1E293B (slate),
@@ -318,6 +395,44 @@
   }
 }
 
+@layer components {
+  .rr-note-card-strawberry {
+    background: linear-gradient(145deg, hsl(347 78% 94% / 0.92), hsl(var(--card)) 82%);
+    border-color: hsl(344 44% 82% / 0.8);
+  }
+
+  .rr-note-card-sage {
+    background: linear-gradient(145deg, hsl(145 38% 91% / 0.92), hsl(var(--card)) 82%);
+    border-color: hsl(147 24% 75% / 0.8);
+  }
+
+  .rr-note-card-cloud {
+    background: linear-gradient(145deg, hsl(204 75% 93% / 0.92), hsl(var(--card)) 82%);
+    border-color: hsl(204 39% 80% / 0.8);
+  }
+
+  .rr-note-card-lavender {
+    background: linear-gradient(145deg, hsl(274 58% 94% / 0.94), hsl(var(--card)) 82%);
+    border-color: hsl(274 31% 81% / 0.8);
+  }
+
+  .rr-note-card-cozy {
+    background: linear-gradient(145deg, hsl(35 68% 91% / 0.94), hsl(var(--card)) 82%);
+    border-color: hsl(34 35% 76% / 0.8);
+  }
+
+  .rr-note-card-minimal {
+    background: linear-gradient(145deg, hsl(215 20% 95% / 0.94), hsl(var(--card)) 82%);
+    border-color: hsl(215 18% 82% / 0.8);
+  }
+
+  :root[data-aesthetic="midnight"] [class*="rr-note-card-"] {
+    color: hsl(var(--foreground));
+    background: linear-gradient(145deg, hsl(var(--accent) / 0.72), hsl(var(--card)) 82%);
+    border-color: hsl(var(--border));
+  }
+}
+
 @layer base {
   * {
     border-color: hsl(var(--border));
@@ -482,6 +597,3 @@
   }
   .rr-skeleton::after { animation: none; }
 }
-
-/* OverSkill Remix Badge styles are imported by src/App.tsx from
-   src/lib/overskill-badge.css (platform-owned). Do not re-add here. */

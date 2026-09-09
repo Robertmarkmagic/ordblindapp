@@ -4,23 +4,6 @@ import App from "./App.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import "./index.css";
 
-// CRITICAL: Initialize fetch interceptor FIRST (before any fetch calls)
-// This captures 401, 404, and network errors for AI debugging
-import "./lib/fetch-interceptor";
-
-// Initialize analytics tracking (page views, sessions, errors, Core Web Vitals)
-// Sends data to /__analytics endpoint -> Cloudflare Analytics Engine
-import "./lib/analytics";
-
-// Console logging for AI debugging is now handled by the OverSkill Platform SDK
-// loaded from CDN in index.html (https://sdk.overskill.com/v1/platform.js)
-// This enables hot-updates to logging without rebuilding apps
-
-// Initialize preview auth for iframe OAuth testing (development only)
-import "./lib/preview-auth";
-
-// Initialize theme preview listener for OverSkill editor integration
-import "./lib/theme-preview";
 import { applyAppPreferences, loadAppPreferences } from "./lib/app-preferences";
 
 applyAppPreferences(loadAppPreferences());
@@ -46,7 +29,7 @@ window.addEventListener('error', (event) => {
 });
 
 // NOTE: App.tsx already includes BrowserRouter with routing
-// Auth routes are pre-configured: /login, /callback, /logged-out, /access-denied
+// ReliefRead auth routes: /login, /callback and /logged-out.
 // Don't add another BrowserRouter here - causes double routing and React crashes
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

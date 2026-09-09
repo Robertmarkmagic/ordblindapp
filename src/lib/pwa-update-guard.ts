@@ -45,7 +45,7 @@ export const AUTO_RELOAD_MAX_PAGE_AGE_MS = 30_000;
  * reload loop would require two automatic reloads in the same tab session,
  * and the flag makes the second one structurally impossible.
  */
-export const SESSION_RELOAD_FLAG = "overskill-pwa-auto-reloaded";
+export const SESSION_RELOAD_FLAG = "reliefread-pwa-auto-reloaded";
 
 export type ControllerChangeDecision = "ignore" | "auto-reload" | "prompt";
 

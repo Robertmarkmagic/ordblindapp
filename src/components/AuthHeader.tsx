@@ -4,7 +4,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { overskill } from '@/lib/auth'
+import { backend } from '@/lib/auth'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -33,7 +33,7 @@ export function AuthHeader() {
   useEffect(() => {
     if (visibility === 'public') return
 
-    overskill.auth.checkSession()
+    backend.auth.checkSession()
       .then(u => setUser(u))
       .catch(() => setUser(null))
   }, [visibility])
@@ -54,7 +54,7 @@ export function AuthHeader() {
     .slice(0, 2) || user.email[0].toUpperCase()
 
   const handleLogout = async () => {
-    await overskill.auth.logout()
+    await backend.auth.logout()
     // Use React Router navigate (SPA) instead of window.location.href (full page reload)
     navigate('/logged-out')
   }

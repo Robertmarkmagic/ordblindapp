@@ -34,7 +34,7 @@ async function extractTxt(file: File): Promise<string> {
 }
 
 // Pull the selectable text out of a loaded pdf.js document.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 async function readPdfText(doc: any): Promise<string> {
   const paragraphs: string[] = [];
   for (let pageNum = 1; pageNum <= doc.numPages; pageNum++) {
@@ -63,8 +63,8 @@ async function readPdfText(doc: any): Promise<string> {
 }
 
 async function extractPdf(file: File): Promise<{ text: string; scanned: boolean }> {
-  // Dynamic import — keeps pdf.js (~1.5MB) out of the main/Worker bundle.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // Dynamic import keeps pdf.js out of the initial browser bundle.
+
   const pdfjs: any = await import("pdfjs-dist");
   const buffer = await file.arrayBuffer();
 
@@ -81,7 +81,7 @@ async function extractPdf(file: File): Promise<{ text: string; scanned: boolean 
   // failures — with `pdfjs-dist@latest` that exact patch is often missing from
   // the CDN → 404 → "fake worker" setup fails → getDocument throws.
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const workerMod: any = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
     pdfjs.GlobalWorkerOptions.workerSrc = workerMod.default;
     const doc = await pdfjs.getDocument({ data: buffer.slice(0), ...baseOptions }).promise;

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { fetchFunction } from '@/lib/supabase';
 
 // useAiObject — generate a structured JSON object from a prompt.
 // Companion to useAiChat: when you don't want a chat reply, you want a
@@ -8,7 +9,7 @@ import { useState, useCallback } from 'react';
 // Inspired by Vercel AI SDK's `generateObject`:
 // https://sdk.vercel.ai/docs/ai-sdk-core/generating-structured-data
 //
-// Wire format: POST /api/ai/object on this app's Worker.
+// Wire format: POST to ReliefRead's authenticated ai-object Edge Function.
 //   { prompt, schema, schemaName?, system?, model?, temperature?, max_tokens? }
 // Returns: { success, object, model, usage, elapsed_ms }
 //
@@ -143,13 +144,10 @@ export function useAiObject<T = unknown>(
       setError(null);
 
       try {
-        const token = localStorage.getItem('auth_token');
-
-        const response = await fetch('/api/ai/object', {
+        const response = await fetchFunction('ai-object', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
           },
           body: JSON.stringify({
             prompt: prompt.trim(),

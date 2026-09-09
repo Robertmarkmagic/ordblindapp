@@ -7,7 +7,7 @@
 // history of 3 example words on Document 2. Fully idempotent: it checks for a
 // sentinel title first, so re-running never duplicates content.
 
-import { overskill } from "@/lib/auth";
+import { backend } from "@/lib/auth";
 import { createShareLink, DEFAULT_SHARE_SNAPSHOT } from "@/lib/share";
 
 /** Marker on Document 1 so we can detect an existing seed and skip. */
@@ -56,7 +56,7 @@ export interface SeedResult {
 /** True if the demo content already exists on this account. */
 export async function isSeeded(): Promise<boolean> {
   try {
-    const rows = await overskill.entities.document.filter({ title: SEED_MARKER });
+    const rows = await backend.entities.document.filter({ title: SEED_MARKER });
     return Array.isArray(rows) && rows.length > 0;
   } catch {
     return false;
@@ -80,9 +80,9 @@ export async function seedDemoContent(): Promise<SeedResult> {
   if (await isSeeded()) return result;
 
   // 1. Documents
-  const doc1 = await overskill.entities.document.create({ ...DOC1_DA, listened: false });
-  const doc2 = await overskill.entities.document.create({ ...DOC2_EN, listened: true });
-  const doc3 = await overskill.entities.document.create({ ...DOC3_LEGAL, listened: false });
+  const doc1 = await backend.entities.document.create({ ...DOC1_DA, listened: false });
+  const doc2 = await backend.entities.document.create({ ...DOC2_EN, listened: true });
+  const doc3 = await backend.entities.document.create({ ...DOC3_LEGAL, listened: false });
   result.documents = 3;
   result.created = true;
 
@@ -109,7 +109,7 @@ export async function seedDemoContent(): Promise<SeedResult> {
   ];
   for (const n of notes) {
     try {
-      await overskill.entities.note.create(n);
+      await backend.entities.note.create(n);
       result.notes += 1;
     } catch (err) {
       console.warn("[seed] note failed:", err);
@@ -167,7 +167,7 @@ export async function seedDemoContent(): Promise<SeedResult> {
   if (userId) {
     for (const l of lookups) {
       try {
-        await overskill.entities.lookup.create({
+        await backend.entities.lookup.create({
           document_id: doc2.id,
           looked_up_by: userId,
           ...l,
@@ -184,7 +184,7 @@ export async function seedDemoContent(): Promise<SeedResult> {
 
 async function currentUserId(): Promise<string | null> {
   try {
-    const me = await overskill.auth.me();
+    const me = await backend.auth.me();
     return me?.id || null;
   } catch {
     return null;

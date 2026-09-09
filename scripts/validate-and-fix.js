@@ -248,7 +248,7 @@ async function runESLintValidation() {
     const execAsync = promisify(exec);
     
     // Run ESLint on src directory
-    const { stdout, stderr } = await execAsync('npx eslint src/ --ext .js,.jsx,.ts,.tsx --format compact');
+    const { stdout, stderr } = await execAsync('npx eslint src/ --ext .js,.jsx,.ts,.tsx --format stylish');
     
     if (stdout.trim()) {
       console.log(`${colors.yellow}  ⚠️  ESLint issues found:${colors.reset}`);
@@ -416,124 +416,17 @@ async function validateImports() {
   }
 }
 
-// 6. Validate and fix SDK import issues (overskill-sdk)
+// 6. Reject dependencies on the retired platform SDK.
 async function validateSDKImports() {
-  console.log(`${colors.blue}🔍 Validating overskill-sdk imports...${colors.reset}`);
+  console.log(`${colors.blue}🔍 Checking for retired platform SDK imports...${colors.reset}`);
 
   const tsxFiles = await glob('src/**/*.{ts,tsx}');
 
-  // Invalid import patterns that AI sometimes hallucinates
-  const invalidImports = [
-    // Pattern 1: Scoped package name (doesn't exist)
-    {
-      pattern: /import\s+\{[^}]*\}\s+from\s+['"]@overskill\/sdk['"]/g,
-      message: 'Wrong package: @overskill/sdk (scoped) should be overskill-sdk (unscoped)',
-      fix: (content) => content.replace(
-        /import\s+(\{[^}]*\})\s+from\s+['"]@overskill\/sdk['"]/g,
-        "import $1 from 'overskill-sdk'"
-      )
-    },
-    // Pattern 2: Importing 'entities' directly (not exported)
-    {
-      pattern: /import\s+\{\s*entities\s*[^}]*\}\s+from\s+['"]overskill-sdk['"]/g,
-      message: "'entities' is not exported from overskill-sdk - use overskill.entities instead",
-      fix: (content) => content.replace(
-        /import\s+\{\s*entities\s*,?\s*([^}]*)\}\s+from\s+['"]overskill-sdk['"]/g,
-        (match, rest) => {
-          const remaining = rest.trim().replace(/^,|,$/g, '').trim();
-          if (remaining) {
-            return `import { overskill, ${remaining} } from 'overskill-sdk'`;
-          }
-          return "import { overskill } from 'overskill-sdk'";
-        }
-      )
-    },
-    // Pattern 3: Importing 'client' directly (not exported)
-    {
-      pattern: /import\s+\{\s*client\s*[^}]*\}\s+from\s+['"]overskill-sdk['"]/g,
-      message: "'client' is not exported from overskill-sdk - use overskill or createClient instead",
-      fix: (content) => content.replace(
-        /import\s+\{\s*client\s*,?\s*([^}]*)\}\s+from\s+['"]overskill-sdk['"]/g,
-        (match, rest) => {
-          const remaining = rest.trim().replace(/^,|,$/g, '').trim();
-          if (remaining) {
-            return `import { overskill, ${remaining} } from 'overskill-sdk'`;
-          }
-          return "import { overskill } from 'overskill-sdk'";
-        }
-      )
-    },
-    // Pattern 4: Default import style (wrong)
-    {
-      pattern: /import\s+overskillSDK\s+from\s+['"]overskill-sdk['"]/g,
-      message: 'Wrong import style: use { overskill } or { createClient } instead of default import',
-      fix: (content) => content.replace(
-        /import\s+overskillSDK\s+from\s+['"]overskill-sdk['"]/g,
-        "import { overskill } from 'overskill-sdk'"
-      ).replace(/overskillSDK\./g, 'overskill.')
-    },
-    // Pattern 5: Namespace import (wrong)
-    {
-      pattern: /import\s+\*\s+as\s+SDK\s+from\s+['"]overskill-sdk['"]/g,
-      message: 'Wrong import style: use { overskill } instead of namespace import',
-      fix: (content) => content.replace(
-        /import\s+\*\s+as\s+SDK\s+from\s+['"]overskill-sdk['"]/g,
-        "import { overskill } from 'overskill-sdk'"
-      ).replace(/SDK\./g, 'overskill.')
-    },
-    // Pattern 6: Importing useEntity / useEntities — neither exists in the SDK (Apr 2026).
-    // The canonical pattern is `useState` + `useEffect` + `overskill.entities.X.list()`.
-    // Strip the bad named import; the developer / AI's next pass will replace
-    // the call sites with the imperative pattern. See investigation:
-    // docs/ultrathink/ai-entity-hallucination-investigation-apr-2026/FINDINGS.md
-    {
-      pattern: /import\s+\{[^}]*\b(useEntity|useEntities)\b[^}]*\}\s+from\s+['"]overskill-sdk['"]/g,
-      message: 'useEntity / useEntities are NOT exported by overskill-sdk — use overskill.entities.X.list() with useState + useEffect instead',
-      fix: (content) => content.replace(
-        /import\s+\{([^}]*)\}\s+from\s+['"]overskill-sdk['"]/g,
-        (match, imports) => {
-          // Drop useEntity and useEntities from the import list, preserve everything else.
-          const remaining = imports
-            .split(',')
-            .map((s) => s.trim())
-            .filter((s) => s && !/^useEntit(?:y|ies)(?:\s+as\s+\w+)?$/.test(s));
-          if (remaining.length === 0) {
-            return ''; // entire import line was just useEntity/useEntities
-          }
-          return `import { ${remaining.join(', ')} } from 'overskill-sdk'`;
-        }
-      )
-    }
-  ];
-
   for (const file of tsxFiles) {
-    let content = fs.readFileSync(file, 'utf-8');
-    let modified = false;
-
-    for (const { pattern, message, fix } of invalidImports) {
-      if (pattern.test(content)) {
-        console.log(`${colors.yellow}  ⚠️  ${message} in ${file}${colors.reset}`);
-        content = fix(content);
-        modified = true;
-        fixedCount++;
-        console.log(`${colors.green}  ✅ Auto-fixed SDK import in ${file}${colors.reset}`);
-        // Reset lastIndex for global regex
-        pattern.lastIndex = 0;
-      }
-    }
-
-    // Also check for direct use of 'entities.' without proper import
-    const hasEntitiesDirect = /\bentities\.[a-zA-Z]+\.(list|create|update|delete|get|filter|bulkCreate)\b/.test(content);
-    const hasOveskillImport = /import\s+\{[^}]*overskill[^}]*\}\s+from/.test(content);
-
-    if (hasEntitiesDirect && !hasOveskillImport) {
-      console.log(`${colors.yellow}  ⚠️  Using 'entities.' directly without 'overskill' import in ${file}${colors.reset}`);
-      console.log(`${colors.yellow}      Should be: overskill.entities.entityName.method()${colors.reset}`);
-      // This is harder to auto-fix without context, just warn
-    }
-
-    if (modified) {
-      fs.writeFileSync(file, content);
+    const content = fs.readFileSync(file, 'utf-8');
+    if (/from\s+['"](?:@overskill\/sdk|overskill-sdk)['"]/.test(content)) {
+      console.log(`${colors.red}  ❌ Retired platform SDK import found in ${file}${colors.reset}`);
+      hasErrors = true;
     }
   }
 }
@@ -621,18 +514,11 @@ async function finalValidation() {
   }
 }
 
-// 8. Bundle-size self-correction (issue #2383) — detect heavy "lazy-only"
+// 8. Bundle-size self-correction - detect heavy "lazy-only"
 //    libraries (recharts, pdfjs-dist, xlsx, …) statically imported from an
-//    EAGERLY-loaded module, which forces them into the eager Cloudflare Worker
-//    bundle and (as the app grows) blows the 6MB asset limit → cryptic deploy
-//    failure + credit-burning publish loop.
+//    EAGERLY-loaded module, which forces them into the initial browser bundle.
 //
-//    This is the headline self-heal: instead of letting the AI ship code that
-//    fails at deploy time, we FAIL the build here with a structured, actionable
-//    correction. Because `npm run build` runs `validate-and-fix` first, a
-//    non-zero exit surfaces this message to the OverSkill generation pipeline's
-//    build-error auto-fix loop (the same channel CSS/import errors use), which
-//    feeds it back to the model so it regenerates the file with a lazy import.
+//    The validation fails with an actionable correction before deployment.
 const SRC_ROOT = path.resolve('src');
 const RESOLVE_EXTS = ['.tsx', '.ts', '.jsx', '.js', '.mjs'];
 
@@ -767,7 +653,7 @@ async function main() {
     // Phase 2: Run all auto-fixes
     console.log(`\n${colors.blue}🔧 Phase 2: Auto-fixing detected issues${colors.reset}`);
     await fixTailwindClasses();         // Fix invalid Tailwind classes
-    await validateSDKImports();         // Fix SDK import errors (NEW - @overskill/sdk, entities, etc)
+    await validateSDKImports();         // Block retired platform dependencies
     await fixMissingReactImports();     // Fix missing React imports
     await validateImports();            // Fix missing component imports
     await fixTypeScriptErrors();        // Fix common TypeScript patterns

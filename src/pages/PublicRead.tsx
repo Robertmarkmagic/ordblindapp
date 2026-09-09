@@ -55,7 +55,7 @@ const SPEEDS = [0.75, 1, 1.25, 1.5] as const;
  * everything locally, and can listen along with the standard voice. A slim,
  * dismissible banner turns every share into a demo of ReliefRead.
  *
- * SAFETY: content comes ONLY from /api/share-view (presentation fields — never
+ * SAFETY: content comes ONLY from public-share (presentation fields, never
  * user data). A revoked/missing slug yields a calm "no longer available" page.
  */
 export default function PublicRead() {

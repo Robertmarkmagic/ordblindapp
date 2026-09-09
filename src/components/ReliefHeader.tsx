@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/lib/i18n";
+import { AppNavigation } from "@/components/AppNavigation";
 
 /**
  * Calm app header used on all signed-in pages.
@@ -36,7 +37,7 @@ export function ReliefHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3 sm:px-8 sm:py-4">
         <Link
           to="/dashboard"
           aria-label={t("header.home", "ReliefRead home")}
@@ -57,6 +58,8 @@ export function ReliefHeader() {
             </span>
           </span>
         </Link>
+
+        <AppNavigation />
 
         <div className="ml-auto flex items-center gap-2">
         <LanguageSwitcher compact />

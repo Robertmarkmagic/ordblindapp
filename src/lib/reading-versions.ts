@@ -1,4 +1,4 @@
-import { getAuthToken } from "@/lib/auth";
+import { fetchFunction } from "@/lib/supabase";
 
 export type ReadingVersion = "original" | "easy" | "very-easy" | "explain";
 
@@ -80,13 +80,11 @@ function instructions(mode: Exclude<ReadingVersion, "original">, lang: "da" | "e
 }
 
 async function transformChunk(text: string, mode: Exclude<ReadingVersion, "original">, lang: "da" | "en", part: number, total: number): Promise<string> {
-  const token = getAuthToken();
   const prompt = instructions(mode, lang);
-  const response = await fetch("/api/ai/chat", {
+  const response = await fetchFunction("ai-chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({
       model: MODEL,

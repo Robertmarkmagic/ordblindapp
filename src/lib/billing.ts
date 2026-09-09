@@ -1,4 +1,4 @@
-// ReliefRead plans, limits, and the demo unlock.
+// ReliefRead plans and limits.
 //
 // Tone rule (from the brief): the paywall is an INVITATION, never a punishment.
 // Nothing here ever hard-blocks the app — free limits show a warm full-state
@@ -6,7 +6,6 @@
 // premium TTS fair-use gate silently falls back to the standard browser voice
 // with a kind note. Saved audio always replays free.
 
-import { overskill } from "@/lib/auth";
 import {
   loadReadingSettings,
   saveReadingSettings,
@@ -14,7 +13,7 @@ import {
 } from "@/lib/reading-settings";
 import { getMonthlyUsage } from "@/lib/usage";
 
-export type BillingProvider = "none" | "overskill" | "stripe";
+export type BillingProvider = "none" | "stripe";
 
 const configuredProvider = import.meta.env.VITE_BILLING_PROVIDER as BillingProvider | undefined;
 
@@ -30,9 +29,7 @@ export const TESTER_MODE = import.meta.env.VITE_TESTER_MODE === "true";
  * keys and webhook secrets must never be added to this browser application.
  */
 export const BILLING_PROVIDER: BillingProvider =
-  configuredProvider === "stripe" || configuredProvider === "overskill"
-    ? configuredProvider
-    : "none";
+  configuredProvider === "stripe" ? configuredProvider : "none";
 
 export const STRIPE_CONFIG = {
   publishableKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined,
@@ -56,9 +53,6 @@ export const FREE_MONTHLY_DOCUMENTS = 3;
 export const FREE_ACTIVE_SHARE_LINKS = 1;
 /** Premium fair use: 90 minutes of FRESH AI-voice generation per month. */
 export const PREMIUM_TTS_SECONDS = 5400;
-/** The discreet competition unlock code. */
-export const DEMO_CODE = "DEMO2026";
-
 export const PRICING = {
   monthly: { price: "$7", cadence: "/month" },
   annual: { price: "$59", cadence: "/year", note: "2 months free" },
@@ -115,47 +109,16 @@ export function nextResetLabel(): string {
 }
 
 /**
- * Redeem the demo code. On a match: flip the user's plan to premium (stored on
- * their user_setting row) and log the activation. Returns { ok } so the caller
- * can show a warm success or a gentle "that code didn't work".
- */
-export async function redeemDemoCode(code: string): Promise<{ ok: boolean }> {
-  const normalized = (code || "").trim().toUpperCase();
-  if (normalized !== DEMO_CODE) return { ok: false };
-
-  const settings = await loadReadingSettings();
-  await saveReadingSettings({ ...settings, plan: "premium" });
-
-  // Log the activation (best-effort — never block the unlock over the log).
-  try {
-    await overskill.entities.demo_activation.create({
-      code: normalized,
-      activated_plan: "premium",
-    });
-  } catch (err) {
-    console.warn("[billing] demo activation log failed:", err);
-  }
-
-  // Let entitlement-aware surfaces refresh immediately.
-  try {
-    window.dispatchEvent(new Event("overskill:entitlement-changed"));
-  } catch {
-    /* SSR / non-browser — ignore */
-  }
-  return { ok: true };
-}
-
-/**
- * Self-serve downgrade — the calm "cancel" path for the demo/plan-flag unlock.
+ * Self-serve downgrade for an account plan flag.
  * Sets the user back to Free (their saved audio and readings are untouched).
  * A real paid subscription is cancelled by the buyer from their account; this
- * covers the competition/demo flow and satisfies "a cancellation path exists".
+ * keeps a safe local fallback for manually provisioned test accounts.
  */
 export async function downgradeToFree(): Promise<void> {
   const settings = await loadReadingSettings();
   await saveReadingSettings({ ...settings, plan: "free" });
   try {
-    window.dispatchEvent(new Event("overskill:entitlement-changed"));
+    window.dispatchEvent(new Event("reliefread:entitlement-changed"));
   } catch {
     /* SSR / non-browser — ignore */
   }

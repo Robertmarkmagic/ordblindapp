@@ -1,4 +1,4 @@
-name: Deploy Ordblindapp to GitHub Pages
+name: Test and deploy ReliefRead
 
 on:
   push:

@@ -6,9 +6,7 @@
 // language. Voices are labelled by personality ("Calm — Emma"), never by
 // technical voice IDs.
 //
-// The IDs below are the platform's curated /api/ai/audio/voices allowlist.
-// An unknown ID would gracefully fall back to the default voice server-side,
-// so these are the safe, supported set.
+// Voice names are resolved by ReliefRead's own text-to-speech function.
 
 export interface ReaderVoice {
   /** ElevenLabs voice id (curated allowlist). */
@@ -22,10 +20,10 @@ export interface ReaderVoice {
 }
 
 export const READER_VOICES: ReaderVoice[] = [
-  { id: "21m00Tcm4TlvDq8ikWAM", label: "Calm — Emma", lang: "en", browserLang: "en-US" },
-  { id: "pNInz6obpgDQGcFmaJgB", label: "Clear — Daniel", lang: "en", browserLang: "en-US" },
-  { id: "EXAVITQu4vr4xnSDxMaL", label: "Rolig — Freja", lang: "da", browserLang: "da-DK" },
-  { id: "IKne3meq5aSn9XLyUdCD", label: "Tydelig — Mikkel", lang: "da", browserLang: "da-DK" },
+  { id: "coral", label: "Calm, Emma", lang: "en", browserLang: "en-US" },
+  { id: "onyx", label: "Clear, Daniel", lang: "en", browserLang: "en-US" },
+  { id: "sage", label: "Rolig, Freja", lang: "da", browserLang: "da-DK" },
+  { id: "ballad", label: "Tydelig, Mikkel", lang: "da", browserLang: "da-DK" },
 ];
 
 export function voicesForLang(lang: string): ReaderVoice[] {

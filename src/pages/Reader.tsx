@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Pencil, BookMarked, Share2, ClipboardList } from "lucide-react";
-import { overskill, useAuth } from "@/lib/auth";
+import { ArrowLeft, Pencil, BookMarked, Share2, ClipboardList, Play, Languages, Mic, MoreVertical, UserCircle } from "lucide-react";
+import { backend, useAuth } from "@/lib/auth";
 import { toast } from "@/components/ui/sonner";
-import { ReliefHeader } from "@/components/ReliefHeader";
 import { SoftNotice } from "@/components/SoftNotice";
 import { ReaderContent } from "@/components/reader/ReaderContent";
 import { AudioBar } from "@/components/reader/AudioBar";
@@ -36,7 +35,6 @@ import { isFreshTtsExhausted } from "@/lib/billing";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { ReaderAdjust } from "@/components/reader/ReaderAdjust";
 import { useLanguage } from "@/lib/i18n";
-import { PersonalToolbar } from "@/components/reader/PersonalToolbar";
 import { ReaderFocusControls } from "@/components/reader/ReaderFocusControls";
 import { ReadingVersionControls } from "@/components/reader/ReadingVersionControls";
 import { createReadingVersion, type ReadingVersion } from "@/lib/reading-versions";
@@ -44,6 +42,8 @@ import { HIGHLIGHT_COLORS } from "@/lib/app-preferences";
 import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { DocumentInsightsSheet } from "@/components/reader/DocumentInsightsSheet";
 import { insightsAsText, type DocumentInsights } from "@/lib/document-insights";
+import { ReaderPersonalisationStudio, ReaderThemeChooser } from "@/components/reader/ReaderPersonalisationStudio";
+import { ReaderWorkspaceSidebar } from "@/components/reader/ReaderWorkspaceSidebar";
 
 /**
  * Reader — the calm reading sanctuary with the listening experience, now with
@@ -98,7 +98,7 @@ export default function Reader() {
     if (authLoading || !user || !id) return;
     let active = true;
     setLoading(true);
-    Promise.all([overskill.entities.document.get(id), loadReadingSettings()])
+    Promise.all([backend.entities.document.get(id), loadReadingSettings()])
       .then(([d, s]) => {
         if (!active) return;
         if (!d) {
@@ -262,7 +262,7 @@ export default function Reader() {
   useEffect(() => {
     if (status !== "playing" || markedListened || !doc?.id) return;
     setMarkedListened(true);
-    overskill.entities.document
+    backend.entities.document
       .update(doc.id, { listened: true })
       .catch((err: unknown) => console.warn("[reader] mark listened failed:", err));
   }, [status, markedListened, doc?.id]);
@@ -418,66 +418,33 @@ export default function Reader() {
   usePageTitle(doc?.title || t("reader.reading", "Reading"));
 
   return (
-    <div className="min-h-screen bg-background">
-      <ReliefHeader />
-      <main className="mx-auto max-w-6xl px-5 pb-40 pt-8 sm:px-8">
-        <div className="mb-6 flex items-center justify-between gap-3">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="inline-flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            aria-label={t("reader.back", "Back to My Reading Space")}
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            {t("reader.back", "Back to my space")}
-          </button>
-          {doc && (
-            <div className="flex items-center gap-2">
-              <ReaderAdjust
-                font={font}
-                setFont={setFontOverride}
-                tint={tint}
-                setTint={setTintOverride}
-                bionic={bionic}
-                setBionic={setBionic}
-              />
-              <ReaderFocusControls
-                open={focusControlsOpen}
-                onOpenChange={setFocusControlsOpen}
-                preferences={preferences}
-                onChange={setPreferences}
-              />
-              <button
-                onClick={() => setShareOpen(true)}
-                className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground shadow-paper outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                aria-label={t("reader.shareAria", "Share this formatted reading")}
-              >
-                <Share2 className="h-4 w-4 text-sage" aria-hidden="true" />
-                <span className="hidden sm:inline">{t("reader.share", "Share")}</span>
-              </button>
-              <button
-                onClick={openHistory}
-                className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground shadow-paper outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                aria-label={t("reader.lookedUpAria", "Open your looked-up words")}
-              >
-                <BookMarked className="h-4 w-4 text-sage" aria-hidden="true" />
-                <span className="hidden sm:inline">{t("reader.lookedUp", "Looked up")}</span>
-              </button>
-            </div>
-          )}
-        </div>
+    <div className="rr-personal-space">
+      <ReaderThemeChooser value={preferences.aesthetic} onChange={(aesthetic) => setPreferences({ ...preferences, aesthetic })} />
+      <main className="mx-auto max-w-6xl px-3 pb-40 sm:px-6">
+        <section className="rr-reader-shell">
+          <div className="rr-reader-windowbar">
+            <div className="flex items-center gap-2" aria-hidden="true"><span className="h-3.5 w-3.5 rounded-full bg-[#ff6a5f]" /><span className="h-3.5 w-3.5 rounded-full bg-[#ffbd44]" /><span className="h-3.5 w-3.5 rounded-full bg-[#4ac06a]" /></div>
+            <button type="button" onClick={() => navigate("/settings")} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-blue-800 hover:bg-blue-50">
+              <UserCircle className="h-6 w-6" aria-hidden="true" />Min profil
+            </button>
+          </div>
+          <div className="flex">
+            <ReaderWorkspaceSidebar onDictionary={openHistory} />
+            <div className="rr-reader-main flex-1">
+              <div className="rr-reading-toolbar">
+                <button onClick={() => toggle()} className="rr-reading-tool !h-12 !w-12 rounded-full bg-blue-100" aria-label="Læs teksten"><Play className="h-5 w-5 fill-current" /></button>
+                <button className="rr-reading-tool px-3" onClick={() => setSpeed(speed === 1 ? 1.25 : 1)}>{speed.toFixed(1)}x</button>
+                <span className="rr-reading-tool px-3"><Languages className="h-4 w-4" />{lang === "da" ? "Dansk" : "English"}</span>
+                <ReaderAdjust font={font} setFont={setFontOverride} tint={tint} setTint={setTintOverride} bionic={bionic} setBionic={setBionic} />
+                <ReaderFocusControls open={focusControlsOpen} onOpenChange={setFocusControlsOpen} preferences={preferences} onChange={setPreferences} />
+                <button onClick={() => setNotesOpen(true)} className="rr-reading-tool" aria-label="Åbn noter"><Mic className="h-5 w-5" /></button>
+                <button onClick={() => setShareOpen(true)} className="rr-reading-tool" aria-label={t("reader.shareAria", "Share this formatted reading")}><Share2 className="h-5 w-5" /></button>
+                <button onClick={openHistory} className="rr-reading-tool" aria-label={t("reader.lookedUpAria", "Open your looked-up words")}><BookMarked className="h-5 w-5" /></button>
+                <button onClick={() => navigate("/dashboard")} className="rr-reading-tool ml-auto" aria-label="Tilbage til mine filer"><MoreVertical className="h-5 w-5" /></button>
+              </div>
 
-        {doc && (
-          <PersonalToolbar
-            onRead={() => toggle()}
-            onWords={openHistory}
-            onNotes={() => setNotesOpen(true)}
-            onHighlight={() => setFocusControlsOpen(true)}
-          />
-        )}
-
-        <div className="lg:grid lg:grid-cols-[65fr_35fr] lg:gap-8">
-          {/* Document column (65%) */}
-          <div className="min-w-0">
+              <div className="grid min-h-[28rem] gap-5 p-4 lg:grid-cols-[minmax(0,1fr)_15rem] lg:p-6">
+                <div className="min-w-0 rr-reader-document">
             {loading ? (
               <div className="space-y-4">
                 <div className="rr-skeleton h-8 w-2/3 rounded-lg" />
@@ -500,7 +467,8 @@ export default function Reader() {
               <SoftNotice>{error}</SoftNotice>
             ) : doc ? (
               <article ref={articleRef} onMouseUp={captureSelection} className="rr-fade-up">
-                <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
+                <button onClick={() => navigate("/dashboard")} className="mb-3 inline-flex min-h-10 items-center gap-2 rounded-lg text-sm font-semibold text-blue-700"><ArrowLeft className="h-4 w-4" />Mine filer</button>
+                <h1 className="font-display text-3xl font-semibold tracking-tight text-blue-800">
                   {doc.title}
                 </h1>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -562,12 +530,11 @@ export default function Reader() {
                 </div>
               </article>
             ) : null}
-          </div>
+                </div>
 
-          {/* Notes column (35%) — sticky on desktop; mobile uses the sheet below. */}
-          {doc && (
-            <aside className="hidden lg:block">
-              <div className="sticky top-8 h-[calc(100vh-8rem)] rounded-3xl border border-border bg-card/60 p-5 shadow-paper">
+                {doc && (
+                  <aside className="hidden lg:block">
+                    <div className="rr-reader-notes h-full min-h-[24rem]">
                 <NotesPanel
                   documentId={doc.id}
                   lang={lang}
@@ -575,10 +542,24 @@ export default function Reader() {
                   onAnchorClick={scrollToAnchor}
                   onClearAnchor={() => setAnchorText(null)}
                 />
+                    </div>
+                  </aside>
+                )}
               </div>
-            </aside>
-          )}
-        </div>
+            </div>
+          </div>
+        </section>
+
+        <ReaderPersonalisationStudio
+          preferences={preferences}
+          onPreferences={setPreferences}
+          font={font}
+          onFont={setFontOverride}
+          tint={tint}
+          onTint={setTintOverride}
+          bionic={bionic}
+          onBionic={setBionic}
+        />
       </main>
 
       {/* Persistent audio bar — only once a document with words is loaded. */}

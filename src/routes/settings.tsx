@@ -31,6 +31,7 @@ import { getMonthlyUsage } from "@/lib/usage";
 import { aiMinutesRemaining, nextResetLabel, downgradeToFree, PRICING } from "@/lib/billing";
 import { PersonalisationSettings } from "@/components/PersonalisationSettings";
 import { useLanguage } from "@/lib/i18n";
+import { ProfileSettings } from "@/components/ProfileSettings";
 
 const VOICE_OPTIONS = [
   { value: "default", label: "System default" },
@@ -130,6 +131,7 @@ export default function SettingsPage() {
           </div>
         ) : (
           <div className="rr-settle mt-8 space-y-5">
+            <ProfileSettings />
             <PersonalisationSettings />
             {/* Your plan — discreet, warm; AI minutes shown quietly (never a reader countdown) */}
             <section className="rounded-2xl border border-border bg-card p-6 shadow-paper">

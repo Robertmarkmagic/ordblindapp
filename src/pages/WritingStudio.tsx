@@ -14,7 +14,7 @@ import {
   SpellCheck2,
   Volume2,
 } from "lucide-react";
-import { overskill, useAuth } from "@/lib/auth";
+import { backend, useAuth } from "@/lib/auth";
 import { ReliefHeader } from "@/components/ReliefHeader";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { Button } from "@/components/ui/button";
@@ -128,7 +128,7 @@ export default function WritingStudio() {
       .then((usage) => setDocumentsCreated(usage.documentsCreated))
       .catch(() => setDocumentsCreated(0))
       .finally(() => setUsageLoading(false));
-    overskill.entities.dictionary_word
+    backend.entities.dictionary_word
       .list("-created_at", 500)
       .then((words: unknown) => {
         const next = new Set<string>();
@@ -174,7 +174,7 @@ export default function WritingStudio() {
   const keepWord = useCallback((word: string) => {
     if (!word) return;
     setDictionary((current) => new Set(current).add(word));
-    overskill.entities.dictionary_word
+    backend.entities.dictionary_word
       .create({ word, language })
       .catch(() => undefined);
   }, [language]);
@@ -229,7 +229,7 @@ export default function WritingStudio() {
     setSaving(true);
     setNotice(null);
     try {
-      const document = await overskill.entities.document.create({
+      const document = await backend.entities.document.create({
         title: title.trim() || firstWords(text, 6) || (language === "da" ? "Min tekst" : "My text"),
         content_raw: text.trim(),
         language: detectLanguage(text),

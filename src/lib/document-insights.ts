@@ -1,4 +1,4 @@
-import { getAuthToken } from "@/lib/auth";
+import { fetchFunction } from "@/lib/supabase";
 
 export interface InsightAction {
   task: string;
@@ -141,12 +141,10 @@ export async function generateDocumentInsights(args: {
   if (cached) return cached;
 
   const outputLanguage = args.lang === "da" ? "Danish" : "English";
-  const token = getAuthToken();
-  const response = await fetch("/api/ai/object", {
+  const response = await fetchFunction("ai-object", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({
       model: MODEL,

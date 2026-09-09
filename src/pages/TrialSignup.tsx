@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, BookOpen, Check, Copy, Gift, Mail } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, Gift, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/lib/i18n";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { supabase, supabaseConfigured } from "@/lib/supabase";
 
 const CONTACT_EMAIL = "hello@reliefread.com";
 
@@ -27,7 +28,8 @@ export default function TrialSignup() {
   const [message, setMessage] = useState("");
   const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
   usePageTitle(t("trial.title", "Try ReliefRead free"));
 
@@ -42,58 +44,38 @@ export default function TrialSignup() {
     [t]
   );
 
-  const requestText = useMemo(() => {
-    const subject = language === "da"
-      ? "Tilmelding til gratis prøveperiode hos ReliefRead"
-      : "ReliefRead free trial signup";
-    const body = language === "da"
-      ? [
-          "Hej ReliefRead",
-          "",
-          "Jeg vil gerne tilmeldes en gratis prøveperiode.",
-          "",
-          `Navn: ${name}`,
-          `E-mail: ${email}`,
-          `ReliefRead skal bruges til: ${purposeLabels[purpose as keyof typeof purposeLabels] || purpose}`,
-          `Jeg vil især gerne have hjælp til: ${message.trim() || "Ikke angivet"}`,
-          "",
-          "Jeg accepterer, at ReliefRead kontakter mig om prøveadgangen.",
-        ].join("\n")
-      : [
-          "Hello ReliefRead",
-          "",
-          "I would like to join the free trial.",
-          "",
-          `Name: ${name}`,
-          `Email: ${email}`,
-          `ReliefRead will be used for: ${purposeLabels[purpose as keyof typeof purposeLabels] || purpose}`,
-          `I would especially like help with: ${message.trim() || "Not specified"}`,
-          "",
-          "I agree that ReliefRead may contact me about trial access.",
-        ].join("\n");
-
-    return { subject, body };
-  }, [email, language, message, name, purpose, purposeLabels]);
-
-  const mailto = useMemo(
-    () => `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(requestText.subject)}&body=${encodeURIComponent(requestText.body)}`,
-    [requestText]
-  );
-
-  const openMail = () => {
-    window.location.href = mailto;
-    setSubmitted(true);
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!name.trim() || !email.trim() || !purpose || !consent) return;
-    openMail();
-  };
+    if (!name.trim() || !email.trim() || !purpose || !consent || sending) return;
+    if (!supabaseConfigured) {
+      setError(t("trial.configError", "Signup is not available just now. Please try again shortly."));
+      return;
+    }
 
-  const copyRequest = async () => {
-    await navigator.clipboard.writeText(`${requestText.subject}\n\n${requestText.body}`);
-    setCopied(true);
+    setSending(true);
+    setError("");
+    sessionStorage.setItem("reliefread_post_login_redirect", "/dashboard");
+    const { error: signupError } = await supabase.auth.signInWithOtp({
+      email: email.trim().toLowerCase(),
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: `${window.location.origin}/callback`,
+        data: {
+          full_name: name.trim(),
+          purpose,
+          help_needs: message.trim(),
+          locale: language,
+          trial_signup: true,
+          onboarding_completed: true,
+        },
+      },
+    });
+    setSending(false);
+    if (signupError) {
+      setError(t("trial.sendError", "We could not send your access email. Check the email address and try again."));
+      return;
+    }
+    setSubmitted(true);
   };
 
   const benefits = [
@@ -160,21 +142,13 @@ export default function TrialSignup() {
                   <Mail className="h-7 w-7" aria-hidden="true" />
                 </span>
                 <h2 className="mt-6 font-display text-3xl font-semibold text-foreground">
-                  {t("trial.sentTitle", "Your signup is ready")}
+                  {t("trial.sentTitle", "Check your email")}
                 </h2>
                 <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
-                  {t("trial.sentText", "Your email app has opened with your details. Send the email to complete your signup.")}
+                  {language === "da"
+                    ? `Vi har sendt et sikkert loginlink til ${email}. Tryk på linket, så bliver din gratis ReliefRead-profil åbnet.`
+                    : `We sent a secure sign-in link to ${email}. Use it to open your free ReliefRead profile.`}
                 </p>
-                <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-                  <Button onClick={openMail} className="h-12 rounded-full bg-sage px-6 font-semibold text-sage-foreground hover:bg-sage/90">
-                    <Mail className="mr-2 h-4 w-4" aria-hidden="true" />
-                    {t("trial.openMail", "Open the email again")}
-                  </Button>
-                  <Button variant="outline" onClick={copyRequest} className="h-12 rounded-full px-6 font-semibold">
-                    {copied ? <Check className="mr-2 h-4 w-4" aria-hidden="true" /> : <Copy className="mr-2 h-4 w-4" aria-hidden="true" />}
-                    {copied ? t("trial.copied", "Signup copied") : t("trial.copy", "Copy signup")}
-                  </Button>
-                </div>
                 <Link to="/" className="mt-7 inline-flex min-h-11 items-center text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
                   {t("trial.back", "Back to the front page")}
                 </Link>
@@ -258,14 +232,18 @@ export default function TrialSignup() {
 
                   <Button
                     type="submit"
-                    disabled={!name.trim() || !email.trim() || !purpose || !consent}
+                    disabled={!name.trim() || !email.trim() || !purpose || !consent || sending}
                     className="h-12 w-full rounded-full bg-sage px-7 text-base font-semibold text-sage-foreground shadow-paper hover:bg-sage/90"
                   >
-                    {t("trial.submit", "Join the free trial")}
-                    <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+                    {sending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" /> : null}
+                    {sending ? t("trial.sending", "Sending your access email...") : t("trial.submit", "Join the free trial")}
+                    {!sending && <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />}
                   </Button>
+                  {error && <p role="alert" className="rounded-2xl bg-amber/10 p-4 text-sm leading-relaxed text-foreground">{error}</p>}
                   <p className="text-sm leading-relaxed text-muted-foreground">
-                    {t("trial.mailNote", "When you continue, your email opens with the signup ready. Send the email and we will contact you about trial access.")}
+                    {language === "da"
+                      ? "Når du fortsætter, sender ReliefRead automatisk et sikkert loginlink. Dit mailprogram åbner ikke."
+                      : "When you continue, ReliefRead automatically sends a secure sign-in link. Your email app will not open."}
                   </p>
                 </form>
               </>

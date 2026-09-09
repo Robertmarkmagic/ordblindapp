@@ -1,4 +1,4 @@
-import { getAuthToken } from "@/lib/auth";
+import { fetchFunction } from "@/lib/supabase";
 
 export type ReplyMode = "compose" | "friendly" | "fix-only";
 export type ReplyTone = "natural" | "warm" | "formal";
@@ -52,12 +52,10 @@ export async function generateReplyDraft(args: {
   lang: "da" | "en";
 }): Promise<string> {
   const request = buildReplyRequest(args);
-  const token = getAuthToken();
-  const response = await fetch("/api/ai/chat", {
+  const response = await fetchFunction("ai-chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({
       model: MODEL,

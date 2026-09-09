@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Quote, X } from "lucide-react";
-import { overskill } from "@/lib/auth";
+import { backend } from "@/lib/auth";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { usePremium } from "@/hooks/usePremium";
 
@@ -39,8 +39,8 @@ export function NotesPanel({ documentId, lang, anchorText, onAnchorClick, onClea
     let active = true;
     setLoading(true);
     Promise.all([
-      overskill.entities.note.filter({ document_id: documentId }),
-      overskill.entities.dictionary_word.list("-created_at", 500),
+      backend.entities.note.filter({ document_id: documentId }),
+      backend.entities.dictionary_word.list("-created_at", 500),
     ])
       .then(([notes, words]) => {
         if (!active) return;
@@ -73,9 +73,9 @@ export function NotesPanel({ documentId, lang, anchorText, onAnchorClick, onClea
       setSave("saving");
       try {
         if (noteId) {
-          await overskill.entities.note.update(noteId, { content: text, anchor_text: anchorText || "" });
+          await backend.entities.note.update(noteId, { content: text, anchor_text: anchorText || "" });
         } else {
-          const created = await overskill.entities.note.create({
+          const created = await backend.entities.note.create({
             document_id: documentId,
             content: text,
             anchor_text: anchorText || "",
@@ -115,7 +115,7 @@ export function NotesPanel({ documentId, lang, anchorText, onAnchorClick, onClea
   const handleKeepWord = useCallback((word: string) => {
     if (!word) return;
     setDictionary((prev) => new Set(prev).add(word));
-    overskill.entities.dictionary_word
+    backend.entities.dictionary_word
       .create({ word, language: "auto" })
       .catch((err: unknown) => console.warn("[notes] keep word failed:", err));
   }, []);

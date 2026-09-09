@@ -19,7 +19,7 @@
 //
 // Vite then code-splits recharts into its own on-demand, R2-offloadable chunk
 // and keeps it OUT of the eager Worker bundle. scripts/validate-and-fix.js +
-// scripts/worker-size-guard.js enforce this at build time.
+// The build validator enforces this at build time.
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 

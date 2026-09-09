@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, BookOpen, RefreshCw, PenLine, Camera, Brain, Files, NotebookText, Sparkles } from "lucide-react";
-import { overskill, useAuth } from "@/lib/auth";
+import { backend, useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { ReliefHeader } from "@/components/ReliefHeader";
 import { DocumentCard, type DocumentRecord } from "@/components/DocumentCard";
@@ -34,7 +34,7 @@ export default function Dashboard() {
     setLoading(true);
     setError(null);
     try {
-      const rows = await overskill.entities.document.list("-created_at");
+      const rows = await backend.entities.document.list("-created_at");
       setDocs(rows || []);
       // Which documents have an active public share link? (best-effort — a
       // failed badge lookup must never break the reading list).
@@ -72,7 +72,7 @@ export default function Dashboard() {
     { key: "dashboard.scan", english: "Scan something", icon: <Camera className="h-6 w-6" />, sticker: "📸", onClick: () => navigate("/new") },
     { key: "dashboard.explain", english: "Explain something", icon: <Brain className="h-6 w-6" />, sticker: "🧠", onClick: openRiley },
     { key: "dashboard.documents", english: "My documents", icon: <Files className="h-6 w-6" />, sticker: "📚", onClick: () => documentsRef.current?.scrollIntoView({ behavior: "smooth" }) },
-    { key: "dashboard.notes", english: "My notes", icon: <NotebookText className="h-6 w-6" />, sticker: "📝", onClick: () => documentsRef.current?.scrollIntoView({ behavior: "smooth" }) },
+    { key: "dashboard.notes", english: "My notes", icon: <NotebookText className="h-6 w-6" />, sticker: "📝", onClick: () => navigate("/notes") },
   ];
 
   return (

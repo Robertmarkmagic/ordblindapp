@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useCallback, useRef } from 'react';
+import { fetchFunction } from '@/lib/supabase';
 
 export interface ChatMessage {
   id: string;
@@ -91,19 +92,16 @@ export function useAiChat(options?: UseAiChatOptions) {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const token = localStorage.getItem('auth_token');
-
       // Build request with conversation history
       const conversationHistory = messages.map(m => ({
         role: m.role,
         content: m.content
       }));
 
-      const response = await fetch('/api/ai/chat', {
+      const response = await fetchFunction('ai-chat', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           message: content.trim(),

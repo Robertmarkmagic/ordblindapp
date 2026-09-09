@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getAuthToken } from "@/lib/auth";
+import { fetchFunction } from "@/lib/supabase";
 import {
   splitSentences,
   currentSentenceIndex,
@@ -46,12 +46,10 @@ const SCHEMA = {
 /** Check one sentence. Never throws — returns [] on any failure. */
 async function checkSentence(sentence: string, lang: "en" | "da"): Promise<Correction[]> {
   try {
-    const token = getAuthToken();
-    const res = await fetch("/api/ai/object", {
+    const res = await fetchFunction("ai-object", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
         prompt: `Language: ${lang === "da" ? "Danish" : "English"}\nSentence: ${sentence}`,

@@ -5,9 +5,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
-import overskillStableIds from "./vite-plugin-overskill-ids.js";
-import overskillSdkImportGuard from "./vite-plugin-sdk-import-guard.js";
-import overskillR2Assets from "./vite-plugin-overskill-r2-assets.js";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -94,35 +91,10 @@ export default defineConfig(({ mode }) => ({
     exclude: [],
   },
   plugins: [
-    // CRITICAL: overskillStableIds MUST run BEFORE react()
-    // The plugin has enforce: 'pre' which makes it run before other plugins.
-    // This plugin injects data-overskill-id attributes into JSX elements
-    // for reliable visual editing element-to-source mapping.
-    overskillStableIds({
-      mappingFile: 'dist/component-mappings.json',
-      debug: mode === 'development'
-    }),
-    // Apr 2026 (Todd's QA): catch hallucinated `{ useEntity }` /
-    // `{ useEntities }` imports from `overskill-sdk` at TRANSFORM TIME
-    // and throw a Vite-formatted error with the canonical fix. Without
-    // this, the import would compile and break at runtime with a
-    // useless "useEntity is not defined" + blank screen. See
-    // vite-plugin-sdk-import-guard.js for the rationale.
-    overskillSdkImportGuard(),
-    // May 2026: Mirror the production WFP worker's `/assets/*` → R2 proxy in
-    // the Vite dev server, so the E2B editor preview renders generated images
-    // consistently with production. The
-    // agent prompt instructs the AI to reference images via worker-proxy
-    // paths like `/assets/images/foo.jpg`; without this plugin, those paths
-    // 404 in dev because there is no worker layer in front of Vite.
-    // See vite-plugin-overskill-r2-assets.js for the full rationale.
-    overskillR2Assets(),
     react(),
     // PWA support (May 2026): Generated apps install on iOS / Android home screen
     // and run full-screen as standalone PWAs. iOS 16.4+ enables Web Push for installed
-    // PWAs (used by overskill-sdk push.subscribe()). Per-app branding (name,
-    // theme_color, icon) overrides happen via injected env vars at build time —
-    // see prepare-worker.js for the per-app customization point.
+    // PWA metadata for ReliefRead is defined directly here.
     //
     // devOptions.enabled: false — service worker is dev-disabled to avoid HMR conflicts
     // and the editor-iframe instrumentation in index.html. SW only runs on the
@@ -138,27 +110,20 @@ export default defineConfig(({ mode }) => ({
       // back without removing the pwa-update import in main.tsx, or the SW
       // would be double-registered.
       injectRegister: false,
-      includeAssets: ["overskill-logo.svg", "vite.svg"],
+      includeAssets: ["reliefread-icon.svg"],
       manifest: {
-        name: process.env.VITE_PWA_NAME || "OverSkill App",
-        short_name: process.env.VITE_PWA_SHORT_NAME || "OverSkill",
-        description:
-          process.env.VITE_PWA_DESCRIPTION ||
-          // Neutral, app-agnostic fallback (issue #3670): the OverSkill
-          // marketing string shipped as every app's manifest description.
-          // The deployed Worker rewrites this to the app's own description at
-          // serve time (patchWebManifest, from VITE_APP_DESCRIPTION); this is
-          // only the pre-rewrite build default.
-          "A web app built with OverSkill.",
-        theme_color: process.env.VITE_PWA_THEME_COLOR || "#0a0a0a",
-        background_color: process.env.VITE_PWA_BG_COLOR || "#ffffff",
+        name: "ReliefRead",
+        short_name: "ReliefRead",
+        description: "Læs, forstå og skriv på din måde.",
+        theme_color: "#5B7B6B",
+        background_color: "#FDFBF7",
         display: "standalone",
         orientation: "any",
         scope: "/",
         start_url: "/",
         icons: [
           {
-            src: "overskill-logo.svg",
+            src: "reliefread-icon.svg",
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any maskable",
@@ -185,7 +150,7 @@ export default defineConfig(({ mode }) => ({
       },
       devOptions: {
         // Disable SW in dev to avoid conflicts with Vite HMR + editor-iframe
-        // instrumentation (overskill-iframe-reloading, vite:error, etc.)
+        // development instrumentation and Vite error messages
         enabled: false,
       },
     }),
@@ -271,7 +236,7 @@ export default defineConfig(({ mode }) => ({
             // R2-offloadable at deploy time via the platform's generic
             // hashed-chunk + budget offload passes). If a generated app instead
             // statically imports recharts from an eager route, auto-split
-            // correctly leaves it eager and the prepare-worker.js size guard +
+            // correctly leaves it eager and the build-size guard +
             // validate-and-fix.js flag it back to the agent to lazy-load.
             if (id.includes('recharts') ||
                 id.includes('react-smooth') ||

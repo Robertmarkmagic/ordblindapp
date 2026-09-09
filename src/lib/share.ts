@@ -2,13 +2,14 @@
 //
 // A share_link is a SNAPSHOT of a document: its raw text + the sharer's chosen
 // formatting, keyed by an unguessable slug. The public reading page fetches it
-// anonymously through the /api/share-view server endpoint (which exposes ONLY
+// anonymously through the public-share Edge Function (which exposes ONLY
 // presentation fields — never document_id, author_id, or any user data).
 //
 // Creating / listing / revoking links happens here through the authenticated
 // client SDK (the sharer is always signed in when managing shares).
 
-import { overskill } from "@/lib/auth";
+import { backend } from "@/lib/auth";
+import { fetchFunction } from "@/lib/supabase";
 import type { FontChoice, TintChoice } from "@/lib/reading-settings";
 
 /** The exact formatting a share was created with — the recipient's starting point. */
@@ -90,7 +91,7 @@ export async function createShareLink(args: {
   sharerPremium: boolean;
 }): Promise<ShareLinkRow> {
   const slug = generateSlug();
-  const created = await overskill.entities.share_link.create({
+  const created = await backend.entities.share_link.create({
     document_id: args.documentId,
     public_slug: slug,
     settings_json: JSON.stringify(args.snapshot),
@@ -109,7 +110,7 @@ export async function createShareLink(args: {
  * own content — no other user has this (user_scoped) document's id.
  */
 export async function listShareLinksForDocument(documentId: string): Promise<ShareLinkRow[]> {
-  const rows = await overskill.entities.share_link.filter({ document_id: documentId });
+  const rows = await backend.entities.share_link.filter({ document_id: documentId });
   const list = (Array.isArray(rows) ? rows : []) as ShareLinkRow[];
   return list.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
 }
@@ -122,7 +123,7 @@ export async function listShareLinksForDocument(documentId: string): Promise<Sha
  */
 export async function listMyShareLinks(userId: string): Promise<ShareLinkRow[]> {
   try {
-    const rows = await overskill.entities.share_link.filter({ author_id: userId });
+    const rows = await backend.entities.share_link.filter({ author_id: userId });
     return (Array.isArray(rows) ? rows : []) as ShareLinkRow[];
   } catch {
     return [];
@@ -131,7 +132,7 @@ export async function listMyShareLinks(userId: string): Promise<ShareLinkRow[]> 
 
 /** Revoke (delete) a share link — the public route returns 404 immediately after. */
 export async function revokeShareLink(id: string): Promise<void> {
-  await overskill.entities.share_link.delete(id);
+  await backend.entities.share_link.delete(id);
 }
 
 export interface PublicShareData {
@@ -149,9 +150,9 @@ export interface PublicShareData {
  * (so the public page can show a calm "no longer available" state, never an error).
  */
 export async function fetchPublicShare(slug: string): Promise<PublicShareData | null> {
-  const res = await fetch(`/api/share-view?slug=${encodeURIComponent(slug)}`, {
+  const res = await fetchFunction(`public-share?slug=${encodeURIComponent(slug)}`, {
     headers: { Accept: "application/json" },
-  });
+  }, { anonymous: true });
   if (res.status === 404 || res.status === 410) return null;
   if (res.status === 429) throw new Error("rate_limited");
   if (!res.ok) throw new Error(`share_fetch_failed_${res.status}`);

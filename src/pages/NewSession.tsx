@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { overskill, useAuth } from "@/lib/auth";
+import { backend, useAuth } from "@/lib/auth";
 import { ReliefHeader } from "@/components/ReliefHeader";
 import { SoftNotice } from "@/components/SoftNotice";
 import { NewSessionForm, type NewSessionSubmit } from "@/components/NewSessionForm";
@@ -58,7 +58,7 @@ export default function NewSession() {
     setSaving(true);
     setError(null);
     try {
-      const doc = await overskill.entities.document.create({
+      const doc = await backend.entities.document.create({
         title: data.title,
         content_raw: data.content,
         language: data.language,

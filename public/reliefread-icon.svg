@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ReliefRead">
+  <rect width="512" height="512" rx="120" fill="#5B7B6B"/>
+  <path d="M104 142c0-22 18-40 40-40h80c30 0 55 11 72 32 17-21 42-32 72-32h0c22 0 40 18 40 40v226c0 18-14 32-32 32h-38c-31 0-56 9-78 28l-4 4-4-4c-22-19-47-28-78-28h-38c-18 0-32-14-32-32V142Z" fill="#FDFBF7"/>
+  <path d="M256 154v246M145 170h64c18 0 33 5 47 16M367 170h-64c-18 0-33 5-47 16M145 230h64c18 0 33 5 47 16M367 230h-64c-18 0-33 5-47 16M145 290h64c18 0 33 5 47 16M367 290h-64c-18 0-33 5-47 16" fill="none" stroke="#5B7B6B" stroke-width="20" stroke-linecap="round"/>
+</svg>

@@ -1,39 +1,13 @@
-import React, { useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React from "react";
+import { Link } from "react-router-dom";
 import { BookOpen, ArrowRight } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 /**
- * Custom 404 — calm, on-brand, never alarming. A soft sage book mark, a warm
- * message, and two clear ways back. Still reports the missing route to the
- * editor when running inside the Overskill preview iframe.
+ * Calm, on-brand 404 with two clear ways back.
  */
 export default function NotFound() {
-  const location = useLocation();
   usePageTitle("Page not found");
-
-  useEffect(() => {
-    const isInIframe = window.self !== window.top;
-    if (isInIframe) {
-      try {
-        window.parent.postMessage(
-          {
-            type: "route_not_found",
-            source: "overskill-app",
-            data: {
-              path: location.pathname,
-              fullUrl: window.location.href,
-              search: location.search,
-              timestamp: new Date().toISOString(),
-            },
-          },
-          "*"
-        );
-      } catch (e) {
-        console.error("[NotFound] Failed to report to parent:", e);
-      }
-    }
-  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-background">

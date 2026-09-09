@@ -4,9 +4,9 @@
 // enforces that each user only ever reads/writes their own row). These
 // defaults are applied to every new reading session.
 
-import { overskill } from "@/lib/auth";
+import { backend } from "@/lib/auth";
 
-export type FontChoice = "lexend" | "opendyslexic" | "standard";
+export type FontChoice = "lexend" | "opendyslexic" | "standard" | "poppins" | "lora";
 export type TintChoice = "cream" | "white" | "sepia" | "soft-blue" | "soft-gray";
 export type PlanChoice = "free" | "premium";
 
@@ -54,6 +54,18 @@ export const FONT_OPTIONS: FontOption[] = [
     description: "A clean, familiar typeface if you prefer something plain.",
     fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
   },
+  {
+    value: "poppins",
+    label: "Poppins",
+    description: "A rounded, open typeface with clear letter shapes.",
+    fontFamily: "'Poppins', 'Lexend', ui-sans-serif, system-ui, sans-serif",
+  },
+  {
+    value: "lora",
+    label: "Lora",
+    description: "A calm serif typeface for readers who prefer book-like text.",
+    fontFamily: "'Lora', Georgia, serif",
+  },
 ];
 
 export interface TintOption {
@@ -95,11 +107,11 @@ function normalize(row: Record<string, unknown>): ReadingSettings {
 
 /** Load the current user's settings, creating a defaults row on first use. */
 export async function loadReadingSettings(): Promise<ReadingSettings> {
-  const rows = await overskill.entities.user_setting.list();
+  const rows = await backend.entities.user_setting.list();
   if (rows && rows.length > 0) {
     return normalize(rows[0]);
   }
-  const created = await overskill.entities.user_setting.create({ ...DEFAULT_READING_SETTINGS });
+  const created = await backend.entities.user_setting.create({ ...DEFAULT_READING_SETTINGS });
   return { ...DEFAULT_READING_SETTINGS, id: created.id };
 }
 
@@ -113,9 +125,9 @@ export async function saveReadingSettings(settings: ReadingSettings): Promise<Re
     default_playback_speed: settings.default_playback_speed,
   };
   if (settings.id) {
-    await overskill.entities.user_setting.update(settings.id, payload);
+    await backend.entities.user_setting.update(settings.id, payload);
     return { ...settings, ...payload };
   }
-  const created = await overskill.entities.user_setting.create(payload);
+  const created = await backend.entities.user_setting.create(payload);
   return { ...settings, ...payload, id: created.id };
 }

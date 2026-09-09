@@ -1,6 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Headphones, Type, PenLine } from "lucide-react";
 
+const LISTEN_WORDS = ["The", "words", "light", "up", "as", "the", "voice", "reads."];
+const READING_LOOKS = [
+  { fontFamily: "'Lexend', sans-serif", letterSpacing: "normal", lineHeight: 1.7 },
+  {
+    fontFamily: "'OpenDyslexic', 'Lexend', sans-serif",
+    letterSpacing: "0.03em",
+    lineHeight: 2,
+  },
+];
+
 /**
  * Three small, always-looping visual demos for the feature trio. All motion is
  * CSS/JS driven (no audio, no network) and every loop is paused for readers who
@@ -22,19 +32,18 @@ function usePrefersReducedMotion(): boolean {
 
 /** LISTEN — a soft yellow highlight that walks word by word, like the reader. */
 function ListenDemo() {
-  const words = ["The", "words", "light", "up", "as", "the", "voice", "reads."];
   const reduced = usePrefersReducedMotion();
-  const [active, setActive] = useState(reduced ? words.length - 1 : 0);
+  const [active, setActive] = useState(reduced ? LISTEN_WORDS.length - 1 : 0);
 
   useEffect(() => {
     if (reduced) return;
-    const id = setInterval(() => setActive((a) => (a + 1) % words.length), 620);
+    const id = setInterval(() => setActive((a) => (a + 1) % LISTEN_WORDS.length), 620);
     return () => clearInterval(id);
   }, [reduced]);
 
   return (
     <p className="text-base leading-relaxed text-foreground" aria-hidden="true">
-      {words.map((w, i) => (
+      {LISTEN_WORDS.map((w, i) => (
         <span
           key={i}
           className={`rounded px-0.5 transition-colors duration-200 ${
@@ -52,25 +61,16 @@ function ListenDemo() {
 function SeeDemo() {
   const reduced = usePrefersReducedMotion();
   const [step, setStep] = useState(0);
-  const looks = [
-    { fontFamily: "'Lexend', sans-serif", letterSpacing: "normal", lineHeight: 1.7 },
-    {
-      fontFamily: "'OpenDyslexic', 'Lexend', sans-serif",
-      letterSpacing: "0.03em",
-      lineHeight: 2,
-    },
-  ];
-
   useEffect(() => {
     if (reduced) return;
-    const id = setInterval(() => setStep((s) => (s + 1) % looks.length), 2200);
+    const id = setInterval(() => setStep((s) => (s + 1) % READING_LOOKS.length), 2200);
     return () => clearInterval(id);
   }, [reduced]);
 
   return (
     <p
       className="text-base text-foreground transition-all duration-700 ease-out"
-      style={looks[step]}
+      style={READING_LOOKS[step]}
       aria-hidden="true"
     >
       Fonts and spacing that fit your eyes.
