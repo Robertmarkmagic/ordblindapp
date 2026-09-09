@@ -25,7 +25,7 @@ const BACKGROUNDS: Array<{ value: TintChoice; color: string; label: string }> = 
   { value: "soft-blue", color: "#d9edff", label: "Lyseblå" },
 ];
 
-const TEXT_COLORS = ["#1E293B", "#203B5B", "#4B3621", "#111827"];
+const TEXT_COLORS = ["#1E293B", "#203B5B", "#4B3621", "#111827", "#FFF0AA"];
 
 interface Props {
   preferences: AppPreferences;
@@ -41,10 +41,10 @@ interface Props {
 export function ReaderThemeChooser({ value, onChange }: { value: AestheticChoice; onChange: (value: AestheticChoice) => void }) {
   return (
     <section className="rr-theme-chooser" aria-labelledby="theme-heading">
-      <div className="text-center text-white drop-shadow-sm">
+      <div className="text-center text-foreground drop-shadow-sm">
         <h1 id="theme-heading" className="font-display text-3xl font-bold uppercase tracking-[0.04em] sm:text-5xl">Gør det til dit eget</h1>
         <p className="mt-1 text-base font-semibold sm:text-xl">Ikke alle læser bedst på samme måde.</p>
-        <p className="mx-auto mt-1 max-w-2xl text-sm text-white/90 sm:text-base">Vælg et tema, og tilpas derefter skrift, farver og værktøjer.</p>
+        <p className="mx-auto mt-1 max-w-2xl text-sm text-muted-foreground sm:text-base">Vælg et tema, og tilpas derefter skrift, farver og værktøjer.</p>
       </div>
       <div className="mx-auto mt-5 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-5">
         {THEME_CHOICES.map((theme) => (
@@ -127,7 +127,7 @@ export function ReaderPersonalisationStudio({ preferences, onPreferences, font, 
           <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
             {TOOL_OPTIONS.map((tool) => {
               const active = preferences.toolbar.includes(tool.value);
-              return <button key={tool.value} type="button" onClick={() => toggleTool(tool.value)} aria-pressed={active} className={`rr-tool-choice ${active ? "is-active" : ""}`}><span className="text-xl" aria-hidden="true">{tool.emoji}</span><span>{tool.label.da}</span>{active && <Check className="absolute right-1 top-1 h-3.5 w-3.5 rounded-full bg-blue-500 p-0.5 text-white" />}</button>;
+              return <button key={tool.value} type="button" onClick={() => toggleTool(tool.value)} aria-pressed={active} className={`rr-tool-choice ${active ? "is-active" : ""}`}><span className="text-xl" aria-hidden="true">{tool.emoji}</span><span>{tool.label.da}</span>{active && <Check className="absolute right-1 top-1 h-3.5 w-3.5 rounded-full bg-primary p-0.5 text-primary-foreground" />}</button>;
             })}
             <button type="button" className="rr-tool-choice"><Plus className="h-5 w-5" /><span>Tilføj</span></button>
           </div>

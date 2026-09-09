@@ -15,7 +15,7 @@ export function ReaderWorkspaceSidebar({ onDictionary }: { onDictionary: () => v
   return (
     <aside className="rr-workspace-sidebar" aria-label="Min læseplads">
       <Link to="/dashboard" className="mb-5 flex items-center gap-2 px-3 text-sm font-bold text-primary">
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-100 text-xl" aria-hidden="true">🌊</span>
+        <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-xl" aria-hidden="true">🌊</span>
         Min læseplads
       </Link>
       <nav className="space-y-1">
@@ -25,7 +25,7 @@ export function ReaderWorkspaceSidebar({ onDictionary }: { onDictionary: () => v
           return <Link key={label} to={item.to} className={classes}><Icon aria-hidden="true" />{label}</Link>;
         })}
       </nav>
-      <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("reliefread:open-riley", { detail: { prompt: "Hvad vil du gerne have hjælp til?" } }))} className="rr-sidebar-link mt-1 bg-blue-100/80 text-blue-900">
+      <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("reliefread:open-riley", { detail: { prompt: "Hvad vil du gerne have hjælp til?" } }))} className="rr-sidebar-link mt-1 bg-accent text-accent-foreground">
         <Sparkles aria-hidden="true" />Spørg Riley
       </button>
     </aside>

@@ -7,11 +7,11 @@ import {
   Check,
   X,
   Sparkles,
-  Heart,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { MiniReader } from "@/components/landing/MiniReader";
+import { PersonalisationShowcase } from "@/components/landing/PersonalisationShowcase";
 import { FeatureDemos } from "@/components/landing/FeatureDemos";
 import { PRICING } from "@/lib/billing";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -108,47 +108,27 @@ export default function Index() {
       </header>
 
       <main className="relative z-10">
-        {/* ---------- HERO ---------- */}
-        <section className="mx-auto max-w-6xl px-5 pb-16 pt-10 sm:px-8 lg:pt-14">
-          <div className="rr-settle mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-1.5 text-xs font-medium text-muted-foreground shadow-paper">
-              <Heart className="h-3.5 w-3.5 text-sage" aria-hidden="true" />
-              {t("landing.badge", "Made for dyslexic & borderline readers")}
-            </span>
-            <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
-              {t("landing.title", "Reading shouldn't feel like a battle.")}
-            </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              {t("landing.intro", "ReliefRead is the readability-first AI workspace for dyslexic and borderline readers. Natural human-like audio, fonts and spacing tuned for your eyes, and a writing coach that never uses red ink.")}
-            </p>
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button
-                className="h-12 rounded-full bg-sage px-7 text-base font-semibold text-sage-foreground shadow-paper hover:bg-sage/90"
-                onClick={goSignUp}
-              >
-                {t("landing.tryFree", "Try ReliefRead free")}
-                <ArrowRight className="ml-1 h-5 w-5" aria-hidden="true" />
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={scrollToDemo}
-                className="h-12 rounded-full border border-border bg-card px-7 text-base font-medium text-foreground hover:bg-accent"
-              >
-                <Play className="mr-1 h-4 w-4 text-sage" aria-hidden="true" />
-                {t("landing.demo", "See it in action")}
-              </Button>
-            </div>
-            <p className="mt-4 text-sm text-muted-foreground">
-              {t("landing.noDiagnosis", "No diagnosis required. No password to remember.")}
-            </p>
-          </div>
+        {/* ---------- PERSONALISATION SETUP ---------- */}
+        <section className="mx-auto max-w-6xl px-3 pb-16 pt-8 sm:px-8 lg:pt-10">
+          <PersonalisationShowcase />
+        </section>
 
-          <div className="rr-fade-up mx-auto mt-10 max-w-5xl">
-            <div className="mb-4 text-center">
-              <p className="font-display text-2xl font-semibold text-foreground">{language === "da" ? "Samme funktioner. Din stil." : "The same features. Your style."}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{language === "da" ? "Prøv temaerne og indstillingerne direkte her." : "Try the themes and reading settings right here."}</p>
+        {/* ---------- FULL APP THEMES ---------- */}
+        <section className="mx-auto max-w-6xl px-5 pb-16 sm:px-8">
+          <div className="rr-fade-up mx-auto max-w-5xl">
+            <div className="mb-5 text-center">
+              <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">{language === "da" ? "Se temaerne i hele appen" : "See the themes across the full app"}</h2>
+              <p className="mt-2 text-base text-muted-foreground">{language === "da" ? "Tryk på et tema, og se hele læsepladsen skifte farve." : "Choose a theme and watch the entire reading space change."}</p>
             </div>
             <MiniReader />
+            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button className="h-12 rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground shadow-paper hover:bg-primary/90" onClick={goSignUp}>
+                {t("landing.tryFree", "Try ReliefRead free")}<ArrowRight className="ml-1 h-5 w-5" aria-hidden="true" />
+              </Button>
+              <Button variant="ghost" onClick={scrollToDemo} className="h-12 rounded-full border border-border bg-card px-7 text-base font-medium text-foreground hover:bg-accent">
+                <Play className="mr-1 h-4 w-4" aria-hidden="true" />{t("landing.demo", "See it in action")}
+              </Button>
+            </div>
           </div>
         </section>
 

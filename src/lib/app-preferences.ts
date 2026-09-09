@@ -38,7 +38,7 @@ export interface AppPreferences {
 }
 
 export const DEFAULT_APP_PREFERENCES: AppPreferences = {
-  aesthetic: "sage",
+  aesthetic: "cloud",
   decorations: true,
   gentleMessages: true,
   toolbar: ["read", "highlight", "words", "dictate", "riley"],
@@ -68,9 +68,9 @@ export const AESTHETIC_OPTIONS: Array<{
   description: { da: string; en: string };
   swatches: [string, string, string];
 }> = [
-  { value: "strawberry", emoji: "🍓", name: { da: "Pinky", en: "Pinky" }, description: { da: "Blød pink, creme og salvie", en: "Soft pink, cream and sage" }, swatches: ["#fff8f8", "#f7d7df", "#5b7b6b"] },
-  { value: "sage", emoji: "🌿", name: { da: "Sage", en: "Sage" }, description: { da: "Salviegrøn, rolig og naturlig", en: "Sage green, calm and natural" }, swatches: ["#fdfbf7", "#dfeae2", "#5b7b6b"] },
-  { value: "cloud", emoji: "☁️", name: { da: "Cloud", en: "Cloud" }, description: { da: "Lys, blå og enkel", en: "Light, blue and simple" }, swatches: ["#f7fbff", "#dcecf7", "#4f7895"] },
+  { value: "strawberry", emoji: "🍓", name: { da: "Pinky", en: "Pinky" }, description: { da: "Lyserød fra kant til kant", en: "Soft pink from edge to edge" }, swatches: ["#fff6f9", "#f7d7e1", "#343b4a"] },
+  { value: "sage", emoji: "🌿", name: { da: "Wood", en: "Wood" }, description: { da: "Grønne, rolige naturtoner", en: "Calm green nature tones" }, swatches: ["#f4f7ef", "#d7e3cf", "#416048"] },
+  { value: "cloud", emoji: "🌊", name: { da: "Ocean", en: "Ocean" }, description: { da: "Lyseblå og dybe havtoner", en: "Light blue and deep ocean tones" }, swatches: ["#edf8ff", "#cce8f8", "#245078"] },
   { value: "lavender", emoji: "💜", name: { da: "Lavender", en: "Lavender" }, description: { da: "Lavendel og bløde pasteller", en: "Lavender and soft pastels" }, swatches: ["#fdf9ff", "#eadcf3", "#77558b"] },
   { value: "cozy", emoji: "☕", name: { da: "Cozy", en: "Cozy" }, description: { da: "Varm beige og study-look", en: "Warm beige and a study feel" }, swatches: ["#fffaf2", "#eadbc5", "#7a5b43"] },
   { value: "midnight", emoji: "🌙", name: { da: "Midnight", en: "Midnight" }, description: { da: "Mørk, rolig og elegant", en: "Dark, calm and elegant" }, swatches: ["#151827", "#2a3046", "#aab8ef"] },
@@ -128,7 +128,7 @@ function normalize(value: Partial<AppPreferences> | null): AppPreferences {
     readerLineHeight: numberInRange(value?.readerLineHeight, DEFAULT_APP_PREFERENCES.readerLineHeight, 1.4, 2.6),
     readerLetterSpacing: numberInRange(value?.readerLetterSpacing, DEFAULT_APP_PREFERENCES.readerLetterSpacing, 0, 0.12),
     readerWordSpacing: numberInRange(value?.readerWordSpacing, DEFAULT_APP_PREFERENCES.readerWordSpacing, 0, 0.3),
-    readerTextColor: ["#1E293B", "#111827", "#4B3621", "#203B5B"].includes(value?.readerTextColor || "")
+    readerTextColor: ["#1E293B", "#111827", "#4B3621", "#203B5B", "#FFF0AA"].includes(value?.readerTextColor || "")
       ? (value?.readerTextColor as string)
       : DEFAULT_APP_PREFERENCES.readerTextColor,
   };

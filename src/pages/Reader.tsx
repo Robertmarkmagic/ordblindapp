@@ -38,12 +38,22 @@ import { useLanguage } from "@/lib/i18n";
 import { ReaderFocusControls } from "@/components/reader/ReaderFocusControls";
 import { ReadingVersionControls } from "@/components/reader/ReadingVersionControls";
 import { createReadingVersion, type ReadingVersion } from "@/lib/reading-versions";
-import { HIGHLIGHT_COLORS } from "@/lib/app-preferences";
+import { HIGHLIGHT_COLORS, type AestheticChoice } from "@/lib/app-preferences";
 import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { DocumentInsightsSheet } from "@/components/reader/DocumentInsightsSheet";
 import { insightsAsText, type DocumentInsights } from "@/lib/document-insights";
 import { ReaderPersonalisationStudio, ReaderThemeChooser } from "@/components/reader/ReaderPersonalisationStudio";
 import { ReaderWorkspaceSidebar } from "@/components/reader/ReaderWorkspaceSidebar";
+
+const THEME_READING_SURFACES: Record<AestheticChoice, string> = {
+  strawberry: "#FFEEF3",
+  cloud: "#E8F5FF",
+  minimal: "#FFFFFF",
+  sage: "#F0F5EB",
+  midnight: "#243E59",
+  lavender: "#F6EEFA",
+  cozy: "#FAF1E4",
+};
 
 /**
  * Reader — the calm reading sanctuary with the listening experience, now with
@@ -296,7 +306,8 @@ export default function Reader() {
   const font = fontOverride ?? settings.default_font;
   const tint = tintOverride ?? settings.default_background_tint;
   const fontFamily = fontFamilyFor(font);
-  const tintColor = tintColorFor(tint);
+  const tintColor = tintOverride ? tintColorFor(tint) : THEME_READING_SURFACES[preferences.aesthetic];
+  const readerTextColor = preferences.aesthetic === "midnight" ? "#FFF0AA" : preferences.readerTextColor;
 
   // --- Notes / anchoring ---
   const articleRef = useRef<HTMLElement | null>(null);
@@ -419,12 +430,12 @@ export default function Reader() {
 
   return (
     <div className="rr-personal-space">
-      <ReaderThemeChooser value={preferences.aesthetic} onChange={(aesthetic) => setPreferences({ ...preferences, aesthetic })} />
+      <ReaderThemeChooser value={preferences.aesthetic} onChange={(aesthetic) => { setTintOverride(null); setPreferences({ ...preferences, aesthetic }); }} />
       <main className="mx-auto max-w-6xl px-3 pb-40 sm:px-6">
         <section className="rr-reader-shell">
           <div className="rr-reader-windowbar">
             <div className="flex items-center gap-2" aria-hidden="true"><span className="h-3.5 w-3.5 rounded-full bg-pink-300" /><span className="h-3.5 w-3.5 rounded-full bg-amber-300" /><span className="h-3.5 w-3.5 rounded-full bg-emerald-400" /></div>
-            <button type="button" onClick={() => navigate("/settings")} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-blue-800 hover:bg-blue-50">
+            <button type="button" onClick={() => navigate("/settings")} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-foreground hover:bg-accent">
               <UserCircle className="h-6 w-6" aria-hidden="true" />Min profil
             </button>
           </div>
@@ -432,7 +443,7 @@ export default function Reader() {
             <ReaderWorkspaceSidebar onDictionary={openHistory} />
             <div className="rr-reader-main flex-1">
               <div className="rr-reading-toolbar">
-                <button onClick={() => toggle()} className="rr-reading-tool !h-12 !w-12 rounded-full bg-blue-100" aria-label="Læs teksten"><Play className="h-5 w-5 fill-current" /></button>
+                <button onClick={() => toggle()} className="rr-reading-tool !h-12 !w-12 rounded-full bg-accent" aria-label="Læs teksten"><Play className="h-5 w-5 fill-current" /></button>
                 <button className="rr-reading-tool px-3" onClick={() => setSpeed(speed === 1 ? 1.25 : 1)}>{speed.toFixed(1)}x</button>
                 <span className="rr-reading-tool px-3"><Languages className="h-4 w-4" />{lang === "da" ? "Dansk" : "English"}</span>
                 <ReaderAdjust font={font} setFont={setFontOverride} tint={tint} setTint={setTintOverride} bionic={bionic} setBionic={setBionic} />
@@ -467,8 +478,8 @@ export default function Reader() {
               <SoftNotice>{error}</SoftNotice>
             ) : doc ? (
               <article ref={articleRef} onMouseUp={captureSelection} className="rr-fade-up">
-                <button onClick={() => navigate("/dashboard")} className="mb-3 inline-flex min-h-10 items-center gap-2 rounded-lg text-sm font-semibold text-blue-700"><ArrowLeft className="h-4 w-4" />Mine filer</button>
-                <h1 className="font-display text-3xl font-semibold tracking-tight text-blue-800">
+                <button onClick={() => navigate("/dashboard")} className="mb-3 inline-flex min-h-10 items-center gap-2 rounded-lg text-sm font-semibold text-primary"><ArrowLeft className="h-4 w-4" />Mine filer</button>
+                <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
                   {doc.title}
                 </h1>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -514,7 +525,7 @@ export default function Reader() {
                       letterSpacing={preferences.readerLetterSpacing}
                       wordSpacing={preferences.readerWordSpacing}
                       fontWeight={preferences.readerFontWeight}
-                      textColor={preferences.readerTextColor}
+                      textColor={readerTextColor}
                       highlightMode={preferences.highlightMode}
                       focusScope={preferences.focusScope}
                       highlightColor={HIGHLIGHT_COLORS.find((color) => color.value === preferences.highlightColor)?.hex}
@@ -522,7 +533,7 @@ export default function Reader() {
                   ) : (
                     <div
                       className="rounded-3xl border border-border p-8 text-lg italic opacity-70 shadow-paper"
-                      style={{ backgroundColor: tintColor, color: "#1E293B" }}
+                      style={{ backgroundColor: tintColor, color: readerTextColor }}
                     >
                       {t("reader.empty", "This reading is empty.")}
                     </div>
