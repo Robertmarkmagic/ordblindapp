@@ -89,8 +89,8 @@
 .rr-landing-reader-tools { display: flex; min-height: 3.25rem; align-items: center; gap: .4rem; overflow-x: auto; border-bottom: 1px solid rgb(172 204 223 / .4); padding: .45rem .65rem; }
 .rr-landing-reader-tools > * { display: inline-flex; min-height: 2.25rem; min-width: 2.25rem; align-items: center; justify-content: center; gap: .25rem; border: 1px solid rgb(157 194 219 / .45); border-radius: .65rem; background: rgb(255 255 255 / .65); padding: .3rem .55rem; font-size: .62rem; font-weight: 700; }
 .rr-landing-reader-tools svg { width: .9rem; height: .9rem; }
-.rr-landing-note { position: relative; border-radius: .75rem; background: linear-gradient(155deg, #fff1f2, #ffdce3); padding: .8rem; color: #74354c; box-shadow: 0 13px 25px -20px #653044; transform: rotate(-1deg); }
-.rr-landing-note b { display: block; border-bottom: 1px solid rgb(116 53 76 / .18); padding-bottom: .35rem; font-family: Lora, serif; }
+.rr-landing-note { position: relative; border-radius: .75rem; background: linear-gradient(155deg, #fff1f2, #ffdce3); padding: .8rem; color: #304a38; box-shadow: 0 13px 25px -20px #3f5f4e; transform: rotate(-1deg); }
+.rr-landing-note b { display: block; border-bottom: 1px solid rgb(48 74 56 / .18); padding-bottom: .35rem; font-family: Lora, serif; }
 .rr-landing-note p { margin-top: .45rem; font-size: .64rem; font-weight: 700; }
 .rr-landing-note > span { position: absolute; bottom: .4rem; right: .65rem; font-size: 1.25rem; }
 .rr-landing-control-card { border: 1px solid rgb(255 255 255 / .68); border-radius: .8rem; background: rgb(255 252 249 / .9); padding: .75rem; color: #17345e; box-shadow: 0 10px 25px -22px #4f382a; }
@@ -329,15 +329,15 @@
     --background: 350 60% 98%;
     --card: 348 55% 99%;
     --popover: 348 55% 99%;
-    --primary: 343 43% 43%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 150 15% 36%;
+    --primary-foreground: 40 43% 98%;
     --accent: 348 54% 92%;
-    --accent-foreground: 343 46% 25%;
+    --accent-foreground: 150 25% 24%;
     --border: 346 32% 88%;
     --input: 346 30% 84%;
-    --ring: 343 43% 43%;
-    --sage: 343 43% 43%;
-    --sage-foreground: 0 0% 100%;
+    --ring: 150 15% 36%;
+    --sage: 150 15% 36%;
+    --sage-foreground: 40 43% 98%;
     --gradient-calm: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(348 65% 91% / 0.75), transparent 70%);
   }
 

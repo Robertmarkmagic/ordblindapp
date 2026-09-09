@@ -38,7 +38,7 @@ export interface AppPreferences {
 }
 
 export const DEFAULT_APP_PREFERENCES: AppPreferences = {
-  aesthetic: "strawberry",
+  aesthetic: "sage",
   decorations: true,
   gentleMessages: true,
   toolbar: ["read", "highlight", "words", "dictate", "riley"],
@@ -68,7 +68,7 @@ export const AESTHETIC_OPTIONS: Array<{
   description: { da: string; en: string };
   swatches: [string, string, string];
 }> = [
-  { value: "strawberry", emoji: "🍓", name: { da: "Strawberry", en: "Strawberry" }, description: { da: "Pink, creme og bløde detaljer", en: "Pink, cream and soft details" }, swatches: ["#fff8f8", "#f7d7df", "#b54f69"] },
+  { value: "strawberry", emoji: "🍓", name: { da: "Pinky", en: "Pinky" }, description: { da: "Blød pink, creme og salvie", en: "Soft pink, cream and sage" }, swatches: ["#fff8f8", "#f7d7df", "#5b7b6b"] },
   { value: "sage", emoji: "🌿", name: { da: "Sage", en: "Sage" }, description: { da: "Salviegrøn, rolig og naturlig", en: "Sage green, calm and natural" }, swatches: ["#fdfbf7", "#dfeae2", "#5b7b6b"] },
   { value: "cloud", emoji: "☁️", name: { da: "Cloud", en: "Cloud" }, description: { da: "Lys, blå og enkel", en: "Light, blue and simple" }, swatches: ["#f7fbff", "#dcecf7", "#4f7895"] },
   { value: "lavender", emoji: "💜", name: { da: "Lavender", en: "Lavender" }, description: { da: "Lavendel og bløde pasteller", en: "Lavender and soft pastels" }, swatches: ["#fdf9ff", "#eadcf3", "#77558b"] },

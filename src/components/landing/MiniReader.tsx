@@ -40,7 +40,7 @@ const NAV_ITEMS = [
 ];
 
 const THEME_SURFACES = {
-  pinky: { shell: "#fff0f4", panel: "#ffe0e9", ink: "#653044" },
+  pinky: { shell: "#fff0f4", panel: "#ffe0e9", ink: "#304a38" },
   ocean: { shell: "#eff9ff", panel: "#d9effc", ink: "#173b70" },
   minimal: { shell: "#ffffff", panel: "#f2f3f5", ink: "#25334a" },
   wood: { shell: "#f3f6ed", panel: "#dfe9d8", ink: "#304a38" },
