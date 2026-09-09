@@ -75,11 +75,11 @@ export default function Index() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[640px] bg-gradient-calm" aria-hidden="true" />
+    <div className="rr-landing-theme relative min-h-screen overflow-x-hidden bg-background">
+      <div className="rr-landing-paper-pattern pointer-events-none absolute inset-x-0 top-0 h-[940px]" aria-hidden="true" />
 
       {/* Top bar */}
-      <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
+      <header className="rr-landing-header relative z-10 mx-auto mt-3 flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
         <div className="flex items-center gap-3">
           <span
             data-app-icon
@@ -109,19 +109,19 @@ export default function Index() {
 
       <main className="relative z-10">
         {/* ---------- HERO ---------- */}
-        <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 pb-16 pt-6 sm:px-8 lg:grid-cols-2 lg:gap-14 lg:pt-12">
-          <div className="rr-settle">
+        <section className="mx-auto max-w-6xl px-5 pb-16 pt-10 sm:px-8 lg:pt-14">
+          <div className="rr-settle mx-auto max-w-3xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-1.5 text-xs font-medium text-muted-foreground shadow-paper">
               <Heart className="h-3.5 w-3.5 text-sage" aria-hidden="true" />
               {t("landing.badge", "Made for dyslexic & borderline readers")}
             </span>
-            <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.4rem]">
+            <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
               {t("landing.title", "Reading shouldn't feel like a battle.")}
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
               {t("landing.intro", "ReliefRead is the readability-first AI workspace for dyslexic and borderline readers. Natural human-like audio, fonts and spacing tuned for your eyes, and a writing coach that never uses red ink.")}
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Button
                 className="h-12 rounded-full bg-sage px-7 text-base font-semibold text-sage-foreground shadow-paper hover:bg-sage/90"
                 onClick={goSignUp}
@@ -143,8 +143,11 @@ export default function Index() {
             </p>
           </div>
 
-          {/* Live, interactive mini reader */}
-          <div className="rr-fade-up">
+          <div className="rr-fade-up mx-auto mt-10 max-w-5xl">
+            <div className="mb-4 text-center">
+              <p className="font-display text-2xl font-semibold text-foreground">{language === "da" ? "Samme funktioner. Din stil." : "The same features. Your style."}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{language === "da" ? "Prøv temaerne og indstillingerne direkte her." : "Try the themes and reading settings right here."}</p>
+            </div>
             <MiniReader />
           </div>
         </section>

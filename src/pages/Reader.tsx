@@ -423,7 +423,7 @@ export default function Reader() {
       <main className="mx-auto max-w-6xl px-3 pb-40 sm:px-6">
         <section className="rr-reader-shell">
           <div className="rr-reader-windowbar">
-            <div className="flex items-center gap-2" aria-hidden="true"><span className="h-3.5 w-3.5 rounded-full bg-[#ff6a5f]" /><span className="h-3.5 w-3.5 rounded-full bg-[#ffbd44]" /><span className="h-3.5 w-3.5 rounded-full bg-[#4ac06a]" /></div>
+            <div className="flex items-center gap-2" aria-hidden="true"><span className="h-3.5 w-3.5 rounded-full bg-pink-300" /><span className="h-3.5 w-3.5 rounded-full bg-amber-300" /><span className="h-3.5 w-3.5 rounded-full bg-emerald-400" /></div>
             <button type="button" onClick={() => navigate("/settings")} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-blue-800 hover:bg-blue-50">
               <UserCircle className="h-6 w-6" aria-hidden="true" />Min profil
             </button>
