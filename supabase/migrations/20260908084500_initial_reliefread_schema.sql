@@ -16,7 +16,7 @@ create table public.profiles (
 
 create table public.subscriptions (
   user_id uuid primary key references auth.users(id) on delete cascade,
-  plan text not null default 'tester' check (plan in ('free', 'tester', 'premium', 'team')),
+  plan text not null default 'free' check (plan in ('free', 'tester', 'premium', 'team')),
   status text not null default 'active' check (status in ('trialing', 'active', 'past_due', 'canceled', 'incomplete')),
   trial_ends_at timestamptz,
   stripe_customer_id text unique,
@@ -183,7 +183,7 @@ begin
   on conflict (user_id) do nothing;
 
   insert into public.subscriptions (user_id, plan, status)
-  values (new.id, 'tester', 'active')
+  values (new.id, 'free', 'active')
   on conflict (user_id) do nothing;
 
   insert into public.user_settings (user_id)
@@ -354,4 +354,3 @@ grant select, insert, update on public.usage_counters to authenticated;
 
 revoke all on public.trial_signups from anon, authenticated;
 revoke all on all tables in schema private from public, anon, authenticated;
-
