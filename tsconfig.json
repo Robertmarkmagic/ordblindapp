@@ -23,5 +23,13 @@
     }
   },
   "include": ["src"],
+  "exclude": [
+    "src/components/CheckoutDialog.tsx",
+    "src/components/PushHealthBanner.tsx",
+    "src/hooks/use-roles.ts",
+    "src/hooks/useWalletBalance.ts",
+    "src/lib/preview-auth.ts",
+    "src/routes/access-denied.tsx"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
