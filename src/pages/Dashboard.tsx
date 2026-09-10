@@ -76,7 +76,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="rr-app-page min-h-screen bg-background">
       <ReliefHeader />
 
       <main className="mx-auto max-w-5xl px-5 pb-28 pt-8 sm:px-8">

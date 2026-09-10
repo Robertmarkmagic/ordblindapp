@@ -263,7 +263,7 @@ export default function WritingStudio() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="rr-app-page min-h-screen bg-background">
       <ReliefHeader />
       <main className="mx-auto max-w-7xl px-4 pb-32 pt-6 sm:px-7 lg:px-9">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { MiniReader } from "@/components/landing/MiniReader";
 import { PersonalisationShowcase } from "@/components/landing/PersonalisationShowcase";
 import { FeatureDemos } from "@/components/landing/FeatureDemos";
+import { FunctionPlayground } from "@/components/landing/FunctionPlayground";
 import { PRICING } from "@/lib/billing";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/lib/i18n";
@@ -108,8 +109,13 @@ export default function Index() {
       </header>
 
       <main className="relative z-10">
+        {/* ---------- INTERACTIVE FUNCTIONS ---------- */}
+        <section id="demo" className="mx-auto max-w-6xl scroll-mt-8 px-3 pb-12 pt-8 sm:px-8 lg:pt-10">
+          <FunctionPlayground />
+        </section>
+
         {/* ---------- PERSONALISATION SETUP ---------- */}
-        <section className="mx-auto max-w-6xl px-3 pb-16 pt-8 sm:px-8 lg:pt-10">
+        <section className="mx-auto max-w-6xl px-3 pb-16 pt-2 sm:px-8">
           <PersonalisationShowcase />
         </section>
 
@@ -185,7 +191,7 @@ export default function Index() {
         </section>
 
         {/* ---------- FEATURE TRIO (live demos) ---------- */}
-        <section id="demo" className="mx-auto max-w-6xl scroll-mt-8 px-5 py-16 sm:px-8">
+        <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
           <div className="mx-auto mb-10 max-w-2xl text-center">
             <h2 className="font-display text-3xl font-semibold tracking-tight text-foreground">
               {t("landing.listenSeeWrite", "Listen. See. Write.")}

@@ -157,7 +157,7 @@ export default function NotesPage() {
     : language;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="rr-app-page min-h-screen bg-background">
       <ReliefHeader />
       <main className="mx-auto max-w-6xl px-5 pb-32 pt-8 sm:px-8">
         <section className="rr-fade-up relative overflow-hidden rounded-[2rem] border border-border bg-card px-6 py-7 shadow-paper sm:px-8 sm:py-9">

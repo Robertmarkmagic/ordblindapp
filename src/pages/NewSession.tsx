@@ -74,7 +74,7 @@ export default function NewSession() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="rr-app-page min-h-screen bg-background">
       <ReliefHeader />
 
       <main className="mx-auto max-w-2xl px-5 pb-24 pt-8 sm:px-8">

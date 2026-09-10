@@ -106,7 +106,7 @@ export default function SettingsPage() {
   const showSkeleton = authLoading || (loading && !!user);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="rr-app-page min-h-screen bg-background">
       <ReliefHeader />
 
       <main className="mx-auto max-w-2xl px-5 pb-32 pt-8 sm:px-8">
