@@ -125,9 +125,9 @@
 .rr-function-suggestion svg { width: 1.1rem; flex: none; color: #198d6d; }
 .rr-function-checks { display: grid; gap: .35rem; }
 .rr-function-checks button { display: flex; min-height: 2rem; align-items: center; gap: .5rem; font-size: .72rem; font-weight: 700; }
-.rr-function-checks button > span { display: grid; width: 1.55rem; height: 1rem; place-items: center; border-radius: 999px; background: #cad9e5; transition: background-color .18s ease; }
+.rr-function-checks button > span { display: inline-flex; width: 1.55rem; height: 1rem; flex: 0 0 1.55rem; align-items: center; justify-content: center; line-height: 0; border-radius: 999px; background: #cad9e5; transition: background-color .18s ease; }
 .rr-function-checks button[aria-pressed="true"] > span { background: #2bc991; }
-.rr-function-checks button svg { width: .72rem; color: #fff; }
+.rr-function-checks button > span svg { display: block; width: .72rem; height: .72rem; stroke-width: 2.6; color: #fff; }
 .rr-function-voice { position: relative; text-align: center; }
 .rr-function-voice .rr-function-card-title { justify-content: center; }
 .rr-function-mic { display: grid; width: 5rem; height: 5rem; place-items: center; margin: .65rem auto; border: .65rem solid #f8d7e5; border-radius: 999px; background: linear-gradient(145deg, #ed8fb3, #ce6896); color: #fff; box-shadow: 0 0 0 .5rem rgb(246 209 225 / .52); }
