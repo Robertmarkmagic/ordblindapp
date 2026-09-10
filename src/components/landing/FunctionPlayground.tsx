@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import {
   BookOpen,
   Check,
+  ChevronRight,
   Highlighter,
   Mic,
   Minus,
@@ -12,7 +13,9 @@ import {
   Sparkles,
   Type,
   Volume2,
+  X,
 } from "lucide-react";
+import { getWritingSuggestions, insertWritingSuggestion } from "@/lib/writing-tools";
 
 const CHECKS = ["Stavning", "Grammatik", "Komma", "Tegnsætning", "Ordforslag"];
 const SAMPLE_WORDS = ["I", "dette", "afsnit", "kan", "du", "prøve", "hvordan", "ReliefRead", "gør", "teksten", "roligere", "at", "læse."];
@@ -24,6 +27,18 @@ const TOOL_BUTTONS = [
   { id: "font", label: "Tekst", icon: Type },
   { id: "words", label: "Ordbog", icon: BookOpen },
 ] as const;
+
+const PHONETIC_SUGGESTIONS: Record<string, string[]> = {
+  grene: ["gerne", "grene", "grenene", "gerning"],
+  somer: ["sommer", "sommeren", "sommerferie", "sommerhus", "sommerdag"],
+  tekst: ["teksten", "tekst", "tekstforslag", "tekstfelt", "tekster"],
+  tydelig: ["tydelig", "tydeligt", "tydeligere", "tydelighed"],
+};
+
+function wordAtCaret(text: string, caret: number) {
+  const before = text.slice(0, caret);
+  return before.match(/([\p{L}æøåÆØÅ]+)$/u)?.[1]?.toLocaleLowerCase() || "";
+}
 
 function speak(text: string, onEnd?: () => void) {
   if (!("speechSynthesis" in window) || !text.trim()) return false;
@@ -46,11 +61,62 @@ export function FunctionPlayground() {
   const [activeWord, setActiveWord] = useState<number | null>(null);
   const [activeTool, setActiveTool] = useState("read");
   const [lookup, setLookup] = useState("tilgængelig");
+  const [caret, setCaret] = useState(draft.length);
+  const [suggestionOpen, setSuggestionOpen] = useState(true);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const suggestion = useMemo(
     () => draft.replace(/\bgrene\b/gi, "gerne").replace(/\bvil gerne skrive\b/i, "vil gerne skrive"),
     [draft],
   );
+
+  const wordSuggestions = useMemo(() => {
+    const prefix = wordAtCaret(draft, caret);
+    const direct = PHONETIC_SUGGESTIONS[prefix];
+    const generated = getWritingSuggestions(draft, caret, "da").words;
+    const fallback = prefix.length >= 2
+      ? Object.entries(PHONETIC_SUGGESTIONS)
+          .filter(([key]) => key.startsWith(prefix) || prefix.startsWith(key.slice(0, 3)))
+          .flatMap(([, words]) => words)
+      : [];
+    const corrected = suggestion !== draft ? [suggestion.match(/\bgerne\b/i)?.[0] || "gerne"] : [];
+    return Array.from(new Set([...(direct || []), ...generated, ...fallback, ...corrected])).slice(0, 7);
+  }, [caret, draft, suggestion]);
+
+  const updateCaret = () => {
+    const next = textareaRef.current?.selectionStart ?? draft.length;
+    setCaret(next);
+    setSelectedSuggestion(0);
+    setSuggestionOpen(true);
+  };
+
+  const applyWordSuggestion = (word: string) => {
+    const result = insertWritingSuggestion(draft, caret, word, true);
+    setDraft(result.text.trimEnd());
+    setCaret(result.caret);
+    setSuggestionOpen(false);
+    window.setTimeout(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(result.caret, result.caret);
+    }, 0);
+  };
+
+  const handleSuggestionKeys = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!suggestionOpen || wordSuggestions.length === 0) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setSelectedSuggestion((current) => (current + 1) % wordSuggestions.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setSelectedSuggestion((current) => (current - 1 + wordSuggestions.length) % wordSuggestions.length);
+    } else if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      applyWordSuggestion(wordSuggestions[selectedSuggestion]);
+    } else if (event.key === "Escape") {
+      setSuggestionOpen(false);
+    }
+  };
 
   const toggleCheck = (name: string) => {
     setChecks((current) => {
@@ -100,10 +166,49 @@ export function FunctionPlayground() {
         <article className="rr-function-card rr-function-writing">
           <div className="rr-function-card-title"><Sparkles aria-hidden="true" /><h3>Skrivehjælp</h3></div>
           <label htmlFor="function-draft">Skriv en sætning</label>
-          <textarea id="function-draft" value={draft} onChange={(event) => setDraft(event.target.value)} />
+          <div className="rr-function-writing-field">
+            <textarea
+              ref={textareaRef}
+              id="function-draft"
+              value={draft}
+              onChange={(event) => {
+                setDraft(event.target.value);
+                setCaret(event.target.selectionStart);
+                setSelectedSuggestion(0);
+                setSuggestionOpen(true);
+              }}
+              onClick={updateCaret}
+              onKeyDown={handleSuggestionKeys}
+              onFocus={updateCaret}
+              aria-controls="rr-writing-suggestions"
+              aria-expanded={suggestionOpen && wordSuggestions.length > 0}
+              aria-autocomplete="list"
+            />
+            {suggestionOpen && wordSuggestions.length > 0 && (
+              <div id="rr-writing-suggestions" className="rr-writing-suggestions" role="listbox" aria-label="Skriveforslag">
+                <div className="rr-writing-suggestions-head">
+                  <span><Sparkles aria-hidden="true" />Skriveforslag</span>
+                  <button type="button" onClick={() => setSuggestionOpen(false)} aria-label="Luk skriveforslag"><X /></button>
+                </div>
+                <div className="rr-writing-suggestion-list">
+                  {wordSuggestions.map((word, index) => (
+                    <div key={word} className={selectedSuggestion === index ? "is-selected" : ""} role="option" aria-selected={selectedSuggestion === index}>
+                      <button type="button" className="rr-writing-suggestion-word" onMouseDown={(event) => event.preventDefault()} onClick={() => applyWordSuggestion(word)}>
+                        <span>{word}</span><ChevronRight aria-hidden="true" />
+                      </button>
+                      <button type="button" className="rr-writing-suggestion-speak" onMouseDown={(event) => event.preventDefault()} onClick={() => speak(word)} aria-label={`Hør ${word}`}>
+                        <Volume2 aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p>Brug piletasterne og Enter, eller vælg et ord.</p>
+              </div>
+            )}
+          </div>
           {suggestion !== draft && (
             <button type="button" className="rr-function-suggestion" onClick={() => setDraft(suggestion)}>
-              <span><b>Forslag:</b> {suggestion}</span><Check aria-hidden="true" />
+              <span><b>Ret hele sætningen:</b> {suggestion}</span><Check aria-hidden="true" />
             </button>
           )}
         </article>
