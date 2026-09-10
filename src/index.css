@@ -149,12 +149,21 @@
 .rr-function-stepper span b { font-size: 1.2rem; }
 .rr-function-reading label { margin-top: .55rem; }
 .rr-function-reading input[type="range"] { width: 100%; accent-color: #247dd0; }
-.rr-function-dictionary > div:not(.rr-function-card-title) { position: relative; }
-.rr-function-dictionary input { width: 100%; border: 1px solid #c9dceb; border-radius: .7rem; background: #f8fcff; padding: .65rem 2.2rem .65rem .7rem; font-size: .8rem; outline: none; }
-.rr-function-dictionary > div > svg { position: absolute; right: .7rem; top: 50%; width: 1rem; transform: translateY(-50%); color: #247dd0; }
-.rr-function-dictionary p { margin-top: .65rem; font-size: .68rem; line-height: 1.5; }
+.rr-dictionary-search > div { position: relative; }
+.rr-function-dictionary input { width: 100%; border: 1px solid #c9dceb; border-radius: .7rem; background: #f8fcff; padding: .7rem 3rem .7rem .75rem; font-size: .9rem; outline: none; }
+.rr-function-dictionary input:focus { border-color: #2988d8; box-shadow: 0 0 0 3px rgb(41 136 216 / .16); }
+.rr-dictionary-search button { position: absolute; right: .2rem; top: 50%; display: grid; width: 2.5rem; height: 2.5rem; place-items: center; transform: translateY(-50%); border-radius: .6rem; color: #247dd0; }
+.rr-dictionary-search button:hover { background: #dcefff; }
+.rr-dictionary-search button svg { width: 1.1rem; }
+.rr-dictionary-result { display: grid; gap: .45rem; margin-top: .7rem; }
+.rr-dictionary-result > div { border-radius: .65rem; background: #edf7ff; padding: .55rem .65rem; text-align: left; }
+.rr-dictionary-result dt { color: #2470b6; font-size: .72rem; font-weight: 800; text-transform: uppercase; }
+.rr-dictionary-result dd { margin-top: .12rem; font-size: .82rem; line-height: 1.45; }
+.rr-dictionary-miss { display: grid; gap: .2rem; margin-top: .7rem; border-radius: .7rem; background: #edf7ff; padding: .7rem; text-align: left; font-size: .78rem; line-height: 1.45; }
+.rr-dictionary-miss span { color: #53718f; }
 .rr-function-dictionary > button { display: inline-flex; min-height: 2.4rem; align-items: center; gap: .35rem; margin-top: .65rem; border-radius: 999px; background: #dcefff; padding: .35rem .7rem; font-size: .68rem; font-weight: 700; }
 .rr-function-dictionary > button svg { width: .9rem; }
+.rr-function-dictionary > button:disabled { cursor: not-allowed; opacity: .5; }
 .rr-function-toolbar { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; margin: 1rem auto 0; max-width: 49rem; border-radius: 1.1rem; background: #fff9f4; padding: .65rem; box-shadow: 0 16px 35px -28px rgb(20 55 90 / .7); }
 .rr-function-toolbar button { display: flex; min-height: 3.5rem; flex-direction: column; align-items: center; justify-content: center; gap: .2rem; border: 2px solid transparent; border-radius: .75rem; color: #17345e; font-size: .62rem; font-weight: 700; }
 .rr-function-toolbar button svg { width: 1.15rem; }

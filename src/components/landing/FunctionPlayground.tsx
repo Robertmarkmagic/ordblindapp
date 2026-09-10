@@ -35,6 +35,47 @@ const PHONETIC_SUGGESTIONS: Record<string, string[]> = {
   tydelig: ["tydelig", "tydeligt", "tydeligere", "tydelighed"],
 };
 
+const DICTIONARY_ENTRIES = {
+  "tilgængelig": {
+    word: "tilgængelig",
+    meaning: "Noget, der er nemt at komme til, bruge eller forstå.",
+    translation: "accessible",
+    inflection: "tilgængelig, tilgængeligt, tilgængelige",
+  },
+  "forsvar": {
+    word: "forsvar",
+    meaning: "Beskyttelse mod et angreb, en fare eller kritik.",
+    translation: "defence",
+    inflection: "et forsvar, forsvaret, flere forsvar",
+  },
+  "sommer": {
+    word: "sommer",
+    meaning: "Årstiden mellem forår og efterår.",
+    translation: "summer",
+    inflection: "en sommer, sommeren, somre, somrene",
+  },
+  "tandlægen": {
+    word: "tandlægen",
+    meaning: "Den tandlæge, som undersøger og behandler tænder.",
+    translation: "the dentist",
+    inflection: "en tandlæge, tandlægen, tandlæger, tandlægerne",
+  },
+  "oversættelse": {
+    word: "oversættelse",
+    meaning: "En tekst eller tale, der er gjort om til et andet sprog.",
+    translation: "translation",
+    inflection: "en oversættelse, oversættelsen, oversættelser, oversættelserne",
+  },
+} as const;
+
+const DICTIONARY_ALIASES: Record<string, keyof typeof DICTIONARY_ENTRIES> = {
+  "tanlæen": "tandlægen",
+  "tandlegen": "tandlægen",
+  "åvessættelse": "oversættelse",
+  "oversettelse": "oversættelse",
+  "somer": "sommer",
+};
+
 function wordAtCaret(text: string, caret: number) {
   const before = text.slice(0, caret);
   return before.match(/([\p{L}æøåÆØÅ]+)$/u)?.[1]?.toLocaleLowerCase() || "";
@@ -60,6 +101,8 @@ export function FunctionPlayground() {
   const [letterSpacing, setLetterSpacing] = useState(0.02);
   const [activeTool, setActiveTool] = useState("read");
   const [lookup, setLookup] = useState("tilgængelig");
+  const [dictionaryKey, setDictionaryKey] = useState<keyof typeof DICTIONARY_ENTRIES>("tilgængelig");
+  const [dictionaryMiss, setDictionaryMiss] = useState(false);
   const [caret, setCaret] = useState(draft.length);
   const [suggestionOpen, setSuggestionOpen] = useState(true);
   const [selectedSuggestion, setSelectedSuggestion] = useState(0);
@@ -68,6 +111,7 @@ export function FunctionPlayground() {
   const [voiceReading, setVoiceReading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const voiceTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const dictionaryEntry = DICTIONARY_ENTRIES[dictionaryKey];
 
   const suggestion = useMemo(
     () => draft.replace(/\bgrene\b/gi, "gerne").replace(/\bvil gerne skrive\b/i, "vil gerne skrive"),
@@ -128,6 +172,19 @@ export function FunctionPlayground() {
       else next.add(name);
       return next;
     });
+  };
+
+  const findDictionaryWord = () => {
+    const normalized = lookup.trim().toLocaleLowerCase("da-DK");
+    const key = (normalized in DICTIONARY_ENTRIES
+      ? normalized
+      : DICTIONARY_ALIASES[normalized]) as keyof typeof DICTIONARY_ENTRIES | undefined;
+    if (!key) {
+      setDictionaryMiss(true);
+      return;
+    }
+    setDictionaryKey(key);
+    setDictionaryMiss(false);
   };
 
   const readVoiceText = () => {
@@ -251,11 +308,28 @@ export function FunctionPlayground() {
         </article>
 
         <article className="rr-function-card rr-function-dictionary">
-          <div className="rr-function-card-title"><BookOpen aria-hidden="true" /><h3>Personlig ordbog</h3></div>
-          <label htmlFor="function-lookup">Søg eller tilføj et ord</label>
-          <div><input id="function-lookup" value={lookup} onChange={(event) => setLookup(event.target.value)} /><Search aria-hidden="true" /></div>
-          <p><b>{lookup || "Dit ord"}</b><br />Et ord, du selv kan gemme og få læst højt.</p>
-          <button type="button" onClick={() => speak(lookup)}><Volume2 aria-hidden="true" /> Hør ordet</button>
+          <div className="rr-function-card-title"><BookOpen aria-hidden="true" /><h3>Hvad kan en ordbog hjælpe med?</h3></div>
+          <form className="rr-dictionary-search" onSubmit={(event) => { event.preventDefault(); findDictionaryWord(); }}>
+            <label htmlFor="function-lookup">Skriv et ord</label>
+            <div>
+              <input id="function-lookup" value={lookup} onChange={(event) => setLookup(event.target.value)} spellCheck="false" />
+              <button type="submit" aria-label="Slå ordet op"><Search aria-hidden="true" /></button>
+            </div>
+          </form>
+          {dictionaryMiss ? (
+            <div className="rr-dictionary-miss" role="status">
+              <b>Ordet er ikke i prøveordbogen endnu.</b>
+              <span>Prøv: tilgængelig, forsvar, sommer, tanlæen eller åvessættelse.</span>
+            </div>
+          ) : (
+            <dl className="rr-dictionary-result" aria-live="polite">
+              <div><dt>Betydning</dt><dd>{dictionaryEntry.meaning}</dd></div>
+              <div><dt>Stavning</dt><dd>{dictionaryEntry.word}</dd></div>
+              <div><dt>Engelsk</dt><dd>{dictionaryEntry.translation}</dd></div>
+              <div><dt>Bøjning</dt><dd>{dictionaryEntry.inflection}</dd></div>
+            </dl>
+          )}
+          <button type="button" disabled={dictionaryMiss} onClick={() => speak(dictionaryEntry.word)}><Volume2 aria-hidden="true" /> Hør udtalen</button>
         </article>
       </div>
 
