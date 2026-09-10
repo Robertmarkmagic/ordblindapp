@@ -130,7 +130,11 @@
 .rr-function-checks button > span svg { display: block; width: .72rem; height: .72rem; stroke-width: 2.6; color: #fff; }
 .rr-function-voice { position: relative; text-align: center; }
 .rr-function-voice .rr-function-card-title { justify-content: center; }
-.rr-function-mic { display: grid; width: 5rem; height: 5rem; place-items: center; margin: .65rem auto; border: .65rem solid #f8d7e5; border-radius: 999px; background: linear-gradient(145deg, #ed8fb3, #ce6896); color: #fff; box-shadow: 0 0 0 .5rem rgb(246 209 225 / .52); }
+.rr-function-voice > label { text-align: left; }
+.rr-function-voice > textarea { min-height: 4.5rem; width: 100%; resize: vertical; border: 1px solid #c9dceb; border-radius: .75rem; background: #f8fcff; padding: .65rem .7rem; color: #17345e; font-size: .78rem; line-height: 1.5; outline: none; }
+.rr-function-voice > textarea:focus { border-color: #2988d8; box-shadow: 0 0 0 3px rgb(41 136 216 / .16); }
+.rr-function-voice > textarea::selection { background: #fff084; color: #17345e; }
+.rr-function-mic { display: grid; width: 4.25rem; height: 4.25rem; place-items: center; margin: .8rem auto; border: .55rem solid #f8d7e5; border-radius: 999px; background: linear-gradient(145deg, #ed8fb3, #ce6896); color: #fff; box-shadow: 0 0 0 .4rem rgb(246 209 225 / .52); }
 .rr-function-mic svg { width: 1.45rem; }
 .rr-function-voice p { font-size: .68rem; font-weight: 700; }
 .rr-function-wave { display: flex; height: 1.6rem; align-items: center; justify-content: center; gap: .18rem; margin-top: .5rem; }

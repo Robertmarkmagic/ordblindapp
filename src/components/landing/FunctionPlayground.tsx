@@ -58,13 +58,16 @@ export function FunctionPlayground() {
   const [fontSize, setFontSize] = useState(19);
   const [lineHeight, setLineHeight] = useState(1.8);
   const [letterSpacing, setLetterSpacing] = useState(0.02);
-  const [activeWord, setActiveWord] = useState<number | null>(null);
   const [activeTool, setActiveTool] = useState("read");
   const [lookup, setLookup] = useState("tilgængelig");
   const [caret, setCaret] = useState(draft.length);
   const [suggestionOpen, setSuggestionOpen] = useState(true);
   const [selectedSuggestion, setSelectedSuggestion] = useState(0);
+  const [voiceText, setVoiceText] = useState("Skriv eller indsæt den tekst, du vil høre læst højt.");
+  const [voiceSelection, setVoiceSelection] = useState(false);
+  const [voiceReading, setVoiceReading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const voiceTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const suggestion = useMemo(
     () => draft.replace(/\bgrene\b/gi, "gerne").replace(/\bvil gerne skrive\b/i, "vil gerne skrive"),
@@ -127,31 +130,21 @@ export function FunctionPlayground() {
     });
   };
 
-  const readSample = () => {
+  const readVoiceText = () => {
     if (window.speechSynthesis?.speaking) {
       window.speechSynthesis.cancel();
-      setActiveWord(null);
+      setVoiceReading(false);
       return;
     }
-    let index = 0;
-    setActiveWord(0);
-    const timer = window.setInterval(() => {
-      index += 1;
-      if (index >= SAMPLE_WORDS.length) {
-        window.clearInterval(timer);
-        setActiveWord(null);
-      } else {
-        setActiveWord(index);
-      }
-    }, 420);
-    const started = speak(SAMPLE_WORDS.join(" "), () => {
-      window.clearInterval(timer);
-      setActiveWord(null);
-    });
-    if (!started) {
-      window.clearInterval(timer);
-      setActiveWord(null);
-    }
+    const field = voiceTextareaRef.current;
+    const start = field?.selectionStart ?? 0;
+    const end = field?.selectionEnd ?? 0;
+    const selectedText = start !== end ? voiceText.slice(start, end).trim() : "";
+    const textToRead = selectedText || voiceText.trim();
+    if (!textToRead) return;
+    setVoiceReading(true);
+    const started = speak(textToRead, () => setVoiceReading(false));
+    if (!started) setVoiceReading(false);
   };
 
   return (
@@ -226,10 +219,23 @@ export function FunctionPlayground() {
 
         <article className="rr-function-card rr-function-voice">
           <div className="rr-function-card-title"><Volume2 aria-hidden="true" /><h3>Få teksten læst højt</h3></div>
-          <button type="button" onClick={readSample} className="rr-function-mic" aria-label="Læs prøveteksten højt">
-            {activeWord === null ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+          <label htmlFor="function-voice-text">Skriv eller indsæt tekst</label>
+          <textarea
+            ref={voiceTextareaRef}
+            id="function-voice-text"
+            value={voiceText}
+            onChange={(event) => setVoiceText(event.target.value)}
+            onSelect={(event) => setVoiceSelection(event.currentTarget.selectionStart !== event.currentTarget.selectionEnd)}
+          />
+          <button
+            type="button"
+            onClick={readVoiceText}
+            className="rr-function-mic"
+            aria-label={voiceReading ? "Stop oplæsning" : voiceSelection ? "Læs den markerede tekst højt" : "Læs hele teksten højt"}
+          >
+            {voiceReading ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
           </button>
-          <p>Tryk og hør teksten med roligt tempo.</p>
+          <p>{voiceSelection ? "Tryk for at læse din markering op." : "Marker en del, eller læs hele teksten op."}</p>
           <div className="rr-function-wave" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
         </article>
 
@@ -265,7 +271,7 @@ export function FunctionPlayground() {
         <span className="rr-function-paper-label">Prøvetekst</span>
         <p>
           {SAMPLE_WORDS.map((word, index) => (
-            <span key={`${word}-${index}`} className={activeWord === index ? "is-reading" : ""}>{word} </span>
+            <span key={`${word}-${index}`}>{word} </span>
           ))}
         </p>
         <small>Valgt værktøj: <b>{TOOL_BUTTONS.find((tool) => tool.id === activeTool)?.label}</b></small>
