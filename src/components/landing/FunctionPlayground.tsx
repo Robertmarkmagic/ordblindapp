@@ -108,7 +108,7 @@ export function FunctionPlayground() {
           )}
         </article>
 
-        <article className="rr-function-card">
+        <article className="rr-function-card rr-function-check-card">
           <div className="rr-function-card-title"><Check aria-hidden="true" /><h3>Vælg din hjælp</h3></div>
           <div className="rr-function-checks">
             {CHECKS.map((name) => (

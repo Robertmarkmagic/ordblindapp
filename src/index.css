@@ -145,9 +145,11 @@
 .rr-function-paper small { display: block; margin-top: .7rem; color: #53718f; font-family: Lexend, sans-serif; font-size: .65rem; letter-spacing: normal; }
 
 @media (min-width: 640px) {
-  .rr-function-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .rr-function-card { grid-column: span 2; }
-  .rr-function-writing, .rr-function-reading { grid-column: span 3; }
+  .rr-function-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .rr-function-writing { grid-column: span 5; }
+  .rr-function-check-card { grid-column: span 3; }
+  .rr-function-voice { grid-column: span 4; }
+  .rr-function-reading, .rr-function-dictionary { grid-column: span 6; }
   .rr-function-toolbar { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 
