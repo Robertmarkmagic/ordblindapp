@@ -288,17 +288,11 @@
 .rr-setup-highlights { display: grid; grid-template-columns: repeat(3, minmax(0, 8rem)); justify-content: center; gap: 1rem; }
 .rr-setup-highlights button { height: 2.5rem; border: 3px solid transparent; border-radius: .2rem; box-shadow: 0 10px 16px -14px rgb(20 50 80 / .65); transform: skew(-8deg) rotate(-1deg); }
 .rr-setup-highlights button[aria-pressed="true"] { border-color: #fff8f0; outline: 2px solid #5d214d; outline-offset: 2px; }
-.rr-setup-accessibility { position: relative; z-index: 1; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .6rem; margin-top: clamp(2rem, 5vw, 3.5rem); border-radius: 999px; background: var(--rr-setup-surface); padding: .8rem 1.2rem; color: var(--rr-setup-ink); transition: background-color .25s ease, color .25s ease; }
-.rr-setup-accessibility > span { font-size: 1.45rem; }
-.rr-setup-accessibility strong { font-size: .72rem; }
-.rr-setup-accessibility p { display: none; font-size: .68rem; }
 
 @media (min-width: 640px) {
   .rr-setup-tool-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
   .rr-setup-color-grid, .rr-setup-notes-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .rr-setup-reading-example { grid-template-columns: minmax(0, 1.8fr) minmax(12rem, .75fr); align-items: center; }
-  .rr-setup-accessibility { grid-template-columns: auto auto 1fr auto; }
-  .rr-setup-accessibility p { display: block; }
 }
 
 @media (min-width: 1024px) {

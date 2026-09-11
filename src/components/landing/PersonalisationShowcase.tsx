@@ -120,12 +120,6 @@ export function PersonalisationShowcase() {
         </div>
       </section>
 
-      <footer className="rr-setup-accessibility">
-        <span aria-hidden="true">♡</span>
-        <strong>Tilgængelighed kommer altid først.</strong>
-        <p>Uanset hvilket udtryk du vælger, er læsbarhed, kontrast og enkel betjening en del af fundamentet.</p>
-        <span aria-hidden="true">♡</span>
-      </footer>
     </div>
   );
 }
