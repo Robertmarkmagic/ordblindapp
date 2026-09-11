@@ -179,7 +179,7 @@
   .rr-function-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
   .rr-function-writing { grid-column: 1 / -1; }
   .rr-function-check-card, .rr-function-voice { grid-column: span 6; }
-  .rr-function-reading, .rr-function-dictionary { grid-column: span 6; }
+  .rr-function-reading, .rr-function-dictionary { grid-column: 1 / -1; }
   .rr-function-toolbar { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 

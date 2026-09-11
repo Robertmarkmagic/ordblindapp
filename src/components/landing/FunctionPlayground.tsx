@@ -296,17 +296,6 @@ export function FunctionPlayground() {
           <div className="rr-function-wave" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
         </article>
 
-        <article className="rr-function-card rr-function-reading">
-          <div className="rr-function-card-title"><Type aria-hidden="true" /><h3>Tekststørrelse og afstand</h3></div>
-          <div className="rr-function-stepper">
-            <button type="button" onClick={() => setFontSize((value) => Math.max(16, value - 1))} aria-label="Gør teksten mindre"><Minus /></button>
-            <span>A <b>{fontSize}</b> A</span>
-            <button type="button" onClick={() => setFontSize((value) => Math.min(30, value + 1))} aria-label="Gør teksten større"><Plus /></button>
-          </div>
-          <label>Linjeafstand <input type="range" min="1.4" max="2.5" step="0.1" value={lineHeight} onChange={(event) => setLineHeight(Number(event.target.value))} /></label>
-          <label>Bogstavafstand <input type="range" min="0" max="0.12" step="0.01" value={letterSpacing} onChange={(event) => setLetterSpacing(Number(event.target.value))} /></label>
-        </article>
-
         <article className="rr-function-card rr-function-dictionary">
           <div className="rr-function-card-title"><BookOpen aria-hidden="true" /><h3>Hvad kan en ordbog hjælpe med?</h3></div>
           <form className="rr-dictionary-search" onSubmit={(event) => { event.preventDefault(); findDictionaryWord(); }}>
@@ -330,6 +319,17 @@ export function FunctionPlayground() {
             </dl>
           )}
           <button type="button" disabled={dictionaryMiss} onClick={() => speak(dictionaryEntry.word)}><Volume2 aria-hidden="true" /> Hør udtalen</button>
+        </article>
+
+        <article className="rr-function-card rr-function-reading">
+          <div className="rr-function-card-title"><Type aria-hidden="true" /><h3>Tekststørrelse og afstand</h3></div>
+          <div className="rr-function-stepper">
+            <button type="button" onClick={() => setFontSize((value) => Math.max(16, value - 1))} aria-label="Gør teksten mindre"><Minus /></button>
+            <span>A <b>{fontSize}</b> A</span>
+            <button type="button" onClick={() => setFontSize((value) => Math.min(30, value + 1))} aria-label="Gør teksten større"><Plus /></button>
+          </div>
+          <label>Linjeafstand <input type="range" min="1.4" max="2.5" step="0.1" value={lineHeight} onChange={(event) => setLineHeight(Number(event.target.value))} /></label>
+          <label>Bogstavafstand <input type="range" min="0" max="0.12" step="0.01" value={letterSpacing} onChange={(event) => setLetterSpacing(Number(event.target.value))} /></label>
         </article>
       </div>
 
