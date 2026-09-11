@@ -6,6 +6,7 @@ import {
   Highlighter,
   Mic,
   Minus,
+  NotebookText,
   Pause,
   Play,
   Plus,
@@ -16,15 +17,18 @@ import {
   X,
 } from "lucide-react";
 import { getWritingSuggestions, insertWritingSuggestion } from "@/lib/writing-tools";
+import { useDictation } from "@/hooks/useDictation";
 
 const CHECKS = ["Stavning", "Grammatik", "Komma", "Tegnsætning", "Ordforslag"];
-const SAMPLE_WORDS = ["I", "dette", "afsnit", "kan", "du", "prøve", "hvordan", "ReliefRead", "gør", "teksten", "roligere", "at", "læse."];
+const INITIAL_SAMPLE = "I dette afsnit kan du prøve, hvordan ReliefRead gør teksten roligere at læse.";
+const HIGHLIGHT_COLORS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8179"];
 const TOOL_BUTTONS = [
   { id: "read", label: "Læs", icon: Play },
   { id: "mark", label: "Marker", icon: Highlighter },
   { id: "ai", label: "Riley", icon: Sparkles },
   { id: "voice", label: "Tal", icon: Mic },
   { id: "font", label: "Tekst", icon: Type },
+  { id: "notes", label: "Noter", icon: NotebookText },
   { id: "words", label: "Ordbog", icon: BookOpen },
 ] as const;
 
@@ -109,9 +113,27 @@ export function FunctionPlayground() {
   const [voiceText, setVoiceText] = useState("Skriv eller indsæt den tekst, du vil høre læst højt.");
   const [voiceSelection, setVoiceSelection] = useState(false);
   const [voiceReading, setVoiceReading] = useState(false);
+  const [sampleText, setSampleText] = useState(INITIAL_SAMPLE);
+  const [sampleSelection, setSampleSelection] = useState("");
+  const [sampleReading, setSampleReading] = useState(false);
+  const [highlightColor, setHighlightColor] = useState(HIGHLIGHT_COLORS[0]);
+  const [note, setNote] = useState("Skriv en lille note til teksten her.");
+  const [rileyPrompt, setRileyPrompt] = useState("Gør teksten lettere at forstå");
+  const [rileyAnswer, setRileyAnswer] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const voiceTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const sampleRef = useRef<HTMLDivElement>(null);
   const dictionaryEntry = DICTIONARY_ENTRIES[dictionaryKey];
+
+  const dictation = useDictation({
+    lang: "da-DK",
+    onFinal: (spoken) => {
+      const current = sampleRef.current?.innerText.trim() || sampleText.trim();
+      const next = `${current}${current ? " " : ""}${spoken}`;
+      if (sampleRef.current) sampleRef.current.innerText = next;
+      setSampleText(next);
+    },
+  });
 
   const suggestion = useMemo(
     () => draft.replace(/\bgrene\b/gi, "gerne").replace(/\bvil gerne skrive\b/i, "vil gerne skrive"),
@@ -202,6 +224,49 @@ export function FunctionPlayground() {
     setVoiceReading(true);
     const started = speak(textToRead, () => setVoiceReading(false));
     if (!started) setVoiceReading(false);
+  };
+
+  const rememberSampleSelection = () => {
+    const selection = window.getSelection();
+    if (!selection?.rangeCount || !sampleRef.current?.contains(selection.anchorNode)) {
+      setSampleSelection("");
+      return;
+    }
+    setSampleSelection(selection.toString().trim());
+  };
+
+  const readSample = (selectedOnly = false) => {
+    if (window.speechSynthesis?.speaking) {
+      window.speechSynthesis.cancel();
+      setSampleReading(false);
+      return;
+    }
+    const current = sampleRef.current?.innerText.trim() || sampleText.trim();
+    const textToRead = selectedOnly ? sampleSelection : current;
+    if (!textToRead) return;
+    setSampleReading(true);
+    const started = speak(textToRead, () => setSampleReading(false));
+    if (!started) setSampleReading(false);
+  };
+
+  const applyHighlight = (color: string) => {
+    setHighlightColor(color);
+    sampleRef.current?.focus();
+    document.execCommand("hiliteColor", false, color);
+    setSampleText(sampleRef.current?.innerText || sampleText);
+  };
+
+  const resetSample = () => {
+    if (sampleRef.current) sampleRef.current.innerText = INITIAL_SAMPLE;
+    setSampleText(INITIAL_SAMPLE);
+    setSampleSelection("");
+  };
+
+  const askRiley = () => {
+    const target = sampleSelection || sampleRef.current?.innerText.trim() || sampleText;
+    if (!rileyPrompt.trim()) return;
+    const shortTarget = target.length > 150 ? `${target.slice(0, 147)}...` : target;
+    setRileyAnswer(`Riley foreslår: ${shortTarget} Du kan gøre teksten kortere ved at bruge én tydelig sætning ad gangen.`);
   };
 
   return (
@@ -341,14 +406,101 @@ export function FunctionPlayground() {
         ))}
       </div>
 
+      <div className="rr-function-tool-panel" aria-live="polite">
+        {activeTool === "read" && (
+          <div>
+            <div><Volume2 aria-hidden="true" /><span><b>Læs teksten højt</b><small>Marker et stykke tekst, eller læs det hele.</small></span></div>
+            <div className="rr-function-panel-actions">
+              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => readSample(false)}>{sampleReading ? <Pause /> : <Play />} {sampleReading ? "Stop" : "Læs hele teksten"}</button>
+              <button type="button" disabled={!sampleSelection} onMouseDown={(event) => event.preventDefault()} onClick={() => readSample(true)}><Volume2 /> Læs markeringen</button>
+            </div>
+          </div>
+        )}
+
+        {activeTool === "mark" && (
+          <div>
+            <div><Highlighter aria-hidden="true" /><span><b>Marker tekst</b><small>Vælg tekst i prøveteksten og tryk på en farve.</small></span></div>
+            <div className="rr-function-highlight-colors" aria-label="Vælg markeringsfarve">
+              {HIGHLIGHT_COLORS.map((color) => <button key={color} type="button" aria-pressed={highlightColor === color} aria-label={`Marker med farven ${color}`} style={{ backgroundColor: color }} onMouseDown={(event) => event.preventDefault()} onClick={() => applyHighlight(color)} />)}
+            </div>
+          </div>
+        )}
+
+        {activeTool === "ai" && (
+          <form onSubmit={(event) => { event.preventDefault(); askRiley(); }}>
+            <div><Sparkles aria-hidden="true" /><span><b>Spørg Riley</b><small>Marker gerne tekst først, og skriv hvad du ønsker hjælp til.</small></span></div>
+            <label htmlFor="function-riley-prompt">Din besked</label>
+            <textarea id="function-riley-prompt" value={rileyPrompt} onChange={(event) => setRileyPrompt(event.target.value)} />
+            <button type="submit" className="rr-function-primary-action"><Sparkles /> Få hjælp</button>
+            {rileyAnswer && <p className="rr-function-riley-answer">{rileyAnswer}</p>}
+          </form>
+        )}
+
+        {activeTool === "voice" && (
+          <div>
+            <div><Mic aria-hidden="true" /><span><b>Tal til prøveteksten</b><small>Det, du siger, bliver skrevet ind nederst i teksten.</small></span></div>
+            <button type="button" className="rr-function-primary-action" onClick={dictation.listening ? dictation.stop : dictation.start}><Mic /> {dictation.listening ? "Stop diktering" : "Start diktering"}</button>
+            {dictation.interim && <p className="rr-function-interim">Jeg hører: {dictation.interim}</p>}
+            {dictation.error && <p className="rr-function-panel-error">Mikrofonen kunne ikke startes. Tillad mikrofonen i browseren, og prøv igen.</p>}
+            {!dictation.supported && <p className="rr-function-panel-error">Diktering virker bedst i Chrome eller Edge.</p>}
+          </div>
+        )}
+
+        {activeTool === "font" && (
+          <div>
+            <div><Type aria-hidden="true" /><span><b>Rediger teksten</b><small>Klik direkte i prøveteksten for at skrive. Her kan du også ændre visningen.</small></span></div>
+            <div className="rr-function-inline-controls">
+              <button type="button" onClick={() => setFontSize((value) => Math.max(16, value - 1))}><Minus /> Mindre</button>
+              <b>{fontSize} px</b>
+              <button type="button" onClick={() => setFontSize((value) => Math.min(30, value + 1))}><Plus /> Større</button>
+              <button type="button" onClick={resetSample}><X /> Gendan tekst</button>
+            </div>
+          </div>
+        )}
+
+        {activeTool === "notes" && (
+          <div>
+            <div><NotebookText aria-hidden="true" /><span><b>Skriv en note</b><small>Noten vises ved siden af prøveteksten.</small></span></div>
+            <label htmlFor="function-note">Min note</label>
+            <textarea id="function-note" value={note} onChange={(event) => setNote(event.target.value)} />
+          </div>
+        )}
+
+        {activeTool === "words" && (
+          <form onSubmit={(event) => { event.preventDefault(); findDictionaryWord(); }}>
+            <div><BookOpen aria-hidden="true" /><span><b>Ordbog</b><small>Skriv et ord for at se betydning, stavning, oversættelse og bøjning.</small></span></div>
+            <label htmlFor="function-toolbar-lookup">Slå et ord op</label>
+            <div className="rr-function-panel-search"><input id="function-toolbar-lookup" value={lookup} onChange={(event) => setLookup(event.target.value)} /><button type="submit" aria-label="Slå ordet op"><Search /></button></div>
+            {!dictionaryMiss && <p className="rr-function-dictionary-compact"><b>{dictionaryEntry.word}</b><span>{dictionaryEntry.meaning}</span><small>{dictionaryEntry.translation}. {dictionaryEntry.inflection}</small></p>}
+            {dictionaryMiss && <p className="rr-function-panel-error">Ordet er ikke i prøveordbogen endnu.</p>}
+          </form>
+        )}
+      </div>
+
       <div className="rr-function-paper" style={{ fontSize, lineHeight, letterSpacing: `${letterSpacing}em` }}>
-        <span className="rr-function-paper-label">Prøvetekst</span>
-        <p>
-          {SAMPLE_WORDS.map((word, index) => (
-            <span key={`${word}-${index}`}>{word} </span>
-          ))}
-        </p>
-        <small>Valgt værktøj: <b>{TOOL_BUTTONS.find((tool) => tool.id === activeTool)?.label}</b></small>
+        <div className="rr-function-paper-main">
+          <span className="rr-function-paper-label">Prøvetekst</span>
+          <div
+            ref={sampleRef}
+            className="rr-function-editable"
+            contentEditable
+            suppressContentEditableWarning
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Redigerbar prøvetekst"
+            onInput={(event) => setSampleText(event.currentTarget.innerText)}
+            onMouseUp={rememberSampleSelection}
+            onKeyUp={rememberSampleSelection}
+          >
+            {INITIAL_SAMPLE}
+          </div>
+          <small>Valgt værktøj: <b>{TOOL_BUTTONS.find((tool) => tool.id === activeTool)?.label}</b>. Klik i teksten for at redigere.</small>
+        </div>
+        <aside className="rr-function-note-preview">
+          <NotebookText aria-hidden="true" />
+          <b>Min note</b>
+          <p>{note || "Din note vises her."}</p>
+        </aside>
       </div>
     </section>
   );
