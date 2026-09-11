@@ -25,9 +25,10 @@ const HIGHLIGHTS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8
 export function PersonalisationShowcase() {
   const [tools, setTools] = useState(() => new Set(["read", "mark", "ai", "voice", "notes", "scan"]));
   const [color, setColor] = useState<(typeof COLOR_CHOICES)[number]["id"]>("ocean");
+  const [notebookTheme, setNotebookTheme] = useState<(typeof COLOR_CHOICES)[number]["id"]>("pinky");
   const [sticker, setSticker] = useState("🍓");
   const [highlight, setHighlight] = useState(HIGHLIGHTS[0]);
-  const selectedNote = useMemo(() => COLOR_CHOICES.find((item) => item.id === color) ?? COLOR_CHOICES[3], [color]);
+  const selectedNote = useMemo(() => COLOR_CHOICES.find((item) => item.id === notebookTheme) ?? COLOR_CHOICES[1], [notebookTheme]);
 
   const toggleTool = (id: string) => {
     setTools((current) => {
@@ -39,7 +40,7 @@ export function PersonalisationShowcase() {
   };
 
   return (
-    <div className="rr-setup-showcase">
+    <div className={`rr-setup-showcase rr-setup-app-${color}`}>
       <span className="rr-setup-cloud rr-setup-cloud-left" aria-hidden="true" />
       <span className="rr-setup-cloud rr-setup-cloud-right" aria-hidden="true" />
 
@@ -67,7 +68,7 @@ export function PersonalisationShowcase() {
       </section>
 
       <section className="rr-setup-section" aria-labelledby="setup-color-title">
-        <h2 id="setup-color-title">Vælg farve</h2>
+        <h2 id="setup-color-title">Vælg appens farve</h2>
         <div className="rr-setup-color-grid">
           {COLOR_CHOICES.map((item) => (
             <button key={item.id} type="button" onClick={() => setColor(item.id)} aria-pressed={color === item.id} className={`rr-setup-color rr-setup-color-${item.id} ${color === item.id ? "is-active" : ""}`}>
@@ -86,10 +87,10 @@ export function PersonalisationShowcase() {
       </section>
 
       <section className="rr-setup-section" aria-labelledby="setup-notepad-title">
-        <h2 id="setup-notepad-title">Notesblok</h2>
+        <h2 id="setup-notepad-title">Vælg notesbog</h2>
         <div className="rr-setup-notes-grid">
           {COLOR_CHOICES.map((item) => (
-            <button key={item.id} type="button" onClick={() => setColor(item.id)} aria-pressed={color === item.id} className={`rr-setup-note rr-setup-note-${item.id} ${color === item.id ? "is-active" : ""}`}>
+            <button key={item.id} type="button" onClick={() => setNotebookTheme(item.id)} aria-pressed={notebookTheme === item.id} className={`rr-setup-note rr-setup-note-${item.id} ${notebookTheme === item.id ? "is-active" : ""}`}>
               <span aria-hidden="true">{item.emoji}</span><b>{item.label}</b><small>♡</small>
             </button>
           ))}
