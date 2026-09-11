@@ -23,11 +23,10 @@ const STICKERS = ["🐚", "🍋", "🌺", "🍓", "🪩", "🪐"];
 const HIGHLIGHTS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8179"];
 const TEXT_COLORS = [
   { value: "#171717", label: "Sort" },
-  { value: "#fff1ad", label: "Butter yellow" },
+  { value: "#fff1ad", label: "Yellow" },
   { value: "#17345e", label: "Mørkeblå" },
   { value: "#6b3e2e", label: "Brun" },
   { value: "#b83f78", label: "Lyserød" },
-  { value: "#355e3b", label: "Grøn" },
   { value: "#ffffff", label: "Hvid" },
 ] as const;
 
@@ -37,7 +36,7 @@ export function PersonalisationShowcase() {
   const [notebookTheme, setNotebookTheme] = useState<(typeof COLOR_CHOICES)[number]["id"]>("pinky");
   const [sticker, setSticker] = useState("🍓");
   const [highlight, setHighlight] = useState(HIGHLIGHTS[0]);
-  const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["value"]>("#fff1ad");
+  const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["value"]>("#171717");
   const selectedNote = useMemo(() => COLOR_CHOICES.find((item) => item.id === notebookTheme) ?? COLOR_CHOICES[1], [notebookTheme]);
 
   const toggleTool = (id: string) => {
@@ -124,7 +123,6 @@ export function PersonalisationShowcase() {
         <h2 id="setup-sticker-title">Tilføj stickers</h2>
         <div className="rr-setup-stickers">
           {STICKERS.map((item) => <button key={item} type="button" onClick={() => setSticker(item)} aria-pressed={sticker === item}>{item}</button>)}
-          <button type="button" className="is-add" aria-label="Tilføj flere stickers"><Plus /></button>
         </div>
       </section>
 
