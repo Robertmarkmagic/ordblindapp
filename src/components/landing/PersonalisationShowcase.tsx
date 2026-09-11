@@ -1,11 +1,11 @@
-import { useMemo, useState, type CSSProperties } from "react";
-import { Camera, Check, Highlighter, Mic, NotebookText, Play, Plus, Search, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { Camera, Check, Highlighter, Mic, NotebookText, PenLine, Play, Search } from "lucide-react";
 
 const TOOLS = [
   { id: "read", label: "Læs", icon: Play },
   { id: "mark", label: "Marker", icon: Highlighter },
-  { id: "ai", label: "AI", icon: Sparkles },
-  { id: "voice", label: "Tale", icon: Mic },
+  { id: "voice", label: "Tal", icon: Mic },
+  { id: "write", label: "Skriv", icon: PenLine },
   { id: "notes", label: "Noter", icon: NotebookText },
   { id: "scan", label: "Scan", icon: Camera },
   { id: "dictionary", label: "Ordbog", icon: Search },
@@ -16,7 +16,7 @@ const COLOR_CHOICES = [
   { id: "pinky", emoji: "🍓", label: "Pinky" },
   { id: "wood", emoji: "🌿", label: "Wood" },
   { id: "ocean", emoji: "🌊", label: "Ocean" },
-  { id: "espresso", emoji: "☕", label: "Espresso" },
+  { id: "night", emoji: "☾", label: "Night Mode" },
 ] as const;
 
 const STICKERS = ["🐚", "🍋", "🌺", "🍓", "🪩", "🪐"];
@@ -30,14 +30,36 @@ const TEXT_COLORS = [
   { value: "#ffffff", label: "Hvid" },
 ] as const;
 
-export function PersonalisationShowcase() {
-  const [tools, setTools] = useState(() => new Set(["read", "mark", "ai", "voice", "notes", "scan"]));
+export type PersonalisationPreview = {
+  tools: string[];
+  color: (typeof COLOR_CHOICES)[number]["id"];
+  notebookTheme: (typeof COLOR_CHOICES)[number]["id"];
+  sticker: string;
+  highlight: string;
+  textColor: (typeof TEXT_COLORS)[number]["value"];
+};
+
+export const DEFAULT_PERSONALISATION: PersonalisationPreview = {
+  tools: ["read", "mark", "voice", "write", "notes", "scan", "dictionary"],
+  color: "ocean",
+  notebookTheme: "pinky",
+  sticker: "🍓",
+  highlight: HIGHLIGHTS[0],
+  textColor: "#fff1ad",
+};
+
+export function PersonalisationShowcase({ onChange }: { onChange?: (value: PersonalisationPreview) => void }) {
+  const [tools, setTools] = useState(() => new Set(DEFAULT_PERSONALISATION.tools));
   const [color, setColor] = useState<(typeof COLOR_CHOICES)[number]["id"]>("ocean");
   const [notebookTheme, setNotebookTheme] = useState<(typeof COLOR_CHOICES)[number]["id"]>("pinky");
   const [sticker, setSticker] = useState("🍓");
   const [highlight, setHighlight] = useState(HIGHLIGHTS[0]);
   const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["value"]>("#fff1ad");
   const selectedNote = useMemo(() => COLOR_CHOICES.find((item) => item.id === notebookTheme) ?? COLOR_CHOICES[1], [notebookTheme]);
+
+  useEffect(() => {
+    onChange?.({ tools: [...tools], color, notebookTheme, sticker, highlight, textColor });
+  }, [color, highlight, notebookTheme, onChange, sticker, textColor, tools]);
 
   const toggleTool = (id: string) => {
     setTools((current) => {
@@ -75,7 +97,6 @@ export function PersonalisationShowcase() {
               </button>
             );
           })}
-          <button type="button" className="rr-setup-tool" aria-label="Tilføj et værktøj"><span><Plus /></span>Tilføj</button>
         </div>
       </section>
 

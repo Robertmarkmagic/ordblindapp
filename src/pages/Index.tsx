@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -11,7 +11,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { MiniReader } from "@/components/landing/MiniReader";
-import { PersonalisationShowcase } from "@/components/landing/PersonalisationShowcase";
+import { DEFAULT_PERSONALISATION, PersonalisationShowcase, type PersonalisationPreview } from "@/components/landing/PersonalisationShowcase";
 import { FeatureDemos } from "@/components/landing/FeatureDemos";
 import { FunctionPlayground } from "@/components/landing/FunctionPlayground";
 import { PRICING } from "@/lib/billing";
@@ -39,6 +39,7 @@ export default function Index() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { language, t } = useLanguage();
+  const [personalisation, setPersonalisation] = useState<PersonalisationPreview>(DEFAULT_PERSONALISATION);
 
   const oldTools = [
     t("landing.old1", "Robotic, 2005-era text-to-speech voices"),
@@ -116,17 +117,17 @@ export default function Index() {
 
         {/* ---------- PERSONALISATION SETUP ---------- */}
         <section className="mx-auto max-w-6xl px-3 pb-16 pt-2 sm:px-8">
-          <PersonalisationShowcase />
+          <PersonalisationShowcase onChange={setPersonalisation} />
         </section>
 
         {/* ---------- FULL APP THEMES ---------- */}
         <section className="mx-auto max-w-6xl px-5 pb-16 sm:px-8">
           <div className="rr-fade-up mx-auto max-w-5xl">
             <div className="mb-5 text-center">
-              <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">{language === "da" ? "Se temaerne i hele appen" : "See the themes across the full app"}</h2>
-              <p className="mt-2 text-base text-muted-foreground">{language === "da" ? "Tryk på et tema, og se hele læsepladsen skifte farve." : "Choose a theme and watch the entire reading space change."}</p>
+              <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">{language === "da" ? "Se din ReliefRead-app" : "See your ReliefRead app"}</h2>
+              <p className="mt-2 text-base text-muted-foreground">{language === "da" ? "Dine valg ovenfor vises direkte i den app, du får." : "Your choices above appear directly in the app you get."}</p>
             </div>
-            <MiniReader />
+            <MiniReader settings={personalisation} />
             <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button className="h-12 rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground shadow-paper hover:bg-primary/90" onClick={goSignUp}>
                 {t("landing.tryFree", "Try ReliefRead free")}<ArrowRight className="ml-1 h-5 w-5" aria-hidden="true" />
