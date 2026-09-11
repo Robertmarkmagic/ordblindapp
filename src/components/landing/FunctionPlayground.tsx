@@ -25,10 +25,8 @@ const HIGHLIGHT_COLORS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f",
 const TOOL_BUTTONS = [
   { id: "read", label: "Læs", icon: Play },
   { id: "mark", label: "Marker", icon: Highlighter },
-  { id: "ai", label: "Riley", icon: Sparkles },
   { id: "voice", label: "Tal", icon: Mic },
   { id: "font", label: "Tekst", icon: Type },
-  { id: "notes", label: "Noter", icon: NotebookText },
   { id: "words", label: "Ordbog", icon: BookOpen },
 ] as const;
 
@@ -39,7 +37,15 @@ const PHONETIC_SUGGESTIONS: Record<string, string[]> = {
   tydelig: ["tydelig", "tydeligt", "tydeligere", "tydelighed"],
 };
 
-const DICTIONARY_ENTRIES = {
+type DictionaryEntry = {
+  word: string;
+  meaning: string;
+  translation: string;
+  inflection: string;
+  sourceUrl?: string;
+};
+
+const DICTIONARY_ENTRIES: Record<string, DictionaryEntry> = {
   "tilgængelig": {
     word: "tilgængelig",
     meaning: "Noget, der er nemt at komme til, bruge eller forstå.",
@@ -70,15 +76,38 @@ const DICTIONARY_ENTRIES = {
     translation: "translation",
     inflection: "en oversættelse, oversættelsen, oversættelser, oversættelserne",
   },
-} as const;
+  "haj": {
+    word: "haj",
+    meaning: "En stor rovfisk med bruskskelet, som lever i havet.",
+    translation: "shark",
+    inflection: "en haj, hajen, hajer, hajerne",
+  },
+};
 
-const DICTIONARY_ALIASES: Record<string, keyof typeof DICTIONARY_ENTRIES> = {
+const DICTIONARY_ALIASES: Record<string, string> = {
   "tanlæen": "tandlægen",
   "tandlegen": "tandlægen",
   "åvessættelse": "oversættelse",
   "oversettelse": "oversættelse",
   "somer": "sommer",
 };
+
+const SPELLING_FIXES: Record<string, string> = {
+  grene: "gerne",
+  somer: "sommer",
+  tanlæen: "tandlægen",
+  tandlegen: "tandlægen",
+  åvessættelse: "oversættelse",
+  oversettelse: "oversættelse",
+};
+
+function firstUsefulDictionaryLine(extract: string) {
+  const ignored = /^(dansk|substantiv|verbum|adjektiv|udtale|etymologi|bøjning|oversættelser|referencer|se også)$/i;
+  return extract
+    .split("\n")
+    .map((line) => line.replace(/^[:#*\d.)\s-]+/, "").trim())
+    .find((line) => line.length > 12 && !ignored.test(line) && !/^=/.test(line)) || "";
+}
 
 function wordAtCaret(text: string, caret: number) {
   const before = text.slice(0, caret);
@@ -105,8 +134,9 @@ export function FunctionPlayground() {
   const [letterSpacing, setLetterSpacing] = useState(0.02);
   const [activeTool, setActiveTool] = useState("read");
   const [lookup, setLookup] = useState("tilgængelig");
-  const [dictionaryKey, setDictionaryKey] = useState<keyof typeof DICTIONARY_ENTRIES>("tilgængelig");
+  const [dictionaryEntry, setDictionaryEntry] = useState<DictionaryEntry>(DICTIONARY_ENTRIES["tilgængelig"]);
   const [dictionaryMiss, setDictionaryMiss] = useState(false);
+  const [dictionaryLoading, setDictionaryLoading] = useState(false);
   const [caret, setCaret] = useState(draft.length);
   const [suggestionOpen, setSuggestionOpen] = useState(true);
   const [selectedSuggestion, setSelectedSuggestion] = useState(0);
@@ -117,13 +147,10 @@ export function FunctionPlayground() {
   const [sampleSelection, setSampleSelection] = useState("");
   const [sampleReading, setSampleReading] = useState(false);
   const [highlightColor, setHighlightColor] = useState(HIGHLIGHT_COLORS[0]);
-  const [note, setNote] = useState("Skriv en lille note til teksten her.");
-  const [rileyPrompt, setRileyPrompt] = useState("Gør teksten lettere at forstå");
-  const [rileyAnswer, setRileyAnswer] = useState("");
+  const [note, setNote] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const voiceTextareaRef = useRef<HTMLTextAreaElement>(null);
   const sampleRef = useRef<HTMLDivElement>(null);
-  const dictionaryEntry = DICTIONARY_ENTRIES[dictionaryKey];
 
   const dictation = useDictation({
     lang: "da-DK",
@@ -136,7 +163,10 @@ export function FunctionPlayground() {
   });
 
   const suggestion = useMemo(
-    () => draft.replace(/\bgrene\b/gi, "gerne").replace(/\bvil gerne skrive\b/i, "vil gerne skrive"),
+    () => Object.entries(SPELLING_FIXES).reduce(
+      (text, [wrong, right]) => text.replace(new RegExp(`\\b${wrong}\\b`, "gi"), right),
+      draft,
+    ),
     [draft],
   );
 
@@ -150,8 +180,29 @@ export function FunctionPlayground() {
           .flatMap(([, words]) => words)
       : [];
     const corrected = suggestion !== draft ? [suggestion.match(/\bgerne\b/i)?.[0] || "gerne"] : [];
-    return Array.from(new Set([...(direct || []), ...generated, ...fallback, ...corrected])).slice(0, 7);
+    const nextWords = getWritingSuggestions(draft, caret, "da").nextWords;
+    return Array.from(new Set([...(direct || []), ...generated, ...fallback, ...corrected, ...nextWords])).slice(0, 7);
   }, [caret, draft, suggestion]);
+
+  const writingResults = useMemo(() => {
+    const trimmed = draft.trim();
+    const lower = draft.toLocaleLowerCase("da-DK");
+    const spellingChanges = Object.entries(SPELLING_FIXES)
+      .filter(([wrong]) => new RegExp(`\\b${wrong}\\b`, "i").test(draft))
+      .map(([wrong, right]) => `${wrong} → ${right}`);
+    const grammarIssue = /\b(jeg|du|vi|de)\s+er\s+(gå|skrive|læse)\b/i.test(draft);
+    const needsComma = /\b(fordi|men|når|hvis|som)\b/i.test(draft) && !/[,;]/.test(draft);
+    const needsPunctuation = Boolean(trimmed) && !/[.!?]$/.test(trimmed);
+    const suggestions = wordSuggestions.slice(0, 4).join(", ");
+
+    return [
+      { name: "Stavning", text: spellingChanges.length ? `Forslag: ${spellingChanges.join(", ")}` : "Ingen tydelige stavefejl fundet." },
+      { name: "Grammatik", text: grammarIssue ? "Sætningen kan bøjes bedre. Prøv for eksempel ‘jeg går’, ‘jeg skriver’ eller ‘jeg læser’." : "Sætningen ser grammatisk tydelig ud." },
+      { name: "Komma", text: needsComma ? "Sætningen kan mangle et komma ved ledsætningen." : "Ingen tydelig kommafejl fundet." },
+      { name: "Tegnsætning", text: needsPunctuation ? "Forslag: Sæt punktum til sidst." : "Tegnsætningen ser tydelig ud." },
+      { name: "Ordforslag", text: suggestions ? `Du kan fortsætte med: ${suggestions}` : lower ? "Skriv videre for at få relevante ordforslag." : "Begynd at skrive for at få ordforslag." },
+    ];
+  }, [draft, wordSuggestions]);
 
   const updateCaret = () => {
     const next = textareaRef.current?.selectionStart ?? draft.length;
@@ -196,17 +247,48 @@ export function FunctionPlayground() {
     });
   };
 
-  const findDictionaryWord = () => {
+  const findDictionaryWord = async () => {
     const normalized = lookup.trim().toLocaleLowerCase("da-DK");
-    const key = (normalized in DICTIONARY_ENTRIES
-      ? normalized
-      : DICTIONARY_ALIASES[normalized]) as keyof typeof DICTIONARY_ENTRIES | undefined;
-    if (!key) {
-      setDictionaryMiss(true);
+    if (!normalized) return;
+    const key = normalized in DICTIONARY_ENTRIES ? normalized : DICTIONARY_ALIASES[normalized];
+    if (key) {
+      setDictionaryEntry(DICTIONARY_ENTRIES[key]);
+      setDictionaryMiss(false);
       return;
     }
-    setDictionaryKey(key);
+
+    setDictionaryLoading(true);
     setDictionaryMiss(false);
+    try {
+      const endpoint = new URL("https://da.wiktionary.org/w/api.php");
+      endpoint.search = new URLSearchParams({
+        action: "query",
+        prop: "extracts",
+        explaintext: "1",
+        redirects: "1",
+        titles: normalized,
+        format: "json",
+        origin: "*",
+      }).toString();
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error("dictionary-request-failed");
+      const data = await response.json() as { query?: { pages?: Record<string, { missing?: string; title?: string; extract?: string }> } };
+      const page = Object.values(data.query?.pages || {})[0];
+      const meaning = firstUsefulDictionaryLine(page?.extract || "");
+      if (!page || "missing" in page || !meaning) throw new Error("dictionary-word-not-found");
+      setDictionaryEntry({
+        word: page.title?.toLocaleLowerCase("da-DK") || normalized,
+        meaning,
+        translation: "Se hele opslaget for oversættelser",
+        inflection: "Se hele opslaget for bøjning og ordklasse",
+        sourceUrl: `https://da.wiktionary.org/wiki/${encodeURIComponent(page.title || normalized)}`,
+      });
+      setDictionaryMiss(false);
+    } catch {
+      setDictionaryMiss(true);
+    } finally {
+      setDictionaryLoading(false);
+    }
   };
 
   const readVoiceText = () => {
@@ -260,13 +342,6 @@ export function FunctionPlayground() {
     if (sampleRef.current) sampleRef.current.innerText = INITIAL_SAMPLE;
     setSampleText(INITIAL_SAMPLE);
     setSampleSelection("");
-  };
-
-  const askRiley = () => {
-    const target = sampleSelection || sampleRef.current?.innerText.trim() || sampleText;
-    if (!rileyPrompt.trim()) return;
-    const shortTarget = target.length > 150 ? `${target.slice(0, 147)}...` : target;
-    setRileyAnswer(`Riley foreslår: ${shortTarget} Du kan gøre teksten kortere ved at bruge én tydelig sætning ad gangen.`);
   };
 
   return (
@@ -326,6 +401,15 @@ export function FunctionPlayground() {
               <span><b>Ret hele sætningen:</b> {suggestion}</span><Check aria-hidden="true" />
             </button>
           )}
+          <div className="rr-writing-results" aria-live="polite">
+            {writingResults.filter((result) => checks.has(result.name)).map((result) => (
+              <div key={result.name}>
+                <b>{result.name}</b>
+                <span>{result.text}</span>
+              </div>
+            ))}
+            {checks.size === 0 && <p>Vælg mindst én type hjælp i boksen nedenfor.</p>}
+          </div>
         </article>
 
         <article className="rr-function-card rr-function-check-card">
@@ -363,17 +447,19 @@ export function FunctionPlayground() {
 
         <article className="rr-function-card rr-function-dictionary">
           <div className="rr-function-card-title"><BookOpen aria-hidden="true" /><h3>Hvad kan en ordbog hjælpe med?</h3></div>
-          <form className="rr-dictionary-search" onSubmit={(event) => { event.preventDefault(); findDictionaryWord(); }}>
+          <form className="rr-dictionary-search" onSubmit={(event) => { event.preventDefault(); void findDictionaryWord(); }}>
             <label htmlFor="function-lookup">Skriv et ord</label>
             <div>
               <input id="function-lookup" value={lookup} onChange={(event) => setLookup(event.target.value)} spellCheck="false" />
               <button type="submit" aria-label="Slå ordet op"><Search aria-hidden="true" /></button>
             </div>
           </form>
-          {dictionaryMiss ? (
+          {dictionaryLoading ? (
+            <div className="rr-dictionary-miss" role="status"><b>Slår ordet op...</b><span>Vi søger i den danske ordbog.</span></div>
+          ) : dictionaryMiss ? (
             <div className="rr-dictionary-miss" role="status">
-              <b>Ordet er ikke i prøveordbogen endnu.</b>
-              <span>Prøv: tilgængelig, forsvar, sommer, tanlæen eller åvessættelse.</span>
+              <b>Vi kunne ikke finde ordet.</b>
+              <span>Kontrollér stavningen, eller prøv en anden bøjning af ordet.</span>
             </div>
           ) : (
             <dl className="rr-dictionary-result" aria-live="polite">
@@ -381,9 +467,10 @@ export function FunctionPlayground() {
               <div><dt>Stavning</dt><dd>{dictionaryEntry.word}</dd></div>
               <div><dt>Engelsk</dt><dd>{dictionaryEntry.translation}</dd></div>
               <div><dt>Bøjning</dt><dd>{dictionaryEntry.inflection}</dd></div>
+              {dictionaryEntry.sourceUrl && <div><dt>Mere information</dt><dd><a href={dictionaryEntry.sourceUrl} target="_blank" rel="noreferrer">Åbn hele ordbogsopslaget</a></dd></div>}
             </dl>
           )}
-          <button type="button" disabled={dictionaryMiss} onClick={() => speak(dictionaryEntry.word)}><Volume2 aria-hidden="true" /> Hør udtalen</button>
+          <button type="button" disabled={dictionaryMiss || dictionaryLoading} onClick={() => speak(dictionaryEntry.word)}><Volume2 aria-hidden="true" /> Hør udtalen</button>
         </article>
 
         <article className="rr-function-card rr-function-reading">
@@ -426,16 +513,6 @@ export function FunctionPlayground() {
           </div>
         )}
 
-        {activeTool === "ai" && (
-          <form onSubmit={(event) => { event.preventDefault(); askRiley(); }}>
-            <div><Sparkles aria-hidden="true" /><span><b>Spørg Riley</b><small>Marker gerne tekst først, og skriv hvad du ønsker hjælp til.</small></span></div>
-            <label htmlFor="function-riley-prompt">Din besked</label>
-            <textarea id="function-riley-prompt" value={rileyPrompt} onChange={(event) => setRileyPrompt(event.target.value)} />
-            <button type="submit" className="rr-function-primary-action"><Sparkles /> Få hjælp</button>
-            {rileyAnswer && <p className="rr-function-riley-answer">{rileyAnswer}</p>}
-          </form>
-        )}
-
         {activeTool === "voice" && (
           <div>
             <div><Mic aria-hidden="true" /><span><b>Tal til prøveteksten</b><small>Det, du siger, bliver skrevet ind nederst i teksten.</small></span></div>
@@ -458,21 +535,14 @@ export function FunctionPlayground() {
           </div>
         )}
 
-        {activeTool === "notes" && (
-          <div>
-            <div><NotebookText aria-hidden="true" /><span><b>Skriv en note</b><small>Noten vises ved siden af prøveteksten.</small></span></div>
-            <label htmlFor="function-note">Min note</label>
-            <textarea id="function-note" value={note} onChange={(event) => setNote(event.target.value)} />
-          </div>
-        )}
-
         {activeTool === "words" && (
-          <form onSubmit={(event) => { event.preventDefault(); findDictionaryWord(); }}>
+          <form onSubmit={(event) => { event.preventDefault(); void findDictionaryWord(); }}>
             <div><BookOpen aria-hidden="true" /><span><b>Ordbog</b><small>Skriv et ord for at se betydning, stavning, oversættelse og bøjning.</small></span></div>
             <label htmlFor="function-toolbar-lookup">Slå et ord op</label>
             <div className="rr-function-panel-search"><input id="function-toolbar-lookup" value={lookup} onChange={(event) => setLookup(event.target.value)} /><button type="submit" aria-label="Slå ordet op"><Search /></button></div>
-            {!dictionaryMiss && <p className="rr-function-dictionary-compact"><b>{dictionaryEntry.word}</b><span>{dictionaryEntry.meaning}</span><small>{dictionaryEntry.translation}. {dictionaryEntry.inflection}</small></p>}
-            {dictionaryMiss && <p className="rr-function-panel-error">Ordet er ikke i prøveordbogen endnu.</p>}
+            {dictionaryLoading && <p className="rr-function-dictionary-compact">Slår ordet op...</p>}
+            {!dictionaryLoading && !dictionaryMiss && <p className="rr-function-dictionary-compact"><b>{dictionaryEntry.word}</b><span>{dictionaryEntry.meaning}</span><small>{dictionaryEntry.translation}. {dictionaryEntry.inflection}</small></p>}
+            {!dictionaryLoading && dictionaryMiss && <p className="rr-function-panel-error">Vi kunne ikke finde ordet. Kontrollér stavningen, og prøv igen.</p>}
           </form>
         )}
       </div>
@@ -498,8 +568,8 @@ export function FunctionPlayground() {
         </div>
         <aside className="rr-function-note-preview">
           <NotebookText aria-hidden="true" />
-          <b>Min note</b>
-          <p>{note || "Din note vises her."}</p>
+          <label htmlFor="function-note"><b>Min note</b></label>
+          <textarea id="function-note" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Skriv din note direkte her..." />
         </aside>
       </div>
     </section>

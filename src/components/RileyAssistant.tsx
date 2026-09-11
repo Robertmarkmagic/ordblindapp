@@ -85,7 +85,7 @@ export function RileyAssistant() {
   );
 
   const { messages, sendMessage, loading, error, clearHistory } = useAiChat({ systemPrompt });
-  const availableHere = ["/dashboard", "/new", "/write", "/read", "/settings"].some(
+  const availableHere = ["/", "/dashboard", "/new", "/write", "/read", "/settings"].some(
     (path) => location.pathname === path || location.pathname.startsWith(`${path}/`)
   );
 
