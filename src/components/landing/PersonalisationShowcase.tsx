@@ -19,7 +19,7 @@ const COLOR_CHOICES = [
   { id: "espresso", emoji: "☕", label: "Espresso" },
 ] as const;
 
-const STICKERS = ["🐚", "🍋", "🌺", "🍓", "🌐", "🪐"];
+const STICKERS = ["🐚", "🍋", "🌺", "🍓", "🪩", "🪐"];
 const HIGHLIGHTS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8179"];
 
 export function PersonalisationShowcase() {
