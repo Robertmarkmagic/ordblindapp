@@ -36,7 +36,7 @@ export function PersonalisationShowcase() {
   const [notebookTheme, setNotebookTheme] = useState<(typeof COLOR_CHOICES)[number]["id"]>("pinky");
   const [sticker, setSticker] = useState("🍓");
   const [highlight, setHighlight] = useState(HIGHLIGHTS[0]);
-  const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["value"]>("#171717");
+  const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["value"]>("#fff1ad");
   const selectedNote = useMemo(() => COLOR_CHOICES.find((item) => item.id === notebookTheme) ?? COLOR_CHOICES[1], [notebookTheme]);
 
   const toggleTool = (id: string) => {
