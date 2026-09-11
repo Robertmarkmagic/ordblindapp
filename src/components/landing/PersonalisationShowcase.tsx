@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { Camera, Check, Highlighter, Mic, NotebookText, Play, Plus, Search, Sparkles } from "lucide-react";
 
 const TOOLS = [
@@ -21,6 +21,15 @@ const COLOR_CHOICES = [
 
 const STICKERS = ["🐚", "🍋", "🌺", "🍓", "🪩", "🪐"];
 const HIGHLIGHTS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8179"];
+const TEXT_COLORS = [
+  { value: "#171717", label: "Sort" },
+  { value: "#fff1ad", label: "Butter yellow" },
+  { value: "#17345e", label: "Mørkeblå" },
+  { value: "#6b3e2e", label: "Brun" },
+  { value: "#b83f78", label: "Lyserød" },
+  { value: "#355e3b", label: "Grøn" },
+  { value: "#ffffff", label: "Hvid" },
+] as const;
 
 export function PersonalisationShowcase() {
   const [tools, setTools] = useState(() => new Set(["read", "mark", "ai", "voice", "notes", "scan"]));
@@ -28,6 +37,7 @@ export function PersonalisationShowcase() {
   const [notebookTheme, setNotebookTheme] = useState<(typeof COLOR_CHOICES)[number]["id"]>("pinky");
   const [sticker, setSticker] = useState("🍓");
   const [highlight, setHighlight] = useState(HIGHLIGHTS[0]);
+  const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["value"]>("#fff1ad");
   const selectedNote = useMemo(() => COLOR_CHOICES.find((item) => item.id === notebookTheme) ?? COLOR_CHOICES[1], [notebookTheme]);
 
   const toggleTool = (id: string) => {
@@ -40,7 +50,10 @@ export function PersonalisationShowcase() {
   };
 
   return (
-    <div className={`rr-setup-showcase rr-setup-app-${color}`}>
+    <div
+      className={`rr-setup-showcase rr-setup-app-${color}`}
+      style={{ "--rr-selected-text": textColor } as CSSProperties}
+    >
       <span className="rr-setup-cloud rr-setup-cloud-left" aria-hidden="true" />
       <span className="rr-setup-cloud rr-setup-cloud-right" aria-hidden="true" />
 
@@ -78,11 +91,21 @@ export function PersonalisationShowcase() {
         </div>
       </section>
 
-      <section className="rr-setup-section" aria-labelledby="setup-sticker-title">
-        <h2 id="setup-sticker-title">Tilføj stickers</h2>
-        <div className="rr-setup-stickers">
-          {STICKERS.map((item) => <button key={item} type="button" onClick={() => setSticker(item)} aria-pressed={sticker === item}>{item}</button>)}
-          <button type="button" className="is-add" aria-label="Tilføj flere stickers"><Plus /></button>
+      <section className="rr-setup-section" aria-labelledby="setup-text-color-title">
+        <h2 id="setup-text-color-title">Vælg tekstfarve</h2>
+        <div className="rr-setup-text-colors">
+          {TEXT_COLORS.map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => setTextColor(item.value)}
+              aria-pressed={textColor === item.value}
+              className={textColor === item.value ? "is-active" : ""}
+            >
+              <span style={{ backgroundColor: item.value }} aria-hidden="true" />
+              {item.label}
+            </button>
+          ))}
         </div>
       </section>
 
@@ -97,8 +120,23 @@ export function PersonalisationShowcase() {
         </div>
       </section>
 
+      <section className="rr-setup-section" aria-labelledby="setup-sticker-title">
+        <h2 id="setup-sticker-title">Tilføj stickers</h2>
+        <div className="rr-setup-stickers">
+          {STICKERS.map((item) => <button key={item} type="button" onClick={() => setSticker(item)} aria-pressed={sticker === item}>{item}</button>)}
+          <button type="button" className="is-add" aria-label="Tilføj flere stickers"><Plus /></button>
+        </div>
+      </section>
+
+      <section className="rr-setup-section" aria-labelledby="setup-highlight-title">
+        <h2 id="setup-highlight-title">Highlighterfarver</h2>
+        <div className="rr-setup-highlights">
+          {HIGHLIGHTS.map((item) => <button key={item} type="button" onClick={() => setHighlight(item)} aria-pressed={highlight === item} style={{ backgroundColor: item }} aria-label={`Vælg highlighterfarven ${item}`} />)}
+        </div>
+      </section>
+
       <section className="rr-setup-section" aria-labelledby="setup-example-title">
-        <h2 id="setup-example-title">Tilføj sticker til en note</h2>
+        <h2 id="setup-example-title">Se dine valg</h2>
         <div className={`rr-setup-reading-example rr-setup-reading-${selectedNote.id}`}>
           <article>
             <h3>Kapitel 1. Introduktion</h3>
@@ -110,13 +148,6 @@ export function PersonalisationShowcase() {
             <p>• Læs færdig<br />• Skriv noter<br />• Spørg AI</p>
             <span className="rr-setup-note-heart" aria-hidden="true">♡</span>
           </aside>
-        </div>
-      </section>
-
-      <section className="rr-setup-section" aria-labelledby="setup-highlight-title">
-        <h2 id="setup-highlight-title">Highlighterfarver</h2>
-        <div className="rr-setup-highlights">
-          {HIGHLIGHTS.map((item) => <button key={item} type="button" onClick={() => setHighlight(item)} aria-pressed={highlight === item} style={{ backgroundColor: item }} aria-label={`Vælg highlighterfarven ${item}`} />)}
         </div>
       </section>
 
