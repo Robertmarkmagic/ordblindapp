@@ -22,6 +22,14 @@ import { useDictation } from "@/hooks/useDictation";
 const CHECKS = ["Stavning", "Grammatik", "Komma", "Tegnsætning", "Ordforslag"];
 const INITIAL_SAMPLE = "I dette afsnit kan du prøve, hvordan ReliefRead gør teksten roligere at læse.";
 const HIGHLIGHT_COLORS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8179"];
+const READING_MODES = ["Læs hele teksten", "Læs ord", "Læs sætning", "Læs bogstavnavn", "Læs bogstavlyd"] as const;
+const SUBJECT_TERMS: Record<string, string[]> = {
+  Generel: ["besked", "forklaring", "eksempel", "vigtigt", "sammenhæng"],
+  Dansk: ["navneord", "udsagnsord", "tillægsord", "grundled", "udsagnsled"],
+  Matematik: ["brøk", "procent", "ligning", "geometri", "resultat"],
+  Naturfag: ["fotosyntese", "energi", "molekyle", "økosystem", "fordampning"],
+  Historie: ["kildekritik", "demokrati", "industrialisering", "revolution", "tidslinje"],
+};
 const TOOL_BUTTONS = [
   { id: "read", label: "Læs", icon: Play },
   { id: "mark", label: "Marker", icon: Highlighter },
@@ -133,12 +141,12 @@ function wordAtCaret(text: string, caret: number) {
   return before.match(/([\p{L}æøåÆØÅ]+)$/u)?.[1]?.toLocaleLowerCase() || "";
 }
 
-function speak(text: string, onEnd?: () => void) {
+function speak(text: string, onEnd?: () => void, rate = 0.9) {
   if (!("speechSynthesis" in window) || !text.trim()) return false;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "da-DK";
-  utterance.rate = 0.9;
+  utterance.rate = rate;
   utterance.onend = () => onEnd?.();
   utterance.onerror = () => onEnd?.();
   window.speechSynthesis.speak(utterance);
@@ -162,6 +170,11 @@ export function FunctionPlayground() {
   const [voiceText, setVoiceText] = useState("Skriv eller indsæt den tekst, du vil høre læst højt.");
   const [voiceSelection, setVoiceSelection] = useState(false);
   const [voiceReading, setVoiceReading] = useState(false);
+  const [readingMode, setReadingMode] = useState<(typeof READING_MODES)[number]>("Læs hele teksten");
+  const [readingSpeed, setReadingSpeed] = useState(0.9);
+  const [subject, setSubject] = useState("Generel");
+  const [personalTerm, setPersonalTerm] = useState("");
+  const [personalTerms, setPersonalTerms] = useState<string[]>([]);
   const [sampleText, setSampleText] = useState(INITIAL_SAMPLE);
   const [sampleSelection, setSampleSelection] = useState("");
   const [sampleReading, setSampleReading] = useState(false);
@@ -200,8 +213,9 @@ export function FunctionPlayground() {
       : [];
     const corrected = suggestion !== draft ? [suggestion.match(/\bgerne\b/i)?.[0] || "gerne"] : [];
     const nextWords = getWritingSuggestions(draft, caret, "da").nextWords;
-    return Array.from(new Set([...(direct || []), ...generated, ...fallback, ...corrected, ...nextWords])).slice(0, 7);
-  }, [caret, draft, suggestion]);
+    const relevantTerms = [...SUBJECT_TERMS[subject], ...personalTerms].filter((term) => !prefix || term.startsWith(prefix) || prefix.length < 2);
+    return Array.from(new Set([...(direct || []), ...generated, ...relevantTerms, ...fallback, ...corrected, ...nextWords])).slice(0, 9);
+  }, [caret, draft, personalTerms, subject, suggestion]);
 
   const sentenceSuggestions = useMemo(() => {
     const corrected = suggestion.trim().replace(/[.!?]+$/, "");
@@ -348,10 +362,27 @@ export function FunctionPlayground() {
     const start = field?.selectionStart ?? 0;
     const end = field?.selectionEnd ?? 0;
     const selectedText = start !== end ? voiceText.slice(start, end).trim() : "";
-    const textToRead = selectedText || voiceText.trim();
+    const before = voiceText.slice(0, start);
+    const after = voiceText.slice(end || start);
+    const word = selectedText || `${before.match(/[\p{L}æøåÆØÅ]+$/u)?.[0] || ""}${after.match(/^[\p{L}æøåÆØÅ]+/u)?.[0] || ""}`;
+    const sentenceStart = Math.max(before.lastIndexOf("."), before.lastIndexOf("!"), before.lastIndexOf("?")) + 1;
+    const remaining = voiceText.slice(start);
+    const nextStop = remaining.search(/[.!?]/);
+    const sentenceEnd = nextStop >= 0 ? start + nextStop + 1 : voiceText.length;
+    const sentence = voiceText.slice(sentenceStart, sentenceEnd).trim();
+    const letter = selectedText.slice(0, 1) || voiceText.slice(start, start + 1);
+    const textToRead = readingMode === "Læs ord"
+      ? word
+      : readingMode === "Læs sætning"
+        ? sentence
+        : readingMode === "Læs bogstavnavn"
+          ? letter.toLocaleUpperCase("da-DK")
+          : readingMode === "Læs bogstavlyd"
+            ? letter.toLocaleLowerCase("da-DK")
+            : selectedText || voiceText.trim();
     if (!textToRead) return;
     setVoiceReading(true);
-    const started = speak(textToRead, () => setVoiceReading(false));
+    const started = speak(textToRead, () => setVoiceReading(false), readingSpeed);
     if (!started) setVoiceReading(false);
   };
 
@@ -449,7 +480,7 @@ export function FunctionPlayground() {
             </button>
           )}
           {sentenceSuggestions.length > 0 && (
-            <div className="rr-sentence-suggestions">
+          <div className="rr-sentence-suggestions">
               <b>Fuldend sætningen</b>
               <div>
                 {sentenceSuggestions.map((sentence) => (
@@ -460,6 +491,24 @@ export function FunctionPlayground() {
               </div>
             </div>
           )}
+          <div className="rr-subject-words">
+            <div>
+              <label htmlFor="function-subject">Fagord</label>
+              <select id="function-subject" value={subject} onChange={(event) => setSubject(event.target.value)}>
+                {Object.keys(SUBJECT_TERMS).map((name) => <option key={name}>{name}</option>)}
+              </select>
+            </div>
+            <form onSubmit={(event) => {
+              event.preventDefault();
+              const value = personalTerm.trim().toLocaleLowerCase("da-DK");
+              if (value && !personalTerms.includes(value)) setPersonalTerms((current) => [...current, value]);
+              setPersonalTerm("");
+            }}>
+              <label htmlFor="function-personal-term">Min personlige fagordsliste</label>
+              <div><input id="function-personal-term" value={personalTerm} onChange={(event) => setPersonalTerm(event.target.value)} placeholder="Tilføj et fagord" /><button type="submit">Tilføj</button></div>
+            </form>
+            <p>{[...SUBJECT_TERMS[subject], ...personalTerms].join(" · ")}</p>
+          </div>
           <div className="rr-writing-results" aria-live="polite">
             {writingResults.filter((result) => checks.has(result.name)).map((result) => (
               <div key={result.name}>
@@ -512,6 +561,20 @@ export function FunctionPlayground() {
             onChange={(event) => setVoiceText(event.target.value)}
             onSelect={(event) => setVoiceSelection(event.currentTarget.selectionStart !== event.currentTarget.selectionEnd)}
           />
+          <div className="rr-reading-presets" aria-label="Tilpas oplæsningen">
+            <label>Teksttype
+              <select value={readingSpeed} onChange={(event) => setReadingSpeed(Number(event.target.value))}>
+                <option value="1.15">Skønlitteratur. Hurtigere</option>
+                <option value="0.8">Fagtekst. Langsommere</option>
+                <option value="0.9">Almindelig tekst</option>
+              </select>
+            </label>
+            <label>Hvad skal læses?
+              <select value={readingMode} onChange={(event) => setReadingMode(event.target.value as (typeof READING_MODES)[number])}>
+                {READING_MODES.map((mode) => <option key={mode}>{mode}</option>)}
+              </select>
+            </label>
+          </div>
           <button
             type="button"
             onClick={readVoiceText}
@@ -520,7 +583,11 @@ export function FunctionPlayground() {
           >
             {voiceReading ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
           </button>
-          <p>{voiceSelection ? "Tryk for at læse din markering op." : "Marker en del, eller læs hele teksten op."}</p>
+          <p>
+            {readingMode} ved {readingSpeed.toFixed(2).replace(".", ",")}×. {voiceSelection
+              ? "Tryk for at læse din markering op."
+              : "Placér markøren i teksten, eller markér det, du vil høre."}
+          </p>
           <div className="rr-function-wave" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
         </article>
 
