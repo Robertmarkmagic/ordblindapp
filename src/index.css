@@ -149,6 +149,7 @@
 .rr-grammar-tokens > span { display: grid; min-width: 4.2rem; gap: .05rem; border: 1px solid transparent; border-radius: .55rem; padding: .38rem .5rem; text-align: center; }
 .rr-grammar-tokens b { font-family: Lora, Georgia, serif; font-size: .84rem; }
 .rr-grammar-tokens small { font-size: .56rem; font-weight: 800; }
+.rr-grammar-tokens em { color: #1769aa; font-size: .53rem; font-style: normal; font-weight: 850; }
 .rr-grammar-tokens [data-word-class="noun"] { border-color: #a9c8ef; background: #e4f0ff; }
 .rr-grammar-tokens [data-word-class="verb"] { border-color: #f0b4bf; background: #ffe8ed; }
 .rr-grammar-tokens [data-word-class="adjective"] { border-color: #acd4b3; background: #e9f7e9; }
@@ -158,6 +159,43 @@
 .rr-grammar-sentence-parts > span { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; background: #edf7ff; padding: .3rem .55rem; font-size: .66rem; }
 .rr-grammar-sentence-parts b { color: #1769aa; }
 .rr-grammar-visual > p { margin-top: .55rem; color: #526579; font-size: .62rem; line-height: 1.45; }
+.rr-comma-guide { margin-top: .75rem; border-top: 1px solid #d6e4ee; padding-top: .75rem; }
+.rr-comma-toggle { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .6rem; border-radius: .75rem; background: #17345e; padding: .65rem .75rem; color: #fff; text-align: left; }
+.rr-comma-toggle > span { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .05rem .45rem; }
+.rr-comma-toggle > span > svg { grid-row: 1 / span 2; width: 1.1rem; color: #fff1ad; }
+.rr-comma-toggle b { color: #fff1ad; font-size: .76rem; }
+.rr-comma-toggle small { color: #eef7ff; font-size: .6rem; }
+.rr-comma-toggle > svg { width: 1rem; flex: none; transition: transform .18s ease; }
+.rr-comma-toggle[aria-expanded="true"] > svg { transform: rotate(180deg); }
+.rr-comma-content { margin-top: .55rem; border: 1px solid #c9dceb; border-radius: .85rem; background: #f8fcff; padding: .7rem; }
+.rr-comma-intro { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .65rem; }
+.rr-comma-intro > div:first-child { flex: 1 1 15rem; }
+.rr-comma-intro b { font-size: .72rem; }
+.rr-comma-intro p { margin-top: .12rem; color: #526579; font-size: .62rem; line-height: 1.45; }
+.rr-comma-intro > div:last-child { display: flex; gap: .3rem; }
+.rr-comma-intro button { border: 1px solid #b9d6eb; border-radius: 999px; background: #fff; padding: .35rem .55rem; font-size: .61rem; font-weight: 800; }
+.rr-comma-intro button[aria-pressed="true"] { border-color: #247dd0; background: #dff2ff; color: #17345e; }
+.rr-comma-live-hint { display: flex; align-items: flex-start; gap: .5rem; margin-top: .65rem; border-radius: .7rem; background: #fff1ad; padding: .55rem .65rem; }
+.rr-comma-live-hint > svg { width: 1rem; flex: none; color: #17345e; }
+.rr-comma-live-hint span { display: grid; gap: .1rem; font-size: .63rem; line-height: 1.45; }
+.rr-comma-live-hint b { color: #17345e; }
+.rr-comma-browser { display: grid; gap: .6rem; margin-top: .65rem; }
+.rr-comma-rule-list { display: grid; max-height: 14rem; gap: .25rem; overflow-y: auto; padding-right: .2rem; }
+.rr-comma-rule-list button { display: grid; grid-template-columns: 1.35rem minmax(0, 1fr) auto; align-items: center; gap: .4rem; border: 1px solid transparent; border-radius: .55rem; padding: .35rem .45rem; color: #334155; text-align: left; font-size: .62rem; font-weight: 750; }
+.rr-comma-rule-list button > span { display: grid; width: 1.25rem; height: 1.25rem; place-items: center; border-radius: 50%; background: #e1eff9; color: #17345e; font-size: .56rem; }
+.rr-comma-rule-list button > svg { width: .8rem; }
+.rr-comma-rule-list button[aria-pressed="true"] { border-color: #71b9ef; background: #dff2ff; color: #17345e; }
+.rr-comma-rule-detail { border: 1px solid #c9dceb; border-radius: .75rem; background: #fff; padding: .75rem; }
+.rr-comma-rule-detail > span { color: #1769aa; font-size: .58rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.rr-comma-rule-detail h4 { margin-top: .2rem; font-family: Lora, Georgia, serif; font-size: 1rem; }
+.rr-comma-rule-detail > p { margin-top: .4rem; color: #334155; font-size: .69rem; line-height: 1.55; }
+.rr-comma-rule-detail > div { display: grid; gap: .15rem; margin-top: .55rem; border-radius: .6rem; background: #edf7ff; padding: .55rem; }
+.rr-comma-rule-detail > div b { color: #1769aa; font-size: .58rem; text-transform: uppercase; }
+.rr-comma-rule-detail q { font-family: Lora, Georgia, serif; font-size: .72rem; line-height: 1.5; }
+.rr-comma-content > a { display: inline-block; margin-top: .65rem; color: #1769aa; font-size: .61rem; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
+@media (min-width: 720px) {
+  .rr-comma-browser { grid-template-columns: minmax(12rem, .75fr) minmax(0, 1.25fr); }
+}
 .rr-function-check-card { text-align: center; }
 .rr-function-check-card .rr-function-card-title { justify-content: center; }
 .rr-function-checks { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .45rem; }

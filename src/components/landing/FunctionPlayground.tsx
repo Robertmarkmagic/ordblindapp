@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { getWritingSuggestions, insertWritingSuggestion } from "@/lib/writing-tools";
 import { useDictation } from "@/hooks/useDictation";
+import { CommaGuide } from "@/components/landing/CommaGuide";
 
 const CHECKS = ["Stavning", "Grammatik", "Komma", "Tegnsætning", "Ordforslag"];
 const INITIAL_SAMPLE = "I dette afsnit kan du prøve, hvordan ReliefRead gør teksten roligere at læse.";
@@ -528,6 +529,8 @@ export function FunctionPlayground() {
                 {grammarAnalysis.tokens.map((token, index) => (
                   <span key={`${token.word}-${index}`} data-word-class={token.wordClass}>
                     <b>{token.word}</b><small>{WORD_CLASS_LABELS[token.wordClass]}</small>
+                    {token.word === grammarAnalysis.subject && <em>× Grundled</em>}
+                    {token.word === grammarAnalysis.predicate && <em>○ Udsagnsled</em>}
                   </span>
                 ))}
               </div>
@@ -536,6 +539,7 @@ export function FunctionPlayground() {
                 <span><b>Udsagnsled</b>{grammarAnalysis.predicate}</span>
               </div>
               <p>Analysen er en enkel prøvevisning. Den fulde skrivehjælp vurderer også sætningen i sammenhæng.</p>
+              <CommaGuide sentence={draft} />
             </div>
           )}
         </article>
