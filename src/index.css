@@ -371,6 +371,54 @@
   .rr-speech-feature { grid-template-columns: minmax(0, 1fr) minmax(18rem, .78fr); align-items: center; }
 }
 @keyframes rr-spin { to { transform: rotate(360deg); } }
+.rr-dyslexia-section { border: 1px solid rgb(255 241 173 / .84); border-radius: 1.6rem; background: linear-gradient(150deg, #78b9e4, #a8d6ef); padding: clamp(1rem, 3vw, 2rem); color: #171717; box-shadow: 0 24px 54px -36px rgb(20 55 90 / .75); }
+.rr-dyslexia-heading { margin: 0 auto; max-width: 48rem; text-align: center; }
+.rr-dyslexia-heading > span { color: #fff1ad; font-size: .7rem; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
+.rr-dyslexia-heading h2 { margin-top: .35rem; color: #fff1ad; font-family: Lora, Georgia, serif; font-size: clamp(1.8rem, 4vw, 3rem); }
+.rr-dyslexia-heading p { margin-top: .65rem; font-size: .84rem; font-weight: 600; line-height: 1.7; }
+.rr-dyslexia-basics { display: grid; gap: .65rem; margin-top: 1.25rem; }
+.rr-dyslexia-basics article { display: flex; align-items: flex-start; gap: .65rem; border: 1px solid rgb(204 221 234 / .9); border-radius: .9rem; background: #fff9f4; padding: .8rem; }
+.rr-dyslexia-basics article > svg { width: 1.2rem; flex: none; color: #247dd0; }
+.rr-dyslexia-basics h3 { font-family: Lora, Georgia, serif; font-size: .86rem; }
+.rr-dyslexia-basics p { margin-top: .2rem; color: #334155; font-size: .68rem; line-height: 1.55; }
+.rr-dyslexia-audience-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; margin-top: 1rem; border-radius: .85rem; background: rgb(23 52 94 / .12); padding: .35rem; }
+.rr-dyslexia-audience-tabs button { display: flex; min-height: 2.7rem; align-items: center; justify-content: center; gap: .35rem; border: 1px solid transparent; border-radius: .65rem; color: #17345e; font-size: .65rem; font-weight: 850; }
+.rr-dyslexia-audience-tabs button svg { width: 1rem; }
+.rr-dyslexia-audience-tabs button[aria-selected="true"] { border-color: #fff1ad; background: #17345e; color: #fff1ad; box-shadow: 0 8px 18px -14px rgb(23 52 94 / .9); }
+.rr-dyslexia-audience { display: grid; gap: 1rem; margin-top: .65rem; border: 1px solid rgb(204 221 234 / .9); border-radius: 1rem; background: #fff9f4; padding: clamp(.85rem, 2.5vw, 1.25rem); }
+.rr-dyslexia-audience-copy > span { display: grid; width: 2.3rem; height: 2.3rem; place-items: center; border-radius: .7rem; background: #dff2ff; color: #247dd0; }
+.rr-dyslexia-audience-copy > span svg { width: 1.1rem; }
+.rr-dyslexia-audience-copy h3 { margin-top: .55rem; font-family: Lora, Georgia, serif; font-size: clamp(1.05rem, 2.5vw, 1.45rem); }
+.rr-dyslexia-audience-copy p { margin-top: .4rem; color: #334155; font-size: .72rem; line-height: 1.65; }
+.rr-dyslexia-audience ol { display: grid; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.rr-dyslexia-audience li { display: flex; align-items: center; gap: .5rem; border-radius: .65rem; background: #edf7ff; padding: .5rem .6rem; font-size: .67rem; font-weight: 750; }
+.rr-dyslexia-audience li span { display: grid; width: 1.3rem; height: 1.3rem; flex: none; place-items: center; border-radius: 50%; background: #247dd0; color: #fff; font-size: .55rem; }
+.rr-dyslexia-reliefread { display: grid; gap: .8rem; margin-top: .8rem; border: 1px solid rgb(255 241 173 / .8); border-radius: 1rem; background: #17345e; padding: clamp(.85rem, 2.5vw, 1.25rem); color: #fff; }
+.rr-dyslexia-reliefread > div:first-child > span { color: #fff1ad; font-size: .62rem; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.rr-dyslexia-reliefread h3 { margin-top: .3rem; color: #fff1ad; font-family: Lora, Georgia, serif; font-size: 1.15rem; }
+.rr-dyslexia-feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; }
+.rr-dyslexia-feature-grid > span { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .05rem .4rem; border-radius: .65rem; background: rgb(255 255 255 / .1); padding: .55rem; }
+.rr-dyslexia-feature-grid svg { grid-row: 1 / span 2; width: 1rem; color: #fff1ad; }
+.rr-dyslexia-feature-grid b { color: #fff1ad; font-size: .65rem; }
+.rr-dyslexia-feature-grid small { color: #f8fbff; font-size: .57rem; line-height: 1.35; }
+.rr-dyslexia-test-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin-top: .8rem; border: 1px solid #e8d894; border-radius: .9rem; background: #fff1ad; padding: .8rem; }
+.rr-dyslexia-test-note > div { flex: 1 1 22rem; }
+.rr-dyslexia-test-note b { font-family: Lora, Georgia, serif; font-size: .82rem; }
+.rr-dyslexia-test-note p { margin-top: .25rem; color: #334155; font-size: .66rem; line-height: 1.5; }
+.rr-dyslexia-test-note button { display: inline-flex; min-height: 2.5rem; align-items: center; gap: .35rem; border-radius: 999px; background: #17345e; padding: .45rem .75rem; color: #fff1ad; font-size: .66rem; font-weight: 850; }
+.rr-dyslexia-test-note button svg { width: .9rem; }
+.rr-dyslexia-sources { display: flex; flex-wrap: wrap; justify-content: center; gap: .35rem .7rem; margin-top: .75rem; color: #17345e; font-size: .59rem; }
+.rr-dyslexia-sources span { font-weight: 850; }
+.rr-dyslexia-sources a { font-weight: 750; text-decoration: underline; text-underline-offset: 2px; }
+@media (min-width: 760px) {
+  .rr-dyslexia-basics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .rr-dyslexia-audience { grid-template-columns: minmax(0, 1.15fr) minmax(15rem, .85fr); align-items: center; }
+  .rr-dyslexia-reliefread { grid-template-columns: minmax(13rem, .7fr) minmax(0, 1.3fr); align-items: center; }
+}
+@media (max-width: 560px) {
+  .rr-dyslexia-audience-tabs { grid-template-columns: 1fr; }
+  .rr-dyslexia-feature-grid { grid-template-columns: 1fr; }
+}
 .rr-setup-showcase {
   --rr-setup-surface: #fff8f3;
   --rr-setup-ink: #122d58;

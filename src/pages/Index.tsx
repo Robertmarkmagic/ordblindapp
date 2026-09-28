@@ -21,6 +21,7 @@ import { DEFAULT_PERSONALISATION, PersonalisationShowcase, type PersonalisationP
 import { FeatureDemos } from "@/components/landing/FeatureDemos";
 import { FunctionPlayground } from "@/components/landing/FunctionPlayground";
 import { PdfWorkspaceShowcase } from "@/components/landing/PdfWorkspaceShowcase";
+import { DyslexiaHelpSection } from "@/components/landing/DyslexiaHelpSection";
 import { PRICING } from "@/lib/billing";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/lib/i18n";
@@ -169,6 +170,11 @@ export default function Index() {
               </Button>
             </div>
           </div>
+        </section>
+
+        {/* ---------- DYSLEXIA KNOWLEDGE ---------- */}
+        <section className="mx-auto max-w-6xl px-3 pb-16 sm:px-8">
+          <DyslexiaHelpSection />
         </section>
 
         {/* ---------- STORY ---------- */}
