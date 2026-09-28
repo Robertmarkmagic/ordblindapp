@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from "react";
-import { BookOpen, FileText, Highlighter, Loader2, Play, Upload, Volume2 } from "lucide-react";
+import { BookOpen, FileText, Highlighter, Loader2, Mic, MicOff, Play, Upload, Volume2 } from "lucide-react";
 import { extractTextFromFile } from "@/lib/import-text";
 import { getWritingSuggestions, insertWritingSuggestion } from "@/lib/writing-tools";
+import { useDictation } from "@/hooks/useDictation";
 
 const SAMPLE_TEXT = `Opgave: Forklar, hvorfor rent drikkevand er vigtigt.
 
@@ -33,6 +34,25 @@ export function PdfWorkspaceShowcase() {
   const fileRef = useRef<HTMLInputElement>(null);
   const documentRef = useRef<HTMLTextAreaElement>(null);
   const answerRef = useRef<HTMLTextAreaElement>(null);
+
+  const dictation = useDictation({
+    lang: "da-DK",
+    onFinal: (spoken) => {
+      setAnswer((current) => {
+        const position = answerRef.current?.selectionStart ?? current.length;
+        const needsSpace = position > 0 && !/\s$/.test(current.slice(0, position));
+        const addition = `${needsSpace ? " " : ""}${spoken}`;
+        const next = `${current.slice(0, position)}${addition}${current.slice(position)}`;
+        const nextCaret = position + addition.length;
+        setAnswerCaret(nextCaret);
+        window.setTimeout(() => {
+          answerRef.current?.focus();
+          answerRef.current?.setSelectionRange(nextCaret, nextCaret);
+        }, 0);
+        return next;
+      });
+    },
+  });
 
   const suggestions = useMemo(() => {
     const result = getWritingSuggestions(answer, answerCaret, "da");
@@ -153,6 +173,25 @@ export function PdfWorkspaceShowcase() {
             }}
             onSelect={(event) => setAnswerCaret(event.currentTarget.selectionStart)}
           />
+          <div className="rr-pdf-dictation">
+            <button
+              type="button"
+              onClick={dictation.listening ? dictation.stop : dictation.start}
+              disabled={dictation.requesting || !dictation.supported}
+              aria-pressed={dictation.listening}
+            >
+              {dictation.listening ? <MicOff aria-hidden="true" /> : <Mic aria-hidden="true" />}
+              {dictation.requesting ? "Forbinder mikrofon..." : dictation.listening ? "Stop indtaling" : "Indtal dit svar"}
+            </button>
+            <span>{dictation.listening ? "Jeg lytter. Tal i dit eget tempo." : "Din tale sættes direkte ind ved markøren."}</span>
+          </div>
+          {dictation.interim && <p className="rr-pdf-interim" aria-live="polite">Hører: {dictation.interim}</p>}
+          {dictation.error && (
+            <p className="rr-pdf-dictation-error" role="alert">
+              Mikrofonen kunne ikke startes. Giv ReliefRead adgang til mikrofonen i browserens adressefelt, og prøv igen.
+            </p>
+          )}
+          {!dictation.supported && <p className="rr-pdf-dictation-error">Tale-til-tekst kræver en browser med talegenkendelse, for eksempel Chrome eller Edge.</p>}
           <div className="rr-pdf-suggestions">
             <b>Ordforslag</b>
             <div>
@@ -163,6 +202,22 @@ export function PdfWorkspaceShowcase() {
             <Volume2 aria-hidden="true" /> Læs mit svar højt
           </button>
         </aside>
+      </div>
+
+      <div className="rr-speech-feature">
+        <div>
+          <span>Tale-til-tekst i ReliefRead</span>
+          <h3>Indtal tankerne. Se dem som tekst. Lyt og ret.</h3>
+          <p>
+            Eleven kan formulere sine idéer med stemmen og få dem sat direkte ind i skrivefeltet.
+            Ordforslag hjælper videre, og oplæsning gør det lettere at opdage fejl og uklare sætninger.
+          </p>
+        </div>
+        <ol aria-label="Sådan bruges tale-til-tekst">
+          <li><Mic aria-hidden="true" /><span><b>1. Indtal</b><small>Tal i dit eget tempo</small></span></li>
+          <li><Highlighter aria-hidden="true" /><span><b>2. Skriv videre</b><small>Brug relevante ordforslag</small></span></li>
+          <li><Volume2 aria-hidden="true" /><span><b>3. Lyt og ret</b><small>Hør om teksten lyder rigtig</small></span></li>
+        </ol>
       </div>
 
       <p className="rr-pdf-footnote">PDF’er med markerbar tekst virker nu. OCR til papirark og scannede PDF’er er næste trin.</p>

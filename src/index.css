@@ -303,15 +303,34 @@
 .rr-pdf-answer label { display: block; margin-bottom: .35rem; font-size: .68rem; font-weight: 800; }
 .rr-pdf-answer > textarea { min-height: 8.5rem; width: 100%; resize: vertical; border: 1px solid #c9dceb; border-radius: .75rem; background: #f8fcff; padding: .7rem; color: #171717; font-size: .82rem; line-height: 1.55; outline: none; }
 .rr-pdf-answer > textarea:focus { border-color: #2988d8; box-shadow: 0 0 0 3px rgb(41 136 216 / .14); }
+.rr-pdf-dictation { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem .6rem; margin-top: .65rem; }
+.rr-pdf-dictation button { display: inline-flex; min-height: 2.5rem; align-items: center; justify-content: center; gap: .38rem; border-radius: 999px; background: #247dd0; padding: .45rem .75rem; color: #fff; font-size: .68rem; font-weight: 850; }
+.rr-pdf-dictation button[aria-pressed="true"] { background: #17345e; box-shadow: 0 0 0 4px rgb(113 185 239 / .3); }
+.rr-pdf-dictation button:disabled { cursor: not-allowed; opacity: .5; }
+.rr-pdf-dictation button svg { width: 1rem; }
+.rr-pdf-dictation span { flex: 1 1 9rem; color: #526579; font-size: .63rem; line-height: 1.45; }
+.rr-pdf-interim, .rr-pdf-dictation-error { margin-top: .5rem; border-radius: .55rem; background: #edf7ff; padding: .5rem .6rem; color: #334155; font-size: .65rem; line-height: 1.45; }
+.rr-pdf-dictation-error { background: #fff6df; color: #62451a; }
 .rr-pdf-suggestions { margin-top: .75rem; }
 .rr-pdf-suggestions > b { font-size: .68rem; }
 .rr-pdf-suggestions > div { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .4rem; }
 .rr-pdf-suggestions button { border: 1px solid #b9d6eb; border-radius: 999px; background: #edf7ff; padding: .32rem .55rem; color: #171717; font-size: .65rem; font-weight: 750; }
 .rr-pdf-suggestions button:hover, .rr-pdf-suggestions button:focus-visible { border-color: #2988d8; background: #dff2ff; outline: none; }
 .rr-pdf-read-answer { width: 100%; margin-top: .75rem; background: #fff1ad; }
+.rr-speech-feature { display: grid; gap: 1rem; margin-top: 1rem; border: 1px solid rgb(255 241 173 / .82); border-radius: 1rem; background: rgb(23 52 94 / .92); padding: clamp(.9rem, 2.5vw, 1.35rem); color: #fff; }
+.rr-speech-feature > div > span { color: #fff1ad; font-size: .65rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.rr-speech-feature h3 { margin-top: .3rem; color: #fff1ad; font-family: Lora, Georgia, serif; font-size: clamp(1.25rem, 3vw, 1.85rem); }
+.rr-speech-feature p { margin-top: .45rem; color: #f8fbff; font-size: .75rem; line-height: 1.65; }
+.rr-speech-feature ol { display: grid; gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.rr-speech-feature li { display: flex; align-items: center; gap: .55rem; border-radius: .75rem; background: rgb(255 255 255 / .1); padding: .55rem .65rem; }
+.rr-speech-feature li > svg { width: 1.1rem; flex: none; color: #fff1ad; }
+.rr-speech-feature li span { display: grid; }
+.rr-speech-feature li b { color: #fff1ad; font-size: .7rem; }
+.rr-speech-feature li small { color: #f8fbff; font-size: .62rem; }
 .rr-pdf-footnote { margin-top: .8rem; color: #17345e; font-size: .68rem; font-weight: 750; text-align: center; }
 @media (min-width: 780px) {
   .rr-pdf-workspace { grid-template-columns: minmax(0, 1.5fr) minmax(15rem, .72fr); }
+  .rr-speech-feature { grid-template-columns: minmax(0, 1fr) minmax(18rem, .78fr); align-items: center; }
 }
 @keyframes rr-spin { to { transform: rotate(360deg); } }
 .rr-setup-showcase {
