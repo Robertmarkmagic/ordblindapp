@@ -271,6 +271,49 @@
 @keyframes rr-wave {
   to { transform: scaleY(.45); }
 }
+.rr-pdf-showcase { overflow: hidden; border: 1px solid rgb(255 241 173 / .86); border-radius: 1.6rem; background: linear-gradient(145deg, #78b9e4, #9bcdec); padding: clamp(1rem, 3vw, 2rem); color: #171717; box-shadow: 0 24px 54px -36px rgb(20 55 90 / .75); }
+.rr-pdf-heading { margin: 0 auto 1.25rem; max-width: 47rem; text-align: center; }
+.rr-pdf-heading > span { color: #fff1ad; font-size: .72rem; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+.rr-pdf-heading h2 { margin-top: .35rem; color: #fff1ad; font-family: Lora, Georgia, serif; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 750; }
+.rr-pdf-heading p { margin-top: .65rem; color: #171717; font-size: .9rem; font-weight: 600; line-height: 1.7; }
+.rr-pdf-workspace { display: grid; gap: 1rem; }
+.rr-pdf-document, .rr-pdf-answer { min-width: 0; border: 1px solid rgb(204 221 234 / .92); border-radius: 1.1rem; background: #fff9f4; padding: .85rem; box-shadow: 0 18px 38px -29px rgb(20 55 90 / .72); }
+.rr-pdf-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .65rem; padding: .15rem .15rem .75rem; }
+.rr-pdf-toolbar > span { display: flex; min-width: 0; align-items: center; gap: .4rem; }
+.rr-pdf-toolbar > span svg { width: 1.05rem; flex: none; color: #247dd0; }
+.rr-pdf-toolbar b { overflow: hidden; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
+.rr-pdf-toolbar > div { display: flex; flex-wrap: wrap; gap: .4rem; }
+.rr-pdf-toolbar button, .rr-pdf-read-answer { display: inline-flex; min-height: 2.35rem; align-items: center; justify-content: center; gap: .35rem; border-radius: .65rem; background: #dff2ff; padding: .4rem .65rem; color: #171717; font-size: .68rem; font-weight: 800; }
+.rr-pdf-toolbar button:last-child { background: #247dd0; color: #fff; }
+.rr-pdf-toolbar button:disabled { cursor: wait; opacity: .65; }
+.rr-pdf-toolbar svg, .rr-pdf-read-answer svg { width: .95rem; }
+.rr-spin { animation: rr-spin .8s linear infinite; }
+.rr-pdf-page { border: 1px solid #d8e4ed; border-radius: .8rem; background: #fff; padding: .75rem; }
+.rr-pdf-page-label { display: flex; align-items: center; gap: .35rem; margin-bottom: .5rem; color: #526579; font-size: .64rem; font-weight: 800; }
+.rr-pdf-page-label svg { width: .9rem; }
+.rr-pdf-page textarea { min-height: 18rem; width: 100%; resize: vertical; border: 0; background: transparent; color: #171717; font-family: Lora, Georgia, serif; font-size: .88rem; line-height: 1.75; outline: none; }
+.rr-pdf-page textarea::selection { background: #fff084; color: #17345e; }
+.rr-pdf-notice { margin-top: .65rem; border-radius: .65rem; background: #edf7ff; padding: .6rem .7rem; color: #334155; font-size: .7rem; line-height: 1.5; }
+.rr-pdf-answer { align-self: start; }
+.rr-pdf-answer-title { display: flex; align-items: center; gap: .55rem; margin-bottom: .8rem; }
+.rr-pdf-answer-title > svg { width: 1.1rem; color: #247dd0; }
+.rr-pdf-answer-title span { display: grid; }
+.rr-pdf-answer-title b { font-family: Lora, Georgia, serif; font-size: .9rem; }
+.rr-pdf-answer-title small { color: #526579; font-size: .64rem; }
+.rr-pdf-answer label { display: block; margin-bottom: .35rem; font-size: .68rem; font-weight: 800; }
+.rr-pdf-answer > textarea { min-height: 8.5rem; width: 100%; resize: vertical; border: 1px solid #c9dceb; border-radius: .75rem; background: #f8fcff; padding: .7rem; color: #171717; font-size: .82rem; line-height: 1.55; outline: none; }
+.rr-pdf-answer > textarea:focus { border-color: #2988d8; box-shadow: 0 0 0 3px rgb(41 136 216 / .14); }
+.rr-pdf-suggestions { margin-top: .75rem; }
+.rr-pdf-suggestions > b { font-size: .68rem; }
+.rr-pdf-suggestions > div { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .4rem; }
+.rr-pdf-suggestions button { border: 1px solid #b9d6eb; border-radius: 999px; background: #edf7ff; padding: .32rem .55rem; color: #171717; font-size: .65rem; font-weight: 750; }
+.rr-pdf-suggestions button:hover, .rr-pdf-suggestions button:focus-visible { border-color: #2988d8; background: #dff2ff; outline: none; }
+.rr-pdf-read-answer { width: 100%; margin-top: .75rem; background: #fff1ad; }
+.rr-pdf-footnote { margin-top: .8rem; color: #17345e; font-size: .68rem; font-weight: 750; text-align: center; }
+@media (min-width: 780px) {
+  .rr-pdf-workspace { grid-template-columns: minmax(0, 1.5fr) minmax(15rem, .72fr); }
+}
+@keyframes rr-spin { to { transform: rotate(360deg); } }
 .rr-setup-showcase {
   --rr-setup-surface: #fff8f3;
   --rr-setup-ink: #122d58;

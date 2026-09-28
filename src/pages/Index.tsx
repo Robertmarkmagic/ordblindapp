@@ -20,6 +20,7 @@ import { MiniReader } from "@/components/landing/MiniReader";
 import { DEFAULT_PERSONALISATION, PersonalisationShowcase, type PersonalisationPreview } from "@/components/landing/PersonalisationShowcase";
 import { FeatureDemos } from "@/components/landing/FeatureDemos";
 import { FunctionPlayground } from "@/components/landing/FunctionPlayground";
+import { PdfWorkspaceShowcase } from "@/components/landing/PdfWorkspaceShowcase";
 import { PRICING } from "@/lib/billing";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/lib/i18n";
@@ -124,6 +125,11 @@ export default function Index() {
         {/* ---------- PERSONALISATION SETUP ---------- */}
         <section className="mx-auto max-w-6xl px-3 pb-16 pt-2 sm:px-8">
           <PersonalisationShowcase onChange={setPersonalisation} />
+        </section>
+
+        {/* ---------- PDF WORKSPACE ---------- */}
+        <section className="mx-auto max-w-6xl px-3 pb-16 sm:px-8">
+          <PdfWorkspaceShowcase />
         </section>
 
         {/* ---------- FULL APP THEMES ---------- */}
