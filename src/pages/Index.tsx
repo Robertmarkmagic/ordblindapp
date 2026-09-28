@@ -125,7 +125,11 @@ export default function Index() {
           <div className="rr-fade-up mx-auto max-w-5xl">
             <div className="mb-5 text-center">
               <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">{language === "da" ? "Se din ReliefRead-app" : "See your ReliefRead app"}</h2>
-              <p className="mt-2 text-base text-muted-foreground">{language === "da" ? "Dine valg ovenfor vises direkte i den app, du får." : "Your choices above appear directly in the app you get."}</p>
+              <p className="mx-auto mt-3 max-w-3xl text-base leading-relaxed text-muted-foreground">
+                {language === "da"
+                  ? "Dine valg ovenfor vises direkte i den app, du får. Du får kontekstbaserede ordforslag, oplæsning og nem adgang til fagord. Værktøjslinjen er integreret dér, hvor du arbejder, og fungerer direkte i browseren på tværs af enheder."
+                  : "Your choices above appear directly in the app you get. You get context-aware word suggestions, text-to-speech and easy access to specialist terms. The toolbar is integrated where you work and runs directly in the browser across devices."}
+              </p>
             </div>
             <MiniReader settings={personalisation} />
             <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
