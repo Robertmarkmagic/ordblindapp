@@ -28,11 +28,19 @@ const APP_COLOR_CHOICES = [...COLOR_CHOICES, ...CHILD_NOTEBOOKS] as const;
 const NOTEBOOK_CHOICES = [...COLOR_CHOICES, ...CHILD_NOTEBOOKS] as const;
 const ADULT_STICKERS = [
   { value: "", label: "Ingen", icon: "×" },
+  { value: "✦", label: "Stjerne", icon: "✦" },
+  { value: "♡", label: "Hjerte", icon: "♡" },
+  { value: "📖", label: "Bog", icon: "📖" },
+  { value: "☕", label: "Kaffe", icon: "☕" },
+  { value: "🍃", label: "Blad", icon: "🍃" },
+] as const;
+const TEEN_STICKERS = [
+  { value: "", label: "Ingen", icon: "×" },
   { value: "🐚", label: "Musling", icon: "🐚" },
   { value: "🍋", label: "Citron", icon: "🍋" },
   { value: "🌺", label: "Blomst", icon: "🌺" },
   { value: "🍓", label: "Jordbær", icon: "🍓" },
-  { value: "🪐", label: "Planet", icon: "🪐" },
+  { value: "✨", label: "Glimmer", icon: "✨" },
 ] as const;
 const CHILD_STICKERS = [
   { value: "", label: "Ingen", icon: "×" },
@@ -40,6 +48,7 @@ const CHILD_STICKERS = [
   { value: "🦄", label: "Enhjørning", icon: "🦄" },
   { value: "🌈", label: "Regnbue", icon: "🌈" },
   { value: "🚀", label: "Rumraket", icon: "🚀" },
+  { value: "🪐", label: "Planet", icon: "🪐" },
 ] as const;
 const HIGHLIGHTS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8179"];
 const TEXT_COLORS = [
@@ -76,13 +85,13 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
   const [sticker, setSticker] = useState("🍓");
   const [appMode, setAppMode] = useState<"adult" | "child">("adult");
   const [notebookMode, setNotebookMode] = useState<"adult" | "child">("adult");
-  const [stickerMode, setStickerMode] = useState<"adult" | "child">("adult");
+  const [stickerMode, setStickerMode] = useState<"adult" | "teen" | "child">("teen");
   const [highlight, setHighlight] = useState(HIGHLIGHTS[0]);
   const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["value"]>("#fff1ad");
   const selectedNote = useMemo(() => NOTEBOOK_CHOICES.find((item) => item.id === notebookTheme) ?? COLOR_CHOICES[1], [notebookTheme]);
   const visibleColors = appMode === "child" ? CHILD_NOTEBOOKS : COLOR_CHOICES;
   const visibleNotebooks = notebookMode === "child" ? CHILD_NOTEBOOKS : COLOR_CHOICES;
-  const visibleStickers = stickerMode === "child" ? CHILD_STICKERS : ADULT_STICKERS;
+  const visibleStickers = stickerMode === "child" ? CHILD_STICKERS : stickerMode === "teen" ? TEEN_STICKERS : ADULT_STICKERS;
 
   useEffect(() => {
     onChange?.({ tools: [...tools], color, notebookTheme, sticker, highlight, textColor });
@@ -115,7 +124,7 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
     if (mode === "adult" && (notebookTheme === "unicorn" || notebookTheme === "dino")) setNotebookTheme("pinky");
   };
 
-  const selectStickerMode = (mode: "adult" | "child") => {
+  const selectStickerMode = (mode: "adult" | "teen" | "child") => {
     setStickerMode(mode);
     setSticker("");
   };
@@ -197,8 +206,9 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
 
       <section className="rr-setup-section" aria-labelledby="setup-sticker-title">
         <h2 id="setup-sticker-title">Tilføj stickers</h2>
-        <div className="rr-setup-mode-switch" role="group" aria-label="Vælg voksen- eller børnestickers">
+        <div className="rr-setup-mode-switch" role="group" aria-label="Vælg stickers til voksne, teenagere eller børn">
           <button type="button" onClick={() => selectStickerMode("adult")} aria-pressed={stickerMode === "adult"}>Voksen</button>
+          <button type="button" onClick={() => selectStickerMode("teen")} aria-pressed={stickerMode === "teen"}>Teenager</button>
           <button type="button" onClick={() => selectStickerMode("child")} aria-pressed={stickerMode === "child"}>Barn</button>
         </div>
         <div className="rr-setup-stickers">

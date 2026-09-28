@@ -50,16 +50,16 @@ export default function Index() {
   const [personalisation, setPersonalisation] = useState<PersonalisationPreview>(DEFAULT_PERSONALISATION);
 
   const oldTools = [
-    t("landing.old1", "Robotic, 2005-era text-to-speech voices"),
-    t("landing.old2", "Rigid, clinical interfaces"),
-    t("landing.old3", "Hundreds of dollars every year"),
-    t("landing.old4", "Often locked behind a formal diagnosis"),
+    t("landing.old1", "Separate programs for reading, writing and looking up words"),
+    t("landing.old2", "Different controls and layouts on every device"),
+    t("landing.old3", "Documents, notes and writing help kept apart"),
+    t("landing.old4", "Long setup before the support is useful"),
   ];
   const reliefRead = [
-    t("landing.new1", "Natural, human-like AI voices"),
-    t("landing.new2", "OpenDyslexic, Bionic Reading & tints built in"),
-    t("landing.new3", "A shame-free phonetic writing coach"),
-    t("landing.new4", "$7 a month, open to everyone"),
+    t("landing.new1", "Reading, speech-to-text, suggestions, grammar and dictionary in one place"),
+    t("landing.new2", "Personal colours, text, notebook, stickers and highlighter"),
+    t("landing.new3", "The same toolbar on computer, tablet and mobile"),
+    t("landing.new4", "PDFs, scanning, notes and Riley in one workspace"),
   ];
 
   // Already signed in → quietly continue to the reading space.
@@ -177,21 +177,6 @@ export default function Index() {
           <DyslexiaHelpSection />
         </section>
 
-        {/* ---------- STORY ---------- */}
-        <section className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
-          <div className="rr-fade-up rounded-3xl border border-border bg-card p-8 shadow-paper sm:p-10">
-            <p className="text-sm font-semibold uppercase tracking-wide text-sage">
-              {t("landing.edgeLabel", "Built for those on the edge")}
-            </p>
-            <p className="mt-5 font-display text-xl leading-relaxed text-foreground sm:text-2xl">
-              {t("landing.edgeStory", "Thousands of students score just above the line for an official dyslexia diagnosis. They get no public support, no tools, no extra time, yet they fight with every page, every day.")}
-            </p>
-            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-              {t("landing.daughter", "ReliefRead was built for one of them: the founder's daughter. She didn't need a diagnosis to deserve relief.")}
-            </p>
-          </div>
-        </section>
-
         {/* ---------- COMPARISON STRIP ---------- */}
         <section className="mx-auto max-w-5xl px-5 py-8 sm:px-8">
           <h2 className="text-center font-display text-3xl font-semibold tracking-tight text-foreground">
@@ -200,7 +185,7 @@ export default function Index() {
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="rounded-3xl border border-border bg-muted/50 p-7">
               <h3 className="font-display text-lg font-semibold text-muted-foreground">
-                {t("landing.oldWay", "The old way")}
+                {t("landing.oldWay", "Separate tools")}
               </h3>
               <ul className="mt-5 space-y-3">
                 {oldTools.map((item) => (
