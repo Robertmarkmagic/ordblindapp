@@ -203,6 +203,26 @@ export function FunctionPlayground() {
     return Array.from(new Set([...(direct || []), ...generated, ...fallback, ...corrected, ...nextWords])).slice(0, 7);
   }, [caret, draft, suggestion]);
 
+  const sentenceSuggestions = useMemo(() => {
+    const corrected = suggestion.trim().replace(/[.!?]+$/, "");
+    if (!corrected) return [];
+    const lower = corrected.toLocaleLowerCase("da-DK");
+    if (/\bfordi$/.test(lower)) {
+      return [`${corrected} det gør teksten lettere at forstå.`, `${corrected} jeg gerne vil forklare det tydeligt.`];
+    }
+    if (/\bjeg vil$/.test(lower)) {
+      return [`${corrected} gerne skrive en tydelig besked.`, `${corrected} gerne have hjælp til min tekst.`];
+    }
+    if (/\bkan du$/.test(lower)) {
+      return [`${corrected} hjælpe mig med at formulere det?`, `${corrected} gøre teksten lettere at læse?`];
+    }
+    return [
+      `${corrected}.`,
+      `${corrected}, så budskabet bliver lettere at forstå.`,
+      `${corrected}. Det vigtigste er, at teksten er tydelig.`,
+    ];
+  }, [suggestion]);
+
   const writingResults = useMemo(() => {
     const trimmed = draft.trim();
     const lower = draft.toLocaleLowerCase("da-DK");
@@ -427,6 +447,18 @@ export function FunctionPlayground() {
             <button type="button" className="rr-function-suggestion" onClick={() => setDraft(suggestion)}>
               <span><b>Ret hele sætningen:</b> {suggestion}</span><Check aria-hidden="true" />
             </button>
+          )}
+          {sentenceSuggestions.length > 0 && (
+            <div className="rr-sentence-suggestions">
+              <b>Fuldend sætningen</b>
+              <div>
+                {sentenceSuggestions.map((sentence) => (
+                  <button key={sentence} type="button" onClick={() => { setDraft(sentence); setCaret(sentence.length); setSuggestionOpen(false); }}>
+                    {sentence}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
           <div className="rr-writing-results" aria-live="polite">
             {writingResults.filter((result) => checks.has(result.name)).map((result) => (

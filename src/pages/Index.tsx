@@ -7,6 +7,12 @@ import {
   Check,
   X,
   Sparkles,
+  Monitor,
+  Laptop,
+  Smartphone,
+  Cloud,
+  Globe2,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -132,6 +138,22 @@ export default function Index() {
               </p>
             </div>
             <MiniReader settings={personalisation} />
+            <div className="rr-platform-support">
+              <div className="rr-platform-copy">
+                <span>Samme ReliefRead. På tværs af dine enheder.</span>
+                <h3>Kontekstbaserede ordforslag, uanset hvor du arbejder</h3>
+                <p>ReliefRead foreslår ord og fuldender sætninger ud fra den tekst, du allerede har skrevet. Den installerbare webapp giver dig den samme værktøjslinje, det samme design og de samme funktioner på computer, tablet og mobil.</p>
+              </div>
+              <div className="rr-platform-grid" aria-label="Platforme, der understøttes af ReliefRead">
+                <div><Monitor aria-hidden="true" /><b>Windows</b><small>Web og installerbar app</small></div>
+                <div><Laptop aria-hidden="true" /><b>Mac</b><small>Web og installerbar app</small></div>
+                <div><Smartphone aria-hidden="true" /><b>Android</b><small>Mobil webapp</small></div>
+                <div><Smartphone aria-hidden="true" /><b>iOS</b><small>Mobil webapp</small></div>
+                <div><Globe2 aria-hidden="true" /><b>Web</b><small>Direkte i browseren</small></div>
+                <div><Cloud aria-hidden="true" /><b>Cloud</b><small>Tilgængelig online</small></div>
+                <div className="is-coming"><FileText aria-hidden="true" /><b>Google Docs</b><small>Browserudvidelse på vej</small></div>
+              </div>
+            </div>
             <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button className="h-12 rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground shadow-paper hover:bg-primary/90" onClick={goSignUp}>
                 {t("landing.tryFree", "Try ReliefRead free")}<ArrowRight className="ml-1 h-5 w-5" aria-hidden="true" />
