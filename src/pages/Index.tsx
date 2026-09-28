@@ -128,11 +128,6 @@ export default function Index() {
           <PersonalisationShowcase onChange={setPersonalisation} />
         </section>
 
-        {/* ---------- PDF WORKSPACE ---------- */}
-        <section className="mx-auto max-w-6xl px-3 pb-16 sm:px-8">
-          <PdfWorkspaceShowcase />
-        </section>
-
         {/* ---------- FULL APP THEMES ---------- */}
         <section className="mx-auto max-w-6xl px-5 pb-16 sm:px-8">
           <div className="rr-fade-up mx-auto max-w-5xl">
@@ -140,7 +135,7 @@ export default function Index() {
               <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">{language === "da" ? "Se din ReliefRead-app" : "See your ReliefRead app"}</h2>
               <p className="mx-auto mt-3 max-w-3xl text-base leading-relaxed text-muted-foreground">
                 {language === "da"
-                  ? "Dine valg ovenfor vises direkte i den app, du får. Du får kontekstbaserede ordforslag, oplæsning og nem adgang til fagord. Værktøjslinjen er integreret dér, hvor du arbejder, og fungerer direkte i browseren på tværs af enheder."
+                  ? "Dine valg ovenfor vises direkte i den app, du får. Læs tekst højt, markér vigtige steder, indtal tekst, skriv med forslag, ret stavning og grammatik, slå ord op, gem noter og arbejd i PDF-filer. Det hele er samlet i den samme ReliefRead-værktøjslinje."
                   : "Your choices above appear directly in the app you get. You get context-aware word suggestions, text-to-speech and easy access to specialist terms. The toolbar is integrated where you work and runs directly in the browser across devices."}
               </p>
             </div>
@@ -170,6 +165,11 @@ export default function Index() {
               </Button>
             </div>
           </div>
+        </section>
+
+        {/* ---------- PDF WORKSPACE ---------- */}
+        <section className="mx-auto max-w-6xl px-3 pb-16 sm:px-8">
+          <PdfWorkspaceShowcase />
         </section>
 
         {/* ---------- DYSLEXIA KNOWLEDGE ---------- */}
@@ -233,10 +233,12 @@ export default function Index() {
         <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
           <div className="mx-auto mb-10 max-w-2xl text-center">
             <h2 className="font-display text-3xl font-semibold tracking-tight text-foreground">
-              {t("landing.listenSeeWrite", "Listen. See. Write.")}
+              {language === "da" ? "Læs. Tal. Skriv." : t("landing.listenSeeWrite", "Read. Speak. Write.")}
             </h2>
             <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
-              {t("landing.threeWays", "Three ways ReliefRead meets you where you are. Watch them move.")}
+              {language === "da"
+                ? "De samme funktioner går igen i hele ReliefRead, så du kan læse, forstå og skrive uden at skifte mellem forskellige værktøjer."
+                : t("landing.threeWays", "The same tools work together across ReliefRead, so you can read, understand and write in one place.")}
             </p>
           </div>
           <FeatureDemos />

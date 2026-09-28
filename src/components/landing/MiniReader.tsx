@@ -1,5 +1,5 @@
 import React, { type CSSProperties } from "react";
-import { BookOpen, Camera, Folder, Highlighter, Mic, NotebookText, PenLine, Play, Search, Settings, Sparkles, Type, UserCircle, Volume2 } from "lucide-react";
+import { BookOpen, Camera, CheckCheck, FileText, Folder, Highlighter, Mic, NotebookText, PenLine, Play, Search, Settings, Sparkles, Type, UserCircle, Volume2 } from "lucide-react";
 import type { PersonalisationPreview } from "@/components/landing/PersonalisationShowcase";
 
 const SAMPLE = "I ReliefRead bestemmer du selv, hvordan teksten skal se ud. Når skrift, farver og afstand passer til dig, bliver det lettere at læse, forstå og deltage på dine egne præmisser.";
@@ -116,9 +116,12 @@ export function MiniReader({ settings }: { settings: PersonalisationPreview }) {
               </div>
 
               <div className="rr-landing-feature-row">
-                <div><PenLine /><span><b>Unik grammatikstøtte</b><small>Visuelle ordklasser, stavning, komma og grammatik</small></span></div>
+                <div><Volume2 /><span><b>Oplæsning</b><small>Læs ord, sætninger eller hele teksten højt</small></span></div>
+                <div><Mic /><span><b>Tale-til-tekst</b><small>Indtal dine tanker direkte i skrivefeltet</small></span></div>
+                <div><PenLine /><span><b>Skrivehjælp</b><small>Kontekstbaserede ord- og sætningsforslag</small></span></div>
+                <div><CheckCheck /><span><b>Grammatik og komma</b><small>Stavning, ordklasser, komma og tegnsætning</small></span></div>
                 <div><Search /><span><b>Ordbog</b><small>Betydning, bøjning, oversættelse og udtale</small></span></div>
-                <div><Camera /><span><b>Scan tekst</b><small>Tag et billede og få teksten gjort læsbar</small></span></div>
+                <div><FileText /><span><b>PDF, scan og noter</b><small>Arbejd med dokumenter, billeder og egne noter</small></span></div>
               </div>
             </div>
           </div>

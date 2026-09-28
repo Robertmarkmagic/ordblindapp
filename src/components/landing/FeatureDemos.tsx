@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Headphones, Type, PenLine } from "lucide-react";
 
-const LISTEN_WORDS = ["The", "words", "light", "up", "as", "the", "voice", "reads."];
+const LISTEN_WORDS = ["Ordene", "bliver", "markeret", "mens", "stemmen", "læser", "højt."];
 const READING_LOOKS = [
   { fontFamily: "'Lexend', sans-serif", letterSpacing: "normal", lineHeight: 1.7 },
   {
@@ -73,7 +73,7 @@ function SeeDemo() {
       style={READING_LOOKS[step]}
       aria-hidden="true"
     >
-      Fonts and spacing that fit your eyes.
+      Skrift, farver og afstand, der passer til dine øjne.
     </p>
   );
 }
@@ -91,15 +91,15 @@ function WriteDemo() {
 
   return (
     <p className="text-base leading-relaxed text-foreground" aria-hidden="true">
-      I want to{" "}
+      Jeg vil{" "}
       <span
         className={`rounded px-0.5 transition-all duration-500 ${
           fixed ? "text-sage font-medium" : "rr-misspelled"
         }`}
       >
-        {fixed ? "beautiful" : "beutifull"}
+        {fixed ? "gerne" : "grene"}
       </span>{" "}
-      write.
+      skrive tydeligt.
     </p>
   );
 }
@@ -107,20 +107,20 @@ function WriteDemo() {
 const FEATURES = [
   {
     icon: Headphones,
-    title: "Listen",
-    body: "Natural, human-like narration with the highlight following every word, so your ears and eyes read together.",
+    title: "Læs og forstå",
+    body: "Få ord, sætninger eller hele teksten læst højt, mens markeringen følger med og hjælper dig med at holde fokus.",
     demo: <ListenDemo />,
   },
   {
     icon: Type,
-    title: "See",
-    body: "OpenDyslexic, Bionic Reading, tints and spacing — tuned until the page finally feels calm.",
+    title: "Tilpas din læsning",
+    body: "Vælg skrift, tekstfarve, afstand, markering og tempo, så den samme tekst passer bedre til dine øjne.",
     demo: <SeeDemo />,
   },
   {
     icon: PenLine,
-    title: "Write",
-    body: "A phonetic writing coach that offers gentle green suggestions you can hear. Never a red mark, never shame.",
+    title: "Skriv med støtte",
+    body: "Brug tale-til-tekst, ordforslag, stavning, grammatik, komma og oplæsning i den samme skriveproces.",
     demo: <WriteDemo />,
   },
 ];
