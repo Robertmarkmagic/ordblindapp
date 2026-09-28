@@ -19,7 +19,23 @@ const COLOR_CHOICES = [
   { id: "night", emoji: "☾", label: "Night Mode" },
 ] as const;
 
-const STICKERS = ["🐚", "🍋", "🌺", "🍓", "🪩", "🪐"];
+const CHILD_NOTEBOOKS = [
+  { id: "unicorn", emoji: "🦄", label: "Enhjørning" },
+  { id: "dino", emoji: "🦕", label: "Dino" },
+] as const;
+
+const NOTEBOOK_CHOICES = [...COLOR_CHOICES, ...CHILD_NOTEBOOKS] as const;
+const STICKERS = [
+  { value: "", label: "Ingen", icon: "×" },
+  { value: "🐚", label: "Musling", icon: "🐚" },
+  { value: "🍓", label: "Jordbær", icon: "🍓" },
+  { value: "🪩", label: "Discokugle", icon: "🪩" },
+  { value: "🦕", label: "Dinosaur", icon: "🦕" },
+  { value: "🦄", label: "Enhjørning", icon: "🦄" },
+  { value: "🌈", label: "Regnbue", icon: "🌈" },
+  { value: "🚀", label: "Rumraket", icon: "🚀" },
+  { value: "✨", label: "Glimmer", icon: "✨" },
+] as const;
 const HIGHLIGHTS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8179"];
 const TEXT_COLORS = [
   { value: "#171717", label: "Sort" },
@@ -33,7 +49,7 @@ const TEXT_COLORS = [
 export type PersonalisationPreview = {
   tools: string[];
   color: (typeof COLOR_CHOICES)[number]["id"];
-  notebookTheme: (typeof COLOR_CHOICES)[number]["id"];
+  notebookTheme: (typeof NOTEBOOK_CHOICES)[number]["id"];
   sticker: string;
   highlight: string;
   textColor: (typeof TEXT_COLORS)[number]["value"];
@@ -51,11 +67,13 @@ export const DEFAULT_PERSONALISATION: PersonalisationPreview = {
 export function PersonalisationShowcase({ onChange }: { onChange?: (value: PersonalisationPreview) => void }) {
   const [tools, setTools] = useState(() => new Set(DEFAULT_PERSONALISATION.tools));
   const [color, setColor] = useState<(typeof COLOR_CHOICES)[number]["id"]>("ocean");
-  const [notebookTheme, setNotebookTheme] = useState<(typeof COLOR_CHOICES)[number]["id"]>("pinky");
+  const [notebookTheme, setNotebookTheme] = useState<(typeof NOTEBOOK_CHOICES)[number]["id"]>("pinky");
   const [sticker, setSticker] = useState("🍓");
+  const [audienceMode, setAudienceMode] = useState<"adult" | "child">("adult");
   const [highlight, setHighlight] = useState(HIGHLIGHTS[0]);
   const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["value"]>("#fff1ad");
-  const selectedNote = useMemo(() => COLOR_CHOICES.find((item) => item.id === notebookTheme) ?? COLOR_CHOICES[1], [notebookTheme]);
+  const selectedNote = useMemo(() => NOTEBOOK_CHOICES.find((item) => item.id === notebookTheme) ?? COLOR_CHOICES[1], [notebookTheme]);
+  const visibleNotebooks = audienceMode === "child" ? CHILD_NOTEBOOKS : COLOR_CHOICES;
 
   useEffect(() => {
     onChange?.({ tools: [...tools], color, notebookTheme, sticker, highlight, textColor });
@@ -70,14 +88,23 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
     });
   };
 
+  const selectColor = (nextColor: (typeof COLOR_CHOICES)[number]["id"]) => {
+    setColor(nextColor);
+    if (nextColor === "minimal") setTextColor("#171717");
+    if (nextColor === "night") setTextColor("#ffffff");
+  };
+
+  const selectMode = (mode: "adult" | "child") => {
+    setAudienceMode(mode);
+    if (mode === "child" && notebookTheme !== "unicorn" && notebookTheme !== "dino") setNotebookTheme("unicorn");
+    if (mode === "adult" && (notebookTheme === "unicorn" || notebookTheme === "dino")) setNotebookTheme("pinky");
+  };
+
   return (
     <div
       className={`rr-setup-showcase rr-setup-app-${color}`}
       style={{ "--rr-selected-text": textColor } as CSSProperties}
     >
-      <span className="rr-setup-cloud rr-setup-cloud-left" aria-hidden="true" />
-      <span className="rr-setup-cloud rr-setup-cloud-right" aria-hidden="true" />
-
       <header className="rr-setup-heading">
         <h1>Gør det til dit eget</h1>
         <p className="rr-setup-lead">Ikke alle læser bedst på samme måde.</p>
@@ -104,7 +131,7 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
         <h2 id="setup-color-title">Vælg appens farve</h2>
         <div className="rr-setup-color-grid">
           {COLOR_CHOICES.map((item) => (
-            <button key={item.id} type="button" onClick={() => setColor(item.id)} aria-pressed={color === item.id} className={`rr-setup-color rr-setup-color-${item.id} ${color === item.id ? "is-active" : ""}`}>
+            <button key={item.id} type="button" onClick={() => selectColor(item.id)} aria-pressed={color === item.id} className={`rr-setup-color rr-setup-color-${item.id} ${color === item.id ? "is-active" : ""}`}>
               <span aria-hidden="true">{item.emoji}</span>{item.label}
             </button>
           ))}
@@ -131,10 +158,14 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
 
       <section className="rr-setup-section" aria-labelledby="setup-notepad-title">
         <h2 id="setup-notepad-title">Vælg notesbog</h2>
+        <div className="rr-setup-mode-switch" role="group" aria-label="Vælg voksen- eller børneunivers">
+          <button type="button" onClick={() => selectMode("adult")} aria-pressed={audienceMode === "adult"}>Voksen</button>
+          <button type="button" onClick={() => selectMode("child")} aria-pressed={audienceMode === "child"}>Barn</button>
+        </div>
         <div className="rr-setup-notes-grid">
-          {COLOR_CHOICES.map((item) => (
+          {visibleNotebooks.map((item) => (
             <button key={item.id} type="button" onClick={() => setNotebookTheme(item.id)} aria-pressed={notebookTheme === item.id} className={`rr-setup-note rr-setup-note-${item.id} ${notebookTheme === item.id ? "is-active" : ""}`}>
-              <span aria-hidden="true">{item.emoji}</span><b>{item.label}</b><small>♡</small>
+              <span aria-hidden="true">{item.emoji}</span><b>{item.label}</b><small aria-hidden="true">{item.id === "unicorn" ? "✦" : item.id === "dino" ? "🌿" : "♡"}</small>
             </button>
           ))}
         </div>
@@ -143,7 +174,7 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
       <section className="rr-setup-section" aria-labelledby="setup-sticker-title">
         <h2 id="setup-sticker-title">Tilføj stickers</h2>
         <div className="rr-setup-stickers">
-          {STICKERS.map((item) => <button key={item} type="button" onClick={() => setSticker(item)} aria-pressed={sticker === item}>{item}</button>)}
+          {STICKERS.map((item) => <button key={item.label} type="button" onClick={() => setSticker(item.value)} aria-pressed={sticker === item.value} aria-label={item.label} className={item.value ? "" : "is-none"}>{item.icon}<small>{item.label}</small></button>)}
         </div>
       </section>
 
@@ -162,7 +193,7 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
             <p>I dette kapitel ser vi på, hvordan <mark style={{ backgroundColor: highlight }}>teknologi</mark> kan gøre hverdagen lettere for alle. Når vi tilpasser værktøjerne til den enkelte, bliver det muligt at lære, arbejde og deltage på <mark style={{ backgroundColor: highlight }}>egne præmisser</mark>.</p>
           </article>
           <aside>
-            <span className="rr-setup-note-sticker" aria-hidden="true">{sticker}</span>
+            {sticker && <span className="rr-setup-note-sticker" aria-hidden="true">{sticker}</span>}
             <h3>Vigtige punkter:</h3>
             <p>• Læs færdig<br />• Skriv noter<br />• Spørg AI</p>
             <span className="rr-setup-note-heart" aria-hidden="true">♡</span>

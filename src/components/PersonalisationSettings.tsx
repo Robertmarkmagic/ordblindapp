@@ -39,7 +39,11 @@ export function PersonalisationSettings() {
                 key={option.value}
                 type="button"
                 aria-pressed={active}
-                onClick={() => setPreferences({ ...preferences, aesthetic: option.value })}
+                onClick={() => setPreferences({
+                  ...preferences,
+                  aesthetic: option.value,
+                  readerTextColor: option.value === "minimal" ? "#171717" : option.value === "midnight" ? "#FFFFFF" : preferences.readerTextColor,
+                })}
                 className={`relative flex min-h-[84px] items-center gap-3 rounded-2xl border p-3 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-ring ${
                   active ? "border-primary bg-accent" : "border-border bg-background hover:border-primary/40"
                 }`}

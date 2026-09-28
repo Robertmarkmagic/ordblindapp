@@ -27,17 +27,19 @@ const NAV_ITEMS = [
 const THEME_SURFACES = {
   pinky: { shell: "#fff5f8", panel: "#f9d9e3", workspace: "#fde8ef", toolbar: "#fff0f5", control: "#fff8fa", document: "#ffeef3", ink: "#303746", muted: "#596171", border: "#eebdcb", active: "#efb8ca", button: "#fff8fa", heading: "#e9c5d0" },
   ocean: { shell: "#edf8ff", panel: "#cce8f8", workspace: "#dceffa", toolbar: "#e7f5fd", control: "#f3faff", document: "#e8f5ff", ink: "#173b70", muted: "#416388", border: "#9ecce7", active: "#9dcef0", button: "#f5fbff", heading: "#cbe3ff" },
-  minimal: { shell: "#f8f1e6", panel: "#efe7da", workspace: "#f5efe5", toolbar: "#fbf7f0", control: "#fffaf3", document: "#fffaf3", ink: "#171717", muted: "#59534b", border: "#d8cec0", active: "#e7dccd", button: "#fffaf3", heading: "#eee5d8" },
+  minimal: { shell: "#ffffff", panel: "#f7f7f7", workspace: "#ffffff", toolbar: "#ffffff", control: "#ffffff", document: "#ffffff", ink: "#171717", muted: "#595959", border: "#dedede", active: "#eeeeee", button: "#ffffff", heading: "#f1f1f1" },
   wood: { shell: "#f4f7ef", panel: "#d7e3cf", workspace: "#e5ecde", toolbar: "#edf3e8", control: "#f7f9f4", document: "#f0f5eb", ink: "#304a38", muted: "#58705f", border: "#aec5a2", active: "#b9d2ae", button: "#f7faf4", heading: "#d1e3c7" },
-  night: { shell: "#16283d", panel: "#1d3651", workspace: "#0f2237", toolbar: "#192f47", control: "#1a3048", document: "#243e59", ink: "#fff0aa", muted: "#d8d2ac", border: "#456b8f", active: "#315c82", button: "#223e5a", heading: "#31577b" },
+  night: { shell: "#050505", panel: "#111111", workspace: "#000000", toolbar: "#090909", control: "#111111", document: "#0b0b0b", ink: "#ffffff", muted: "#c8c8c8", border: "#353535", active: "#252525", button: "#151515", heading: "#242424" },
 } as const;
 
 const NOTE_SURFACES = {
   minimal: { background: "#efe7da", color: "#171717" },
   pinky: { background: "#f3a7c1", color: "#171717" },
   wood: { background: "#cbdab9", color: "#273d2e" },
-  ocean: { background: "#244a76", color: "#fff1ad" },
-  night: { background: "#304d6d", color: "#fff1ad" },
+  ocean: { background: "#c7e8f8", color: "#173b70" },
+  night: { background: "#050505", color: "#ffffff" },
+  unicorn: { background: "linear-gradient(145deg, #ffdff1, #d9eeff 52%, #fff1bd)", color: "#513b72" },
+  dino: { background: "linear-gradient(145deg, #dcefc9, #b9dca8 55%, #f2df9d)", color: "#244a2d" },
 } as const;
 
 type PreviewStyle = CSSProperties & Record<`--rr-preview-${string}`, string>;
@@ -103,8 +105,8 @@ export function MiniReader({ settings }: { settings: PersonalisationPreview }) {
                   </div>
                 </div>
 
-                <aside className="rr-landing-note" style={{ backgroundColor: note.background, color: note.color }}>
-                  <span className="rr-landing-note-sticker" aria-hidden="true">{settings.sticker}</span>
+                <aside className={`rr-landing-note rr-landing-note-${settings.notebookTheme}`} style={{ background: note.background, color: note.color }}>
+                  {settings.sticker && <span className="rr-landing-note-sticker" aria-hidden="true">{settings.sticker}</span>}
                   <b>Mine noter</b>
                   <textarea defaultValue={"Vigtigt!\nSpørg om et eksempel\nFind mere information"} aria-label="Eksempel på note" />
                   <span aria-hidden="true">♡</span>

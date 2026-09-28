@@ -73,7 +73,7 @@ export const AESTHETIC_OPTIONS: Array<{
   { value: "cloud", emoji: "🌊", name: { da: "Ocean", en: "Ocean" }, description: { da: "Lyseblå og dybe havtoner", en: "Light blue and deep ocean tones" }, swatches: ["#edf8ff", "#cce8f8", "#245078"] },
   { value: "lavender", emoji: "💜", name: { da: "Lavender", en: "Lavender" }, description: { da: "Lavendel og bløde pasteller", en: "Lavender and soft pastels" }, swatches: ["#fdf9ff", "#eadcf3", "#77558b"] },
   { value: "cozy", emoji: "☕", name: { da: "Cozy", en: "Cozy" }, description: { da: "Varm beige og study-look", en: "Warm beige and a study feel" }, swatches: ["#fffaf2", "#eadbc5", "#7a5b43"] },
-  { value: "midnight", emoji: "🌙", name: { da: "Midnight", en: "Midnight" }, description: { da: "Mørk, rolig og elegant", en: "Dark, calm and elegant" }, swatches: ["#151827", "#2a3046", "#aab8ef"] },
+  { value: "midnight", emoji: "🌙", name: { da: "Night Mode", en: "Night Mode" }, description: { da: "Sort, rolig og enkel", en: "Black, calm and simple" }, swatches: ["#000000", "#111111", "#ffffff"] },
   { value: "minimal", emoji: "🤍", name: { da: "Minimal", en: "Minimal" }, description: { da: "Neutral og professionel", en: "Neutral and professional" }, swatches: ["#ffffff", "#eef0f2", "#344054"] },
 ];
 
@@ -128,7 +128,7 @@ function normalize(value: Partial<AppPreferences> | null): AppPreferences {
     readerLineHeight: numberInRange(value?.readerLineHeight, DEFAULT_APP_PREFERENCES.readerLineHeight, 1.4, 2.6),
     readerLetterSpacing: numberInRange(value?.readerLetterSpacing, DEFAULT_APP_PREFERENCES.readerLetterSpacing, 0, 0.12),
     readerWordSpacing: numberInRange(value?.readerWordSpacing, DEFAULT_APP_PREFERENCES.readerWordSpacing, 0, 0.3),
-    readerTextColor: ["#1E293B", "#111827", "#4B3621", "#203B5B", "#FFF0AA"].includes(value?.readerTextColor || "")
+    readerTextColor: ["#1E293B", "#111827", "#171717", "#4B3621", "#203B5B", "#FFF0AA", "#FFFFFF"].includes(value?.readerTextColor || "")
       ? (value?.readerTextColor as string)
       : DEFAULT_APP_PREFERENCES.readerTextColor,
   };

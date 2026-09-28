@@ -50,7 +50,7 @@ const THEME_READING_SURFACES: Record<AestheticChoice, string> = {
   cloud: "#E8F5FF",
   minimal: "#FFFFFF",
   sage: "#F0F5EB",
-  midnight: "#243E59",
+  midnight: "#050505",
   lavender: "#F6EEFA",
   cozy: "#FAF1E4",
 };
@@ -307,7 +307,7 @@ export default function Reader() {
   const tint = tintOverride ?? settings.default_background_tint;
   const fontFamily = fontFamilyFor(font);
   const tintColor = tintOverride ? tintColorFor(tint) : THEME_READING_SURFACES[preferences.aesthetic];
-  const readerTextColor = preferences.aesthetic === "midnight" ? "#FFF0AA" : preferences.readerTextColor;
+  const readerTextColor = preferences.aesthetic === "midnight" ? "#FFFFFF" : preferences.aesthetic === "minimal" ? "#171717" : preferences.readerTextColor;
 
   // --- Notes / anchoring ---
   const articleRef = useRef<HTMLElement | null>(null);
@@ -430,7 +430,7 @@ export default function Reader() {
 
   return (
     <div className="rr-personal-space">
-      <ReaderThemeChooser value={preferences.aesthetic} onChange={(aesthetic) => { setTintOverride(null); setPreferences({ ...preferences, aesthetic }); }} />
+      <ReaderThemeChooser value={preferences.aesthetic} onChange={(aesthetic) => { setTintOverride(null); setPreferences({ ...preferences, aesthetic, readerTextColor: aesthetic === "minimal" ? "#171717" : aesthetic === "midnight" ? "#FFFFFF" : preferences.readerTextColor }); }} />
       <main className="mx-auto max-w-6xl px-3 pb-40 sm:px-6">
         <section className="rr-reader-shell">
           <div className="rr-reader-windowbar">
