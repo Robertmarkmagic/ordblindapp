@@ -112,7 +112,7 @@ export function MiniReader({ settings }: { settings: PersonalisationPreview }) {
               </div>
 
               <div className="rr-landing-feature-row">
-                <div><PenLine /><span><b>Skrivehjælp</b><small>Stavning, grammatik, komma og ordforslag</small></span></div>
+                <div><PenLine /><span><b>Unik grammatikstøtte</b><small>Visuelle ordklasser, stavning, komma og grammatik</small></span></div>
                 <div><Search /><span><b>Ordbog</b><small>Betydning, bøjning, oversættelse og udtale</small></span></div>
                 <div><Camera /><span><b>Scan tekst</b><small>Tag et billede og få teksten gjort læsbar</small></span></div>
               </div>

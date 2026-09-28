@@ -127,6 +127,25 @@
 .rr-writing-results > div { display: grid; gap: .15rem; border: 1px solid #c9dceb; border-radius: .7rem; background: #f8fcff; padding: .55rem .65rem; color: #171717; }
 .rr-writing-results b { font-size: .72rem; }
 .rr-writing-results span, .rr-writing-results > p { font-size: .68rem; line-height: 1.45; }
+.rr-grammar-visual { margin-top: .7rem; border: 1px solid #b9d6eb; border-radius: .9rem; background: #fff; padding: .75rem; color: #171717; box-shadow: 0 14px 28px -24px rgb(20 55 90 / .65); }
+.rr-grammar-visual-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .35rem; }
+.rr-grammar-visual-head > span { display: inline-flex; align-items: center; gap: .4rem; }
+.rr-grammar-visual-head svg { width: 1rem; color: #247dd0; }
+.rr-grammar-visual-head b { font-size: .78rem; }
+.rr-grammar-visual-head small { color: #526579; font-size: .65rem; }
+.rr-grammar-tokens { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .65rem; }
+.rr-grammar-tokens > span { display: grid; min-width: 4.2rem; gap: .05rem; border: 1px solid transparent; border-radius: .55rem; padding: .38rem .5rem; text-align: center; }
+.rr-grammar-tokens b { font-family: Lora, Georgia, serif; font-size: .84rem; }
+.rr-grammar-tokens small { font-size: .56rem; font-weight: 800; }
+.rr-grammar-tokens [data-word-class="noun"] { border-color: #a9c8ef; background: #e4f0ff; }
+.rr-grammar-tokens [data-word-class="verb"] { border-color: #f0b4bf; background: #ffe8ed; }
+.rr-grammar-tokens [data-word-class="adjective"] { border-color: #acd4b3; background: #e9f7e9; }
+.rr-grammar-tokens [data-word-class="pronoun"] { border-color: #c9b9eb; background: #f0eaff; }
+.rr-grammar-tokens [data-word-class="other"] { border-color: #d7d3c8; background: #f5f2eb; }
+.rr-grammar-sentence-parts { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .65rem; }
+.rr-grammar-sentence-parts > span { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; background: #edf7ff; padding: .3rem .55rem; font-size: .66rem; }
+.rr-grammar-sentence-parts b { color: #1769aa; }
+.rr-grammar-visual > p { margin-top: .55rem; color: #526579; font-size: .62rem; line-height: 1.45; }
 .rr-function-check-card { text-align: center; }
 .rr-function-check-card .rr-function-card-title { justify-content: center; }
 .rr-function-checks { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .45rem; }

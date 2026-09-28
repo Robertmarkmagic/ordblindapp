@@ -101,6 +101,25 @@ const SPELLING_FIXES: Record<string, string> = {
   oversettelse: "oversættelse",
 };
 
+const WORD_CLASS_LABELS = {
+  noun: "Navneord",
+  verb: "Udsagnsord",
+  adjective: "Tillægsord",
+  pronoun: "Stedord",
+  other: "Andre ord",
+} as const;
+
+type WordClass = keyof typeof WORD_CLASS_LABELS;
+
+function findWordClass(word: string): WordClass {
+  const normalized = word.toLocaleLowerCase("da-DK");
+  if (["jeg", "du", "han", "hun", "den", "det", "vi", "i", "de", "mig", "dig", "os", "dem"].includes(normalized)) return "pronoun";
+  if (["er", "var", "har", "havde", "vil", "skal", "kan", "må", "bliver", "blev", "går", "gik", "skriver", "skrev", "læser", "læste", "skrive", "læse", "forstå"].includes(normalized) || /(ede|te|er)$/.test(normalized)) return "verb";
+  if (["tydelig", "tydeligt", "rolig", "roligt", "svær", "svært", "let", "nem", "god", "glad", "grøn", "blå", "stor", "lille"].includes(normalized) || /(lig|isk|fuld|løst)$/.test(normalized)) return "adjective";
+  if (["en", "et", "den", "det", "de", "og", "eller", "men", "fordi", "som", "når", "hvis", "på", "i", "til", "fra", "med", "af"].includes(normalized)) return "other";
+  return "noun";
+}
+
 function firstUsefulDictionaryLine(extract: string) {
   const ignored = /^(dansk|substantiv|verbum|adjektiv|udtale|etymologi|bøjning|oversættelser|referencer|se også)$/i;
   return extract
@@ -203,6 +222,14 @@ export function FunctionPlayground() {
       { name: "Ordforslag", text: suggestions ? `Du kan fortsætte med: ${suggestions}` : lower ? "Skriv videre for at få relevante ordforslag." : "Begynd at skrive for at få ordforslag." },
     ];
   }, [draft, wordSuggestions]);
+
+  const grammarAnalysis = useMemo(() => {
+    const words = draft.match(/[\p{L}æøåÆØÅ]+/gu) || [];
+    const tokens = words.map((word) => ({ word, wordClass: findWordClass(word) }));
+    const subject = tokens.find((token) => token.wordClass === "pronoun" || token.wordClass === "noun")?.word || "Ikke fundet";
+    const predicate = tokens.find((token) => token.wordClass === "verb")?.word || "Ikke fundet";
+    return { tokens, subject, predicate };
+  }, [draft]);
 
   const updateCaret = () => {
     const next = textareaRef.current?.selectionStart ?? draft.length;
@@ -410,6 +437,26 @@ export function FunctionPlayground() {
             ))}
             {checks.size === 0 && <p>Vælg mindst én type hjælp i boksen nedenfor.</p>}
           </div>
+          {checks.has("Grammatik") && grammarAnalysis.tokens.length > 0 && (
+            <div className="rr-grammar-visual" aria-live="polite">
+              <div className="rr-grammar-visual-head">
+                <span><Sparkles aria-hidden="true" /><b>Visuel grammatikanalyse</b></span>
+                <small>Ordklasserne ændrer sig, når du skriver.</small>
+              </div>
+              <div className="rr-grammar-tokens" aria-label="Ordklasser i din tekst">
+                {grammarAnalysis.tokens.map((token, index) => (
+                  <span key={`${token.word}-${index}`} data-word-class={token.wordClass}>
+                    <b>{token.word}</b><small>{WORD_CLASS_LABELS[token.wordClass]}</small>
+                  </span>
+                ))}
+              </div>
+              <div className="rr-grammar-sentence-parts">
+                <span><b>Grundled</b>{grammarAnalysis.subject}</span>
+                <span><b>Udsagnsled</b>{grammarAnalysis.predicate}</span>
+              </div>
+              <p>Analysen er en enkel prøvevisning. Den fulde skrivehjælp vurderer også sætningen i sammenhæng.</p>
+            </div>
+          )}
         </article>
 
         <article className="rr-function-card rr-function-check-card">
