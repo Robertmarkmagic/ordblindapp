@@ -23,28 +23,28 @@
 @tailwind utilities;
 
 .rr-landing-theme {
-  --background: 207 55% 76%;
-  --foreground: 49 100% 84%;
-  --card: 207 48% 69%;
-  --card-foreground: 49 100% 84%;
-  --popover: 207 48% 69%;
-  --popover-foreground: 49 100% 84%;
+  --background: 0 0% 100%;
+  --foreground: 217 33% 17%;
+  --card: 0 0% 100%;
+  --card-foreground: 217 33% 17%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 217 33% 17%;
   --primary: 214 48% 27%;
-  --primary-foreground: 49 100% 84%;
-  --secondary: 207 45% 66%;
-  --secondary-foreground: 49 100% 84%;
-  --muted: 207 43% 70%;
-  --muted-foreground: 49 84% 88%;
-  --accent: 207 48% 62%;
-  --accent-foreground: 49 100% 86%;
-  --border: 49 75% 83%;
-  --input: 207 38% 61%;
-  --ring: 49 100% 84%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 25% 96%;
+  --secondary-foreground: 217 33% 20%;
+  --muted: 210 22% 96%;
+  --muted-foreground: 215 16% 43%;
+  --accent: 205 58% 93%;
+  --accent-foreground: 214 48% 24%;
+  --border: 214 20% 88%;
+  --input: 214 20% 84%;
+  --ring: 214 48% 27%;
   --sage: 214 48% 27%;
-  --sage-foreground: 49 100% 84%;
-  background: #a9cbea;
-  color: #fff1ad;
-  background-color: #a9cbea;
+  --sage-foreground: 0 0% 100%;
+  background: #ffffff;
+  color: #24344f;
+  background-color: #ffffff;
 }
 .rr-landing-theme > main,
 .rr-landing-theme > footer,
@@ -53,17 +53,16 @@
 }
 .rr-landing-paper-pattern {
   background:
-    radial-gradient(circle at 2% 11%, rgb(221 239 252 / .45) 0 7%, transparent 7.2%),
-    radial-gradient(circle at 95% 18%, rgb(136 180 219 / .35) 0 10%, transparent 10.2%),
-    radial-gradient(circle at 8% 72%, rgb(199 225 246 / .42) 0 9%, transparent 9.2%),
-    linear-gradient(135deg, #b5d4ef, #9fc4e4 52%, #b9d8f0);
-  opacity: .9;
+    radial-gradient(circle at 4% 12%, rgb(229 235 241 / .5) 0 6%, transparent 6.2%),
+    radial-gradient(circle at 95% 18%, rgb(235 240 245 / .55) 0 9%, transparent 9.2%),
+    linear-gradient(135deg, #ffffff, #fafbfd 52%, #ffffff);
+  opacity: .8;
 }
 .rr-landing-header {
-  border: 1px solid rgb(255 241 173 / .62);
+  border: 1px solid #e4e9ef;
   border-radius: 1.25rem;
-  background: rgb(111 158 199 / .78);
-  box-shadow: 0 18px 45px -32px rgb(27 65 103 / .58);
+  background: rgb(255 255 255 / .94);
+  box-shadow: 0 16px 40px -32px rgb(27 65 103 / .28);
   backdrop-filter: blur(14px);
 }
 
