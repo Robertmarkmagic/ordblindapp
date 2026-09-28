@@ -4,7 +4,7 @@ import type { PersonalisationPreview } from "@/components/landing/Personalisatio
 
 const SAMPLE = "I ReliefRead bestemmer du selv, hvordan teksten skal se ud. Når skrift, farver og afstand passer til dig, bliver det lettere at læse, forstå og deltage på dine egne præmisser.";
 
-const APP_ICONS = { minimal: "♡", pinky: "🍓", wood: "🌿", ocean: "🌊", night: "☾" } as const;
+const APP_ICONS = { minimal: "♡", pinky: "🍓", wood: "🌿", ocean: "🌊", night: "☾", unicorn: "🦄", dino: "🦕" } as const;
 
 const TOOL_ITEMS = [
   { id: "read", label: "Læs", icon: Play },
@@ -30,6 +30,8 @@ const THEME_SURFACES = {
   minimal: { shell: "#ffffff", panel: "#f7f7f7", workspace: "#ffffff", toolbar: "#ffffff", control: "#ffffff", document: "#ffffff", ink: "#171717", muted: "#595959", border: "#dedede", active: "#eeeeee", button: "#ffffff", heading: "#f1f1f1" },
   wood: { shell: "#f4f7ef", panel: "#d7e3cf", workspace: "#e5ecde", toolbar: "#edf3e8", control: "#f7f9f4", document: "#f0f5eb", ink: "#304a38", muted: "#58705f", border: "#aec5a2", active: "#b9d2ae", button: "#f7faf4", heading: "#d1e3c7" },
   night: { shell: "#050505", panel: "#111111", workspace: "#000000", toolbar: "#090909", control: "#111111", document: "#0b0b0b", ink: "#ffffff", muted: "#c8c8c8", border: "#353535", active: "#252525", button: "#151515", heading: "#242424" },
+  unicorn: { shell: "#fff6fd", panel: "#f9dff1", workspace: "#e8f5ff", toolbar: "#fff3fb", control: "#fff9fd", document: "#fffafd", ink: "#513b72", muted: "#796a8f", border: "#e9bfdc", active: "#f4cfea", button: "#ffffff", heading: "#ffe2f4" },
+  dino: { shell: "#f7fbf1", panel: "#dcefc9", workspace: "#edf5df", toolbar: "#f2f8ea", control: "#fbfdf8", document: "#fcfdf9", ink: "#244a2d", muted: "#58705f", border: "#b7cea7", active: "#c9e2b5", button: "#ffffff", heading: "#e0efcf" },
 } as const;
 
 const NOTE_SURFACES = {

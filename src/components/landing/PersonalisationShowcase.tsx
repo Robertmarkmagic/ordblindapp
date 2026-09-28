@@ -24,17 +24,22 @@ const CHILD_NOTEBOOKS = [
   { id: "dino", emoji: "🦕", label: "Dino" },
 ] as const;
 
+const APP_COLOR_CHOICES = [...COLOR_CHOICES, ...CHILD_NOTEBOOKS] as const;
 const NOTEBOOK_CHOICES = [...COLOR_CHOICES, ...CHILD_NOTEBOOKS] as const;
-const STICKERS = [
+const ADULT_STICKERS = [
   { value: "", label: "Ingen", icon: "×" },
   { value: "🐚", label: "Musling", icon: "🐚" },
+  { value: "🍋", label: "Citron", icon: "🍋" },
+  { value: "🌺", label: "Blomst", icon: "🌺" },
   { value: "🍓", label: "Jordbær", icon: "🍓" },
-  { value: "🪩", label: "Discokugle", icon: "🪩" },
+  { value: "🪐", label: "Planet", icon: "🪐" },
+] as const;
+const CHILD_STICKERS = [
+  { value: "", label: "Ingen", icon: "×" },
   { value: "🦕", label: "Dinosaur", icon: "🦕" },
   { value: "🦄", label: "Enhjørning", icon: "🦄" },
   { value: "🌈", label: "Regnbue", icon: "🌈" },
   { value: "🚀", label: "Rumraket", icon: "🚀" },
-  { value: "✨", label: "Glimmer", icon: "✨" },
 ] as const;
 const HIGHLIGHTS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8179"];
 const TEXT_COLORS = [
@@ -48,7 +53,7 @@ const TEXT_COLORS = [
 
 export type PersonalisationPreview = {
   tools: string[];
-  color: (typeof COLOR_CHOICES)[number]["id"];
+  color: (typeof APP_COLOR_CHOICES)[number]["id"];
   notebookTheme: (typeof NOTEBOOK_CHOICES)[number]["id"];
   sticker: string;
   highlight: string;
@@ -66,14 +71,18 @@ export const DEFAULT_PERSONALISATION: PersonalisationPreview = {
 
 export function PersonalisationShowcase({ onChange }: { onChange?: (value: PersonalisationPreview) => void }) {
   const [tools, setTools] = useState(() => new Set(DEFAULT_PERSONALISATION.tools));
-  const [color, setColor] = useState<(typeof COLOR_CHOICES)[number]["id"]>("ocean");
+  const [color, setColor] = useState<(typeof APP_COLOR_CHOICES)[number]["id"]>("ocean");
   const [notebookTheme, setNotebookTheme] = useState<(typeof NOTEBOOK_CHOICES)[number]["id"]>("pinky");
   const [sticker, setSticker] = useState("🍓");
-  const [audienceMode, setAudienceMode] = useState<"adult" | "child">("adult");
+  const [appMode, setAppMode] = useState<"adult" | "child">("adult");
+  const [notebookMode, setNotebookMode] = useState<"adult" | "child">("adult");
+  const [stickerMode, setStickerMode] = useState<"adult" | "child">("adult");
   const [highlight, setHighlight] = useState(HIGHLIGHTS[0]);
   const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["value"]>("#fff1ad");
   const selectedNote = useMemo(() => NOTEBOOK_CHOICES.find((item) => item.id === notebookTheme) ?? COLOR_CHOICES[1], [notebookTheme]);
-  const visibleNotebooks = audienceMode === "child" ? CHILD_NOTEBOOKS : COLOR_CHOICES;
+  const visibleColors = appMode === "child" ? CHILD_NOTEBOOKS : COLOR_CHOICES;
+  const visibleNotebooks = notebookMode === "child" ? CHILD_NOTEBOOKS : COLOR_CHOICES;
+  const visibleStickers = stickerMode === "child" ? CHILD_STICKERS : ADULT_STICKERS;
 
   useEffect(() => {
     onChange?.({ tools: [...tools], color, notebookTheme, sticker, highlight, textColor });
@@ -88,16 +97,27 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
     });
   };
 
-  const selectColor = (nextColor: (typeof COLOR_CHOICES)[number]["id"]) => {
+  const selectColor = (nextColor: (typeof APP_COLOR_CHOICES)[number]["id"]) => {
     setColor(nextColor);
     if (nextColor === "minimal") setTextColor("#171717");
     if (nextColor === "night") setTextColor("#ffffff");
   };
 
-  const selectMode = (mode: "adult" | "child") => {
-    setAudienceMode(mode);
+  const selectAppMode = (mode: "adult" | "child") => {
+    setAppMode(mode);
+    if (mode === "child" && color !== "unicorn" && color !== "dino") setColor("unicorn");
+    if (mode === "adult" && (color === "unicorn" || color === "dino")) setColor("ocean");
+  };
+
+  const selectNotebookMode = (mode: "adult" | "child") => {
+    setNotebookMode(mode);
     if (mode === "child" && notebookTheme !== "unicorn" && notebookTheme !== "dino") setNotebookTheme("unicorn");
     if (mode === "adult" && (notebookTheme === "unicorn" || notebookTheme === "dino")) setNotebookTheme("pinky");
+  };
+
+  const selectStickerMode = (mode: "adult" | "child") => {
+    setStickerMode(mode);
+    setSticker("");
   };
 
   return (
@@ -129,8 +149,12 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
 
       <section className="rr-setup-section" aria-labelledby="setup-color-title">
         <h2 id="setup-color-title">Vælg appens farve</h2>
+        <div className="rr-setup-mode-switch" role="group" aria-label="Vælg voksen- eller børnefarver">
+          <button type="button" onClick={() => selectAppMode("adult")} aria-pressed={appMode === "adult"}>Voksen</button>
+          <button type="button" onClick={() => selectAppMode("child")} aria-pressed={appMode === "child"}>Barn</button>
+        </div>
         <div className="rr-setup-color-grid">
-          {COLOR_CHOICES.map((item) => (
+          {visibleColors.map((item) => (
             <button key={item.id} type="button" onClick={() => selectColor(item.id)} aria-pressed={color === item.id} className={`rr-setup-color rr-setup-color-${item.id} ${color === item.id ? "is-active" : ""}`}>
               <span aria-hidden="true">{item.emoji}</span>{item.label}
             </button>
@@ -159,8 +183,8 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
       <section className="rr-setup-section" aria-labelledby="setup-notepad-title">
         <h2 id="setup-notepad-title">Vælg notesbog</h2>
         <div className="rr-setup-mode-switch" role="group" aria-label="Vælg voksen- eller børneunivers">
-          <button type="button" onClick={() => selectMode("adult")} aria-pressed={audienceMode === "adult"}>Voksen</button>
-          <button type="button" onClick={() => selectMode("child")} aria-pressed={audienceMode === "child"}>Barn</button>
+          <button type="button" onClick={() => selectNotebookMode("adult")} aria-pressed={notebookMode === "adult"}>Voksen</button>
+          <button type="button" onClick={() => selectNotebookMode("child")} aria-pressed={notebookMode === "child"}>Barn</button>
         </div>
         <div className="rr-setup-notes-grid">
           {visibleNotebooks.map((item) => (
@@ -173,8 +197,12 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
 
       <section className="rr-setup-section" aria-labelledby="setup-sticker-title">
         <h2 id="setup-sticker-title">Tilføj stickers</h2>
+        <div className="rr-setup-mode-switch" role="group" aria-label="Vælg voksen- eller børnestickers">
+          <button type="button" onClick={() => selectStickerMode("adult")} aria-pressed={stickerMode === "adult"}>Voksen</button>
+          <button type="button" onClick={() => selectStickerMode("child")} aria-pressed={stickerMode === "child"}>Barn</button>
+        </div>
         <div className="rr-setup-stickers">
-          {STICKERS.map((item) => <button key={item.label} type="button" onClick={() => setSticker(item.value)} aria-pressed={sticker === item.value} aria-label={item.label} className={item.value ? "" : "is-none"}>{item.icon}<small>{item.label}</small></button>)}
+          {visibleStickers.map((item) => <button key={item.label} type="button" onClick={() => setSticker(item.value)} aria-pressed={sticker === item.value} aria-label={item.label} className={item.value ? "" : "is-none"}>{item.icon}<small>{item.label}</small></button>)}
         </div>
       </section>
 
