@@ -299,6 +299,44 @@
 .rr-function-note-preview > textarea { min-height: 8rem; width: 100%; resize: vertical; margin-top: .4rem; border: 1px solid rgb(23 23 23 / .18); border-radius: .55rem; background: rgb(255 255 255 / .5); padding: .55rem; color: #171717; font-family: inherit; font-size: .75rem; line-height: 1.5; outline: none; }
 .rr-function-note-preview > textarea:focus { border-color: #17345e; box-shadow: 0 0 0 3px rgb(255 241 173 / .7); }
 
+/* Keep the complete interactive feature demo on a calm white canvas. Theme
+   colours still belong to the separate personalisation previews below. */
+.rr-function-lab {
+  border-color: #e4e9ef;
+  background: #ffffff;
+  color: #171717;
+  box-shadow: 0 24px 54px -40px rgb(20 55 90 / .38);
+}
+.rr-function-lab::before,
+.rr-function-lab::after { display: none; }
+.rr-function-lab-heading { color: #171717; }
+.rr-function-lab-heading h2 { text-shadow: none; }
+.rr-function-card,
+.rr-function-writing textarea,
+.rr-writing-suggestions-head,
+.rr-function-suggestion,
+.rr-sentence-suggestions,
+.rr-subject-words,
+.rr-writing-results > div,
+.rr-comma-content,
+.rr-function-checks button,
+.rr-function-voice > textarea,
+.rr-reading-presets select,
+.rr-function-stepper,
+.rr-function-dictionary input,
+.rr-dictionary-result > div,
+.rr-dictionary-miss,
+.rr-function-toolbar,
+.rr-function-tool-panel textarea,
+.rr-function-tool-panel input,
+.rr-function-riley-answer,
+.rr-function-dictionary-compact,
+.rr-function-interim,
+.rr-function-paper,
+.rr-function-note-preview > textarea {
+  background: #ffffff;
+}
+
 @media (min-width: 640px) {
   .rr-function-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
   .rr-function-writing { grid-column: 1 / -1; }

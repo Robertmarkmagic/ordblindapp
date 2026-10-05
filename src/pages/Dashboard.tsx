@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, BookOpen, RefreshCw, PenLine, Camera, Brain, Files, NotebookText, Sparkles } from "lucide-react";
+import { Plus, BookOpen, RefreshCw, PenLine, Camera, Highlighter, Mic, NotebookText, Search, Sparkles } from "lucide-react";
 import { backend, useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { ReliefHeader } from "@/components/ReliefHeader";
@@ -22,7 +22,7 @@ export default function Dashboard() {
   // Auth guard: prevents a 401 flash when the OAuth token is still settling.
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const documentsRef = useRef<HTMLDivElement>(null);
 
   const [docs, setDocs] = useState<DocumentRecord[]>([]);
@@ -67,12 +67,13 @@ export default function Dashboard() {
 
   const openRiley = () => window.dispatchEvent(new Event("reliefread:open-riley"));
   const actionCards = [
-    { key: "dashboard.read", english: "Read something", icon: <BookOpen className="h-6 w-6" />, sticker: "📖", onClick: () => navigate("/new") },
-    { key: "dashboard.write", english: "Write something", icon: <PenLine className="h-6 w-6" />, sticker: "✍️", onClick: () => navigate("/write") },
-    { key: "dashboard.scan", english: "Scan something", icon: <Camera className="h-6 w-6" />, sticker: "📸", onClick: () => navigate("/new") },
-    { key: "dashboard.explain", english: "Explain something", icon: <Brain className="h-6 w-6" />, sticker: "🧠", onClick: openRiley },
-    { key: "dashboard.documents", english: "My documents", icon: <Files className="h-6 w-6" />, sticker: "📚", onClick: () => documentsRef.current?.scrollIntoView({ behavior: "smooth" }) },
-    { key: "dashboard.notes", english: "My notes", icon: <NotebookText className="h-6 w-6" />, sticker: "📝", onClick: () => navigate("/notes") },
+    { key: "dashboard.read", english: "Read", danish: "Læs", descriptionDa: "Indsæt en tekst eller åbn en PDF og få den læst højt.", descriptionEn: "Paste text or open a PDF and have it read aloud.", icon: <BookOpen className="h-6 w-6" />, sticker: "📖", onClick: () => navigate("/new") },
+    { key: "dashboard.highlight", english: "Highlight", danish: "Marker", descriptionDa: "Fremhæv det vigtigste med din valgte highlighterfarve.", descriptionEn: "Highlight key passages with your chosen color.", icon: <Highlighter className="h-6 w-6" />, sticker: "🖍️", onClick: () => navigate("/new") },
+    { key: "dashboard.dictate", english: "Dictate", danish: "Tal", descriptionDa: "Indtal dine tanker, og få dem skrevet som tekst.", descriptionEn: "Speak your thoughts and turn them into text.", icon: <Mic className="h-6 w-6" />, sticker: "🎙️", onClick: () => navigate("/write") },
+    { key: "dashboard.write", english: "Write", danish: "Skriv", descriptionDa: "Få hjælp til stavning, grammatik, komma og ordforslag.", descriptionEn: "Get spelling, grammar, comma and word suggestions.", icon: <PenLine className="h-6 w-6" />, sticker: "✍️", onClick: () => navigate("/write") },
+    { key: "dashboard.notes", english: "Notes", danish: "Noter", descriptionDa: "Gem noter og knyt dem til det, du læser.", descriptionEn: "Save notes and connect them to what you read.", icon: <NotebookText className="h-6 w-6" />, sticker: "📝", onClick: () => navigate("/notes") },
+    { key: "dashboard.scan", english: "Scan or upload", danish: "Scan eller upload", descriptionDa: "Åbn tekst- og PDF-filer i ReliefRead.", descriptionEn: "Open text and PDF files in ReliefRead.", icon: <Camera className="h-6 w-6" />, sticker: "📸", onClick: () => navigate("/new") },
+    { key: "dashboard.dictionary", english: "Dictionary", danish: "Ordbog", descriptionDa: "Slå ord op, se betydning og hør udtalen.", descriptionEn: "Look up words, meanings and pronunciation.", icon: <Search className="h-6 w-6" />, sticker: "🔎", onClick: () => navigate("/new") },
   ];
 
   return (
@@ -98,16 +99,17 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <section className="rr-settle mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4" aria-label={t("dashboard.today", "What can we help with today?")}>
+        <section className="rr-settle mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4" aria-label={t("dashboard.today", "What can we help with today?")}>
           {actionCards.map((card) => (
             <button
               key={card.key}
               type="button"
               onClick={card.onClick}
-              className="group relative flex min-h-32 flex-col justify-between overflow-hidden rounded-3xl border border-border bg-card p-4 text-left shadow-paper outline-none transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent/45 focus-visible:ring-2 focus-visible:ring-ring sm:min-h-36 sm:p-5"
+              className="group relative flex min-h-40 flex-col overflow-hidden rounded-3xl border border-border bg-card p-4 text-left shadow-paper outline-none transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent/45 focus-visible:ring-2 focus-visible:ring-ring sm:p-5"
             >
               <span className="grid h-12 w-12 place-items-center rounded-2xl bg-accent text-primary transition group-hover:scale-105" aria-hidden="true">{card.icon}</span>
-              <span className="mt-4 text-base font-semibold text-foreground sm:text-lg">{t(card.key, card.english)}</span>
+              <span className="mt-4 text-base font-semibold text-foreground sm:text-lg">{language === "da" ? card.danish : card.english}</span>
+              <span className="mt-1 pr-5 text-sm leading-relaxed text-muted-foreground">{language === "da" ? card.descriptionDa : card.descriptionEn}</span>
               <span className="absolute right-3 top-3 text-xl opacity-70 rr-decoration" aria-hidden="true">{card.sticker}</span>
             </button>
           ))}

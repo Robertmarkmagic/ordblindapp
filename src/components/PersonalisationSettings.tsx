@@ -1,9 +1,17 @@
 import React from "react";
-import { Check, LayoutGrid, Palette, Sparkles } from "lucide-react";
+import { Check, Highlighter, LayoutGrid, Palette, Sparkles, Type } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { AESTHETIC_OPTIONS, TOOL_OPTIONS } from "@/lib/app-preferences";
+import { AESTHETIC_OPTIONS, HIGHLIGHT_COLORS, TOOL_OPTIONS } from "@/lib/app-preferences";
 import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { useLanguage } from "@/lib/i18n";
+
+const TEXT_COLOR_OPTIONS = [
+  { value: "#171717", da: "Sort", en: "Black" },
+  { value: "#FFF0AA", da: "Gul", en: "Yellow" },
+  { value: "#203B5B", da: "Mørkeblå", en: "Dark blue" },
+  { value: "#4B3621", da: "Brun", en: "Brown" },
+  { value: "#FFFFFF", da: "Hvid", en: "White" },
+] as const;
 
 export function PersonalisationSettings() {
   const { preferences, setPreferences } = useAppPreferences();
@@ -87,6 +95,66 @@ export function PersonalisationSettings() {
               aria-label={language === "da" ? "Venlige systembeskeder" : "Friendly system messages"}
             />
           </label>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-border bg-card p-6 shadow-paper">
+        <div className="flex items-center gap-2">
+          <Type className="h-5 w-5 text-primary" aria-hidden="true" />
+          <h2 className="font-display text-xl font-semibold text-foreground">
+            {language === "da" ? "Vælg tekstfarve" : "Choose text color"}
+          </h2>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {language === "da" ? "Farven bruges i dine læsetekster. Ikoner og funktionsnavne forbliver tydelige." : "This color is used in reading text. Icons and controls stay easy to see."}
+        </p>
+        <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-5">
+          {TEXT_COLOR_OPTIONS.map((option) => {
+            const active = preferences.readerTextColor.toUpperCase() === option.value.toUpperCase();
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setPreferences({ ...preferences, readerTextColor: option.value })}
+                className={`relative flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-2xl border px-2 py-3 text-xs font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-ring ${active ? "border-primary bg-accent text-foreground" : "border-border bg-background text-foreground hover:border-primary/40"}`}
+              >
+                <span className="h-7 w-7 rounded-full border border-black/20 shadow-sm" style={{ backgroundColor: option.value }} aria-hidden="true" />
+                {language === "da" ? option.da : option.en}
+                {active && <Check className="absolute right-2 top-2 h-3.5 w-3.5 text-primary" aria-hidden="true" />}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-border bg-card p-6 shadow-paper">
+        <div className="flex items-center gap-2">
+          <Highlighter className="h-5 w-5 text-primary" aria-hidden="true" />
+          <h2 className="font-display text-xl font-semibold text-foreground">
+            {language === "da" ? "Highlighterfarve" : "Highlighter color"}
+          </h2>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {language === "da" ? "Din valgte farve bruges, når du markerer tekst i læseren." : "Your chosen color is used when you highlight text in the reader."}
+        </p>
+        <div className="mt-5 grid grid-cols-5 gap-2.5">
+          {HIGHLIGHT_COLORS.map((option) => {
+            const active = preferences.highlightColor === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-label={option.label[language]}
+                aria-pressed={active}
+                onClick={() => setPreferences({ ...preferences, highlightColor: option.value })}
+                className={`relative h-14 rounded-xl border-2 outline-none transition focus-visible:ring-2 focus-visible:ring-ring ${active ? "border-primary" : "border-border hover:border-primary/40"}`}
+                style={{ backgroundColor: option.hex }}
+              >
+                {active && <Check className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-slate-900" aria-hidden="true" />}
+              </button>
+            );
+          })}
         </div>
       </section>
 
