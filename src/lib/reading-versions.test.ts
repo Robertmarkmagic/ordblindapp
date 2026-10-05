@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { splitReadingText } from "@/lib/reading-versions";
+import { createLocalReadingVersion, splitReadingText } from "@/lib/reading-versions";
 
 describe("splitReadingText", () => {
   it("keeps short paragraphs together", () => {
@@ -21,5 +21,25 @@ describe("splitReadingText", () => {
     const chunks = splitReadingText("one two three four five six", 10);
     expect(chunks.every((chunk) => chunk.length <= 10)).toBe(true);
     expect(chunks.join(" ")).toBe("one two three four five six");
+  });
+});
+
+describe("createLocalReadingVersion", () => {
+  it("creates a simpler Danish view without changing facts", () => {
+    const result = createLocalReadingVersion(
+      "Du skal fremsende ansøgningen inden udgangen af 5. oktober 2026, såfremt du vil deltage.",
+      "easy",
+      "da",
+    );
+    expect(result).toContain("sende");
+    expect(result).toContain("5. oktober 2026");
+    expect(result).toContain("hvis");
+  });
+
+  it("creates a clearly structured explanation", () => {
+    const result = createLocalReadingVersion("Du skal sende svaret fredag. Husk dit navn.", "explain", "da");
+    expect(result).toContain("Kort fortalt");
+    expect(result).toContain("Det vigtigste");
+    expect(result).toContain("fredag");
   });
 });

@@ -94,12 +94,81 @@ async function transformChunk(text: string, mode: Exclude<ReadingVersion, "origi
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
+    // Keep the reading tools useful even if the optional AI provider is not
+    // configured or is temporarily unavailable. The original is never touched.
+    if (response.status === 502 || response.status === 503 || response.status === 504) {
+      return createLocalReadingVersion(text, mode, lang);
+    }
     throw new Error(body?.error || "Reading version request failed");
   }
   const body = await response.json();
   const result = String(body?.content || body?.message || body?.response || "").trim();
   if (!result) throw new Error("Reading version was empty");
   return result;
+}
+
+const DANISH_REPLACEMENTS: Array<[RegExp, string]> = [
+  [/\bvedrørende\b/gi, "om"],
+  [/\bangående\b/gi, "om"],
+  [/\bfremsende\b/gi, "sende"],
+  [/\bforetage\b/gi, "lave"],
+  [/\bmodtage\b/gi, "få"],
+  [/\bsåfremt\b/gi, "hvis"],
+  [/\binden udgangen af\b/gi, "senest"],
+  [/\bimplementere\b/gi, "føre ud i livet"],
+];
+
+const ENGLISH_REPLACEMENTS: Array<[RegExp, string]> = [
+  [/\bregarding\b/gi, "about"],
+  [/\bcommence\b/gi, "start"],
+  [/\butilize\b/gi, "use"],
+  [/\bapproximately\b/gi, "about"],
+  [/\bsubsequently\b/gi, "later"],
+  [/\bprior to\b/gi, "before"],
+];
+
+function sentences(text: string): string[] {
+  return text
+    .replace(/\r\n?/g, "\n")
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+}
+
+function shortenSentence(sentence: string, veryEasy: boolean): string[] {
+  const maximum = veryEasy ? 72 : 115;
+  if (sentence.length <= maximum) return [sentence];
+
+  const parts = sentence
+    .split(/[,;:]\s+|\s+(?:men|but|fordi|because|mens|while)\s+/i)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (parts.length < 2) return [sentence];
+  return parts.map((part) => /[.!?]$/.test(part) ? part : `${part}.`);
+}
+
+/** A safe on-device fallback used when the hosted AI service is unavailable. */
+export function createLocalReadingVersion(
+  text: string,
+  mode: Exclude<ReadingVersion, "original">,
+  lang: "da" | "en",
+): string {
+  const replacements = lang === "da" ? DANISH_REPLACEMENTS : ENGLISH_REPLACEMENTS;
+  let plain = text.trim();
+  for (const [pattern, replacement] of replacements) plain = plain.replace(pattern, replacement);
+
+  const simplified = sentences(plain).flatMap((sentence) => shortenSentence(sentence, mode === "very-easy"));
+  if (mode === "easy") return simplified.join(" ");
+  if (mode === "very-easy") return simplified.join("\n\n");
+
+  const lead = lang === "da" ? "Kort fortalt" : "In short";
+  const details = lang === "da" ? "Det vigtigste" : "The important points";
+  const first = simplified[0] || plain;
+  const rest = simplified.slice(1, 6);
+  return [
+    `${lead}:\n${first}`,
+    rest.length ? `${details}:\n${rest.map((item) => `• ${item}`).join("\n")}` : "",
+  ].filter(Boolean).join("\n\n");
 }
 
 export async function createReadingVersion(args: {
