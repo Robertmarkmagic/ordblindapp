@@ -1,14 +1,14 @@
 import { Check, Plus } from "lucide-react";
 import { HIGHLIGHT_COLORS, TOOL_OPTIONS, type AestheticChoice, type AppPreferences, type ToolbarTool } from "@/lib/app-preferences";
-import type { FontChoice, TintChoice } from "@/lib/reading-settings";
+import type { FontChoice } from "@/lib/reading-settings";
 import { useLanguage } from "@/lib/i18n";
 
 const THEME_CHOICES: Array<{ value: AestheticChoice; emoji: string; label: string }> = [
-  { value: "strawberry", emoji: "🍓", label: "Pinky" },
-  { value: "cloud", emoji: "🌊", label: "Ocean" },
-  { value: "minimal", emoji: "♡", label: "Minimal" },
-  { value: "sage", emoji: "🌿", label: "Wood" },
+  { value: "minimal", emoji: "🤍", label: "Hvid" },
   { value: "midnight", emoji: "☾", label: "Night Mode" },
+  { value: "cloud", emoji: "🌊", label: "Ocean" },
+  { value: "dino", emoji: "🦕", label: "Dino" },
+  { value: "unicorn", emoji: "🦄", label: "Glimmer-magi" },
 ];
 
 const FONT_CHOICES: Array<{ value: FontChoice; label: string }> = [
@@ -17,23 +17,11 @@ const FONT_CHOICES: Array<{ value: FontChoice; label: string }> = [
   { value: "lora", label: "Lora" },
 ];
 
-const BACKGROUNDS: Array<{ value: TintChoice; color: string; label: string }> = [
-  { value: "cream", color: "#fff8ee", label: "Creme" },
-  { value: "white", color: "#ffffff", label: "Hvid" },
-  { value: "sepia", color: "#ead9c3", label: "Sepia" },
-  { value: "soft-gray", color: "#cad3bf", label: "Salvie" },
-  { value: "soft-blue", color: "#d9edff", label: "Lyseblå" },
-];
-
-const TEXT_COLORS = ["#1E293B", "#203B5B", "#4B3621", "#111827", "#FFF0AA"];
-
 interface Props {
   preferences: AppPreferences;
   onPreferences: (next: AppPreferences) => void;
   font: FontChoice;
   onFont: (font: FontChoice) => void;
-  tint: TintChoice;
-  onTint: (tint: TintChoice) => void;
   bionic: boolean;
   onBionic: (active: boolean) => void;
 }
@@ -65,7 +53,7 @@ export function ReaderThemeChooser({ value, onChange }: { value: AestheticChoice
   );
 }
 
-export function ReaderPersonalisationStudio({ preferences, onPreferences, font, onFont, tint, onTint, bionic, onBionic }: Props) {
+export function ReaderPersonalisationStudio({ preferences, onPreferences, font, onFont, bionic, onBionic }: Props) {
   const { language } = useLanguage();
   const update = <K extends keyof AppPreferences>(key: K, value: AppPreferences[K]) => onPreferences({ ...preferences, [key]: value });
   const toggleTool = (tool: ToolbarTool) => {
@@ -76,7 +64,7 @@ export function ReaderPersonalisationStudio({ preferences, onPreferences, font, 
 
   return (
     <section className="mt-5 space-y-3" aria-label={language === "da" ? "Tilpas din læseplads" : "Personalise your reading space"}>
-      <div className="grid gap-3 lg:grid-cols-[1.15fr_1fr_1fr_.68fr]">
+      <div className="grid gap-3 lg:grid-cols-[1.15fr_1fr_.68fr]">
         <div className="rr-control-card">
           <h2>Skrifttype</h2>
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -96,16 +84,6 @@ export function ReaderPersonalisationStudio({ preferences, onPreferences, font, 
           <label className="rr-range-row"><span>☰</span><input type="range" min="1.4" max="2.6" step="0.1" value={preferences.readerLineHeight} onChange={(event) => update("readerLineHeight", Number(event.target.value))} aria-label="Linjeafstand" /><span>☷</span></label>
           <span className="rr-control-label">Bogstavsafstand</span>
           <label className="rr-range-row"><span>Aa</span><input type="range" min="0" max="0.12" step="0.01" value={preferences.readerLetterSpacing} onChange={(event) => update("readerLetterSpacing", Number(event.target.value))} aria-label="Bogstavsafstand" /><span>A a</span></label>
-        </div>
-
-        <div className="rr-control-card">
-          <h2>Baggrund og tekstfarve</h2>
-          <div className="mt-4 flex flex-wrap gap-3">
-            {BACKGROUNDS.map((option) => <button key={option.value} type="button" onClick={() => onTint(option.value)} aria-label={`Baggrund: ${option.label}`} aria-pressed={tint === option.value} className={`rr-color-dot ${tint === option.value ? "is-active" : ""}`} style={{ backgroundColor: option.color }} />)}
-          </div>
-          <div className="mt-5 flex flex-wrap gap-3">
-            {TEXT_COLORS.map((color) => <button key={color} type="button" onClick={() => update("readerTextColor", color)} aria-label="Vælg tekstfarve" aria-pressed={preferences.readerTextColor === color} className={`rr-color-dot ${preferences.readerTextColor === color ? "is-active" : ""}`} style={{ backgroundColor: color }} />)}
-          </div>
         </div>
 
         <div className="rr-control-card">

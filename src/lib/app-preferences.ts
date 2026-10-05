@@ -5,7 +5,9 @@ export type AestheticChoice =
   | "lavender"
   | "cozy"
   | "midnight"
-  | "minimal";
+  | "minimal"
+  | "dino"
+  | "unicorn";
 
 export type ToolbarTool =
   | "read"
@@ -68,13 +70,11 @@ export const AESTHETIC_OPTIONS: Array<{
   description: { da: string; en: string };
   swatches: [string, string, string];
 }> = [
-  { value: "strawberry", emoji: "🍓", name: { da: "Pinky", en: "Pinky" }, description: { da: "Lyserød fra kant til kant", en: "Soft pink from edge to edge" }, swatches: ["#fff6f9", "#f7d7e1", "#343b4a"] },
-  { value: "sage", emoji: "🌿", name: { da: "Wood", en: "Wood" }, description: { da: "Grønne, rolige naturtoner", en: "Calm green nature tones" }, swatches: ["#f4f7ef", "#d7e3cf", "#416048"] },
-  { value: "cloud", emoji: "🌊", name: { da: "Ocean", en: "Ocean" }, description: { da: "Lyseblå og dybe havtoner", en: "Light blue and deep ocean tones" }, swatches: ["#edf8ff", "#cce8f8", "#245078"] },
-  { value: "lavender", emoji: "💜", name: { da: "Lavender", en: "Lavender" }, description: { da: "Lavendel og bløde pasteller", en: "Lavender and soft pastels" }, swatches: ["#fdf9ff", "#eadcf3", "#77558b"] },
-  { value: "cozy", emoji: "☕", name: { da: "Cozy", en: "Cozy" }, description: { da: "Varm beige og study-look", en: "Warm beige and a study feel" }, swatches: ["#fffaf2", "#eadbc5", "#7a5b43"] },
-  { value: "midnight", emoji: "🌙", name: { da: "Night Mode", en: "Night Mode" }, description: { da: "Sort, rolig og enkel", en: "Black, calm and simple" }, swatches: ["#000000", "#111111", "#ffffff"] },
-  { value: "minimal", emoji: "🤍", name: { da: "Minimal", en: "Minimal" }, description: { da: "Neutral og professionel", en: "Neutral and professional" }, swatches: ["#ffffff", "#eef0f2", "#344054"] },
+  { value: "minimal", emoji: "🤍", name: { da: "Hvid", en: "White" }, description: { da: "Hvid baggrund med sort tekst", en: "White background with black text" }, swatches: ["#ffffff", "#f7f7f7", "#171717"] },
+  { value: "midnight", emoji: "🌙", name: { da: "Night Mode", en: "Night Mode" }, description: { da: "Sort baggrund med hvid tekst", en: "Black background with white text" }, swatches: ["#000000", "#111111", "#ffffff"] },
+  { value: "cloud", emoji: "🌊", name: { da: "Ocean", en: "Ocean" }, description: { da: "Lyseblå baggrund med sort tekst", en: "Light blue background with black text" }, swatches: ["#edf8ff", "#cce8f8", "#171717"] },
+  { value: "dino", emoji: "🦕", name: { da: "Dino", en: "Dino" }, description: { da: "Et grønt børneunivers", en: "A green children's world" }, swatches: ["#e4f2d4", "#b9dca8", "#171717"] },
+  { value: "unicorn", emoji: "🦄", name: { da: "Glimmer-magi", en: "Glitter magic" }, description: { da: "Enhjørning, glimmer og pasteller", en: "Unicorns, glitter and pastels" }, swatches: ["#ffdff1", "#d9eeff", "#171717"] },
 ];
 
 export const TOOL_OPTIONS: Array<{
@@ -105,10 +105,14 @@ function normalize(value: Partial<AppPreferences> | null): AppPreferences {
   const toolbar = Array.isArray(value?.toolbar)
     ? value.toolbar.filter((tool): tool is ToolbarTool => TOOL_OPTIONS.some((item) => item.value === tool))
     : DEFAULT_APP_PREFERENCES.toolbar;
+  const oldAesthetic = value?.aesthetic;
+  const aesthetic: AestheticChoice = AESTHETIC_OPTIONS.some((item) => item.value === oldAesthetic)
+    ? (oldAesthetic as AestheticChoice)
+    : ["strawberry", "sage", "lavender", "cozy"].includes(oldAesthetic || "")
+      ? "minimal"
+      : DEFAULT_APP_PREFERENCES.aesthetic;
   return {
-    aesthetic: AESTHETIC_OPTIONS.some((item) => item.value === value?.aesthetic)
-      ? (value?.aesthetic as AestheticChoice)
-      : DEFAULT_APP_PREFERENCES.aesthetic,
+    aesthetic,
     decorations: value?.decorations !== false,
     gentleMessages: value?.gentleMessages !== false,
     toolbar: toolbar.length ? toolbar : DEFAULT_APP_PREFERENCES.toolbar,
@@ -128,9 +132,7 @@ function normalize(value: Partial<AppPreferences> | null): AppPreferences {
     readerLineHeight: numberInRange(value?.readerLineHeight, DEFAULT_APP_PREFERENCES.readerLineHeight, 1.4, 2.6),
     readerLetterSpacing: numberInRange(value?.readerLetterSpacing, DEFAULT_APP_PREFERENCES.readerLetterSpacing, 0, 0.12),
     readerWordSpacing: numberInRange(value?.readerWordSpacing, DEFAULT_APP_PREFERENCES.readerWordSpacing, 0, 0.3),
-    readerTextColor: ["#1E293B", "#111827", "#171717", "#4B3621", "#203B5B", "#FFF0AA", "#FFFFFF"].includes(value?.readerTextColor || "")
-      ? (value?.readerTextColor as string)
-      : DEFAULT_APP_PREFERENCES.readerTextColor,
+    readerTextColor: aesthetic === "midnight" ? "#FFFFFF" : "#171717",
   };
 }
 

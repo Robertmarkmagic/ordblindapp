@@ -12,15 +12,13 @@ const TOOLS = [
 ] as const;
 
 const COLOR_CHOICES = [
-  { id: "minimal", emoji: "♥", label: "Minimal" },
-  { id: "pinky", emoji: "🍓", label: "Pinky" },
-  { id: "wood", emoji: "🌿", label: "Wood" },
+  { id: "minimal", emoji: "🤍", label: "Hvid" },
   { id: "ocean", emoji: "🌊", label: "Ocean" },
   { id: "night", emoji: "☾", label: "Night Mode" },
 ] as const;
 
 const CHILD_NOTEBOOKS = [
-  { id: "unicorn", emoji: "🦄", label: "Enhjørning" },
+  { id: "unicorn", emoji: "🦄", label: "Glimmer-magi" },
   { id: "dino", emoji: "🦕", label: "Dino" },
 ] as const;
 
@@ -51,51 +49,41 @@ const CHILD_STICKERS = [
   { value: "🪐", label: "Planet", icon: "🪐" },
 ] as const;
 const HIGHLIGHTS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8179"];
-const TEXT_COLORS = [
-  { value: "#171717", label: "Sort" },
-  { value: "#fff1ad", label: "Yellow" },
-  { value: "#17345e", label: "Mørkeblå" },
-  { value: "#6b3e2e", label: "Brun" },
-  { value: "#b83f78", label: "Lyserød" },
-  { value: "#ffffff", label: "Hvid" },
-] as const;
-
 export type PersonalisationPreview = {
   tools: string[];
   color: (typeof APP_COLOR_CHOICES)[number]["id"];
   notebookTheme: (typeof NOTEBOOK_CHOICES)[number]["id"];
   sticker: string;
   highlight: string;
-  textColor: (typeof TEXT_COLORS)[number]["value"];
+  textColor: "#171717" | "#ffffff";
 };
 
 export const DEFAULT_PERSONALISATION: PersonalisationPreview = {
   tools: ["read", "mark", "voice", "write", "notes", "scan", "dictionary"],
   color: "ocean",
-  notebookTheme: "pinky",
+  notebookTheme: "minimal",
   sticker: "🍓",
   highlight: HIGHLIGHTS[0],
-  textColor: "#fff1ad",
+  textColor: "#171717",
 };
 
 export function PersonalisationShowcase({ onChange }: { onChange?: (value: PersonalisationPreview) => void }) {
   const [tools, setTools] = useState(() => new Set(DEFAULT_PERSONALISATION.tools));
   const [color, setColor] = useState<(typeof APP_COLOR_CHOICES)[number]["id"]>("ocean");
-  const [notebookTheme, setNotebookTheme] = useState<(typeof NOTEBOOK_CHOICES)[number]["id"]>("pinky");
+  const [notebookTheme, setNotebookTheme] = useState<(typeof NOTEBOOK_CHOICES)[number]["id"]>("minimal");
   const [sticker, setSticker] = useState("🍓");
   const [appMode, setAppMode] = useState<"adult" | "child">("adult");
   const [notebookMode, setNotebookMode] = useState<"adult" | "child">("adult");
   const [stickerMode, setStickerMode] = useState<"adult" | "teen" | "child">("teen");
   const [highlight, setHighlight] = useState(HIGHLIGHTS[0]);
-  const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["value"]>("#fff1ad");
   const selectedNote = useMemo(() => NOTEBOOK_CHOICES.find((item) => item.id === notebookTheme) ?? COLOR_CHOICES[1], [notebookTheme]);
   const visibleColors = appMode === "child" ? CHILD_NOTEBOOKS : COLOR_CHOICES;
   const visibleNotebooks = notebookMode === "child" ? CHILD_NOTEBOOKS : COLOR_CHOICES;
   const visibleStickers = stickerMode === "child" ? CHILD_STICKERS : stickerMode === "teen" ? TEEN_STICKERS : ADULT_STICKERS;
 
   useEffect(() => {
-    onChange?.({ tools: [...tools], color, notebookTheme, sticker, highlight, textColor });
-  }, [color, highlight, notebookTheme, onChange, sticker, textColor, tools]);
+    onChange?.({ tools: [...tools], color, notebookTheme, sticker, highlight, textColor: color === "night" ? "#ffffff" : "#171717" });
+  }, [color, highlight, notebookTheme, onChange, sticker, tools]);
 
   const toggleTool = (id: string) => {
     setTools((current) => {
@@ -108,8 +96,6 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
 
   const selectColor = (nextColor: (typeof APP_COLOR_CHOICES)[number]["id"]) => {
     setColor(nextColor);
-    if (nextColor === "minimal") setTextColor("#171717");
-    if (nextColor === "night") setTextColor("#ffffff");
   };
 
   const selectAppMode = (mode: "adult" | "child") => {
@@ -121,7 +107,7 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
   const selectNotebookMode = (mode: "adult" | "child") => {
     setNotebookMode(mode);
     if (mode === "child" && notebookTheme !== "unicorn" && notebookTheme !== "dino") setNotebookTheme("unicorn");
-    if (mode === "adult" && (notebookTheme === "unicorn" || notebookTheme === "dino")) setNotebookTheme("pinky");
+    if (mode === "adult" && (notebookTheme === "unicorn" || notebookTheme === "dino")) setNotebookTheme("minimal");
   };
 
   const selectStickerMode = (mode: "adult" | "teen" | "child") => {
@@ -132,7 +118,7 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
   return (
     <div
       className={`rr-setup-showcase rr-setup-app-${color}`}
-      style={{ "--rr-selected-text": textColor } as CSSProperties}
+      style={{ "--rr-selected-text": color === "night" ? "#ffffff" : "#171717" } as CSSProperties}
     >
       <header className="rr-setup-heading">
         <h1>Gør det til dit eget</h1>
@@ -166,24 +152,6 @@ export function PersonalisationShowcase({ onChange }: { onChange?: (value: Perso
           {visibleColors.map((item) => (
             <button key={item.id} type="button" onClick={() => selectColor(item.id)} aria-pressed={color === item.id} className={`rr-setup-color rr-setup-color-${item.id} ${color === item.id ? "is-active" : ""}`}>
               <span aria-hidden="true">{item.emoji}</span>{item.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="rr-setup-section" aria-labelledby="setup-text-color-title">
-        <h2 id="setup-text-color-title">Vælg tekstfarve</h2>
-        <div className="rr-setup-text-colors">
-          {TEXT_COLORS.map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => setTextColor(item.value)}
-              aria-pressed={textColor === item.value}
-              className={textColor === item.value ? "is-active" : ""}
-            >
-              <span style={{ backgroundColor: item.value }} aria-hidden="true" />
-              {item.label}
             </button>
           ))}
         </div>

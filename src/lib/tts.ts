@@ -1,4 +1,5 @@
 import { fetchFunction } from "@/lib/supabase";
+import type { NarrationStyle } from "@/lib/reader-voices";
 
 export interface HdAudioResult {
   url: string;
@@ -19,17 +20,19 @@ export async function generateHdAudio(params: {
   documentId: string;
   voiceId: string;
   text: string;
+  speed: number;
+  narrationStyle: NarrationStyle;
 }): Promise<HdAudioResult> {
   const text = params.text.trim();
   if (!text) throw new Error("Nothing to read aloud yet.");
-  const key = `${params.documentId}:${params.voiceId}:${hashText(text)}`;
+  const key = `${params.documentId}:${params.voiceId}:${params.speed}:${params.narrationStyle}:${hashText(text)}`;
   const cached = memoryCache.get(key);
   if (cached) return { url: cached, cachedFree: true };
 
   const response = await fetchFunction("text-to-speech", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, voice: params.voiceId }),
+    body: JSON.stringify({ text, voice: params.voiceId, speed: params.speed, narrationStyle: params.narrationStyle }),
   });
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));

@@ -1,5 +1,5 @@
 import React from "react";
-import { Play, Pause, Square, RotateCcw, Gauge, Sparkles, Loader2, Volume2, HelpCircle } from "lucide-react";
+import { Play, Pause, Square, RotateCcw, Gauge, Sparkles, Loader2, Volume2, HelpCircle, AudioLines } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { PlaybackStatus } from "@/hooks/useReadAloud";
 import type { Engine } from "@/lib/reader-tokens";
-import { voicesForLang, type ReaderVoice } from "@/lib/reader-voices";
+import { NARRATION_STYLES, voicesForLang, type NarrationStyle, type ReaderVoice } from "@/lib/reader-voices";
 import { AudioTroubleshooter } from "@/components/reader/AudioTroubleshooter";
 import { useLanguage } from "@/lib/i18n";
 
@@ -25,6 +25,8 @@ interface AudioBarProps {
   lang: "en" | "da";
   speed: number;
   onSpeed: (s: number) => void;
+  narrationStyle: NarrationStyle;
+  onNarrationStyle: (style: NarrationStyle) => void;
   onToggle: () => void;
   onStop: () => void;
   onSkipBack: () => void;
@@ -46,13 +48,15 @@ export function AudioBar({
   lang,
   speed,
   onSpeed,
+  narrationStyle,
+  onNarrationStyle,
   onToggle,
   onStop,
   onSkipBack,
   hdVoiceId,
   onVoice,
 }: AudioBarProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isPlaying = status === "playing";
   const isLoading = status === "loading";
   const hdVoices = voicesForLang(lang);
@@ -60,6 +64,7 @@ export function AudioBar({
     ? hdVoices.find((v) => v.id === hdVoiceId)?.label ?? t("audio.natural", "Natural voice")
     : t("audio.standard", "Standard voice");
   const [troubleshootOpen, setTroubleshootOpen] = React.useState(false);
+  const activeStyle = NARRATION_STYLES.find((item) => item.value === narrationStyle) ?? NARRATION_STYLES[1];
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/90 backdrop-blur-md">
@@ -135,6 +140,33 @@ export function AudioBar({
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* Delivery style. This controls phrasing and pauses in the AI voice. */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="h-11 shrink-0 gap-1.5 rounded-full px-3 text-foreground hover:bg-accent"
+              aria-label={language === "da" ? `Læseflow, nu ${activeStyle.label.da}` : `Reading flow, currently ${activeStyle.label.en}`}
+            >
+              <AudioLines className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden text-sm font-medium md:block">{activeStyle.label[language]}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" className="w-64 rounded-2xl">
+            <DropdownMenuLabel>{language === "da" ? "Læseflow" : "Reading flow"}</DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={narrationStyle} onValueChange={(value) => onNarrationStyle(value as NarrationStyle)}>
+              {NARRATION_STYLES.map((style) => (
+                <DropdownMenuRadioItem key={style.value} value={style.value} className="items-start rounded-xl py-2.5">
+                  <span className="flex flex-col">
+                    <span className="font-medium">{style.label[language]}</span>
+                    <span className="text-xs font-normal text-muted-foreground">{style.description[language]}</span>
+                  </span>
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         {/* Voice selector */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -183,6 +215,9 @@ export function AudioBar({
                 )}
               </DropdownMenuItem>
             ))}
+            <p className="px-2 pb-1 pt-2 text-xs leading-relaxed text-muted-foreground">
+              {language === "da" ? "AI-stemmerne bruger dit valgte tempo og læseflow." : "AI voices use your chosen pace and reading flow."}
+            </p>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

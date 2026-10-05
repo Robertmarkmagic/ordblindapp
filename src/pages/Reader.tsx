@@ -53,6 +53,8 @@ const THEME_READING_SURFACES: Record<AestheticChoice, string> = {
   midnight: "#050505",
   lavender: "#F6EEFA",
   cozy: "#FAF1E4",
+  dino: "#E4F2D4",
+  unicorn: "#FFF0F8",
 };
 
 /**
@@ -200,6 +202,8 @@ export default function Reader() {
     currentWordIndex,
     speed,
     setSpeed,
+    narrationStyle,
+    setNarrationStyle,
     toggle,
     stop,
     skipBack,
@@ -307,7 +311,7 @@ export default function Reader() {
   const tint = tintOverride ?? settings.default_background_tint;
   const fontFamily = fontFamilyFor(font);
   const tintColor = tintOverride ? tintColorFor(tint) : THEME_READING_SURFACES[preferences.aesthetic];
-  const readerTextColor = preferences.aesthetic === "midnight" ? "#FFFFFF" : preferences.aesthetic === "minimal" ? "#171717" : preferences.readerTextColor;
+  const readerTextColor = preferences.aesthetic === "midnight" ? "#FFFFFF" : "#171717";
 
   // --- Notes / anchoring ---
   const articleRef = useRef<HTMLElement | null>(null);
@@ -430,7 +434,7 @@ export default function Reader() {
 
   return (
     <div className="rr-personal-space">
-      <ReaderThemeChooser value={preferences.aesthetic} onChange={(aesthetic) => { setTintOverride(null); setPreferences({ ...preferences, aesthetic, readerTextColor: aesthetic === "minimal" ? "#171717" : aesthetic === "midnight" ? "#FFFFFF" : preferences.readerTextColor }); }} />
+      <ReaderThemeChooser value={preferences.aesthetic} onChange={(aesthetic) => { setTintOverride(null); setPreferences({ ...preferences, aesthetic }); }} />
       <main className="mx-auto max-w-6xl px-3 pb-40 sm:px-6">
         <section className="rr-reader-shell">
           <div className="rr-reader-windowbar">
@@ -566,8 +570,6 @@ export default function Reader() {
           onPreferences={setPreferences}
           font={font}
           onFont={setFontOverride}
-          tint={tint}
-          onTint={setTintOverride}
           bionic={bionic}
           onBionic={setBionic}
         />
@@ -581,6 +583,8 @@ export default function Reader() {
           lang={lang}
           speed={speed}
           onSpeed={setSpeed}
+          narrationStyle={narrationStyle}
+          onNarrationStyle={setNarrationStyle}
           onToggle={() => toggle()}
           onStop={stop}
           onSkipBack={skipBack}

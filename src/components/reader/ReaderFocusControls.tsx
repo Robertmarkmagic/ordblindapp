@@ -40,13 +40,6 @@ const FONT_WEIGHTS = [
   { value: 800, da: "Ekstra", en: "Extra" },
 ];
 
-const TEXT_COLORS = [
-  { value: "#1E293B", da: "Mørk grå", en: "Dark grey" },
-  { value: "#111827", da: "Sort", en: "Black" },
-  { value: "#4B3621", da: "Mørk brun", en: "Dark brown" },
-  { value: "#203B5B", da: "Mørk blå", en: "Dark blue" },
-];
-
 function OptionGrid<T extends string>({
   options,
   value,
@@ -239,29 +232,6 @@ export function ReaderFocusControls({ open, onOpenChange, preferences, onChange 
             aria-label={language === "da" ? "Linjeafstand" : "Line spacing"}
           />
 
-          <div className="mb-2 mt-5 text-sm font-semibold text-foreground">
-            {language === "da" ? "Tekstfarve" : "Text colour"}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {TEXT_COLORS.map((color) => {
-              const active = preferences.readerTextColor === color.value;
-              return (
-                <button
-                  key={color.value}
-                  type="button"
-                  aria-label={color[language]}
-                  aria-pressed={active}
-                  title={color[language]}
-                  onClick={() => change("readerTextColor", color.value)}
-                  className={`grid h-11 w-11 place-items-center rounded-full border bg-background outline-none transition focus-visible:ring-2 focus-visible:ring-ring ${
-                    active ? "border-sage ring-2 ring-sage/40" : "border-border"
-                  }`}
-                >
-                  <span className="h-5 w-5 rounded-full" style={{ backgroundColor: color.value }} aria-hidden="true" />
-                </button>
-              );
-            })}
-          </div>
         </div>
       </PopoverContent>
     </Popover>

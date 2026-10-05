@@ -19,11 +19,27 @@ export interface ReaderVoice {
   browserLang: string;
 }
 
+export type NarrationStyle = "clear" | "natural" | "flowing";
+
+export const NARRATION_STYLES: Array<{
+  value: NarrationStyle;
+  label: { da: string; en: string };
+  description: { da: string; en: string };
+}> = [
+  { value: "clear", label: { da: "Ekstra tydelig", en: "Extra clear" }, description: { da: "Rolige pauser og tydelig udtale", en: "Calm pauses and clear pronunciation" } },
+  { value: "natural", label: { da: "Naturlig", en: "Natural" }, description: { da: "Som en rolig samtale", en: "Like a calm conversation" } },
+  { value: "flowing", label: { da: "Flydende", en: "Flowing" }, description: { da: "Sammenhængende og levende rytme", en: "Connected, lively rhythm" } },
+];
+
 export const READER_VOICES: ReaderVoice[] = [
   { id: "coral", label: "Calm, Emma", lang: "en", browserLang: "en-US" },
   { id: "onyx", label: "Clear, Daniel", lang: "en", browserLang: "en-US" },
+  { id: "nova", label: "Warm, Sophie", lang: "en", browserLang: "en-US" },
+  { id: "ballad", label: "Story, Noah", lang: "en", browserLang: "en-US" },
   { id: "sage", label: "Rolig, Freja", lang: "da", browserLang: "da-DK" },
-  { id: "ballad", label: "Tydelig, Mikkel", lang: "da", browserLang: "da-DK" },
+  { id: "onyx", label: "Tydelig, Mikkel", lang: "da", browserLang: "da-DK" },
+  { id: "coral", label: "Varm, Sofie", lang: "da", browserLang: "da-DK" },
+  { id: "ballad", label: "Fortællende, Noah", lang: "da", browserLang: "da-DK" },
 ];
 
 export function voicesForLang(lang: string): ReaderVoice[] {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSpeech } from "@/hooks/useSpeech";
 import { generateHdAudio } from "@/lib/tts";
+import type { NarrationStyle } from "@/lib/reader-voices";
 import { recordTtsSeconds } from "@/lib/usage";
 import {
   ReaderModel,
@@ -46,6 +47,8 @@ export interface UseReadAloudResult {
   currentWordIndex: number;
   speed: number;
   setSpeed: (s: number) => void;
+  narrationStyle: NarrationStyle;
+  setNarrationStyle: (style: NarrationStyle) => void;
   /** Toggle play/pause. Starts from `fromWord` if given (click-to-seek). */
   toggle: (fromWord?: number) => void;
   stop: () => void;
@@ -89,6 +92,7 @@ export function useReadAloud({
   const [status, setStatus] = useState<PlaybackStatus>("idle");
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [speed, setSpeedState] = useState(1);
+  const [narrationStyle, setNarrationStyleState] = useState<NarrationStyle>("natural");
   const [hdError, setHdError] = useState(false);
 
   const engine = chooseEngine({
@@ -306,10 +310,14 @@ export function useReadAloud({
           documentId,
           voiceId: hdVoiceId || "",
           text: model.collapsed,
+          speed,
+          narrationStyle,
         });
 
         const audio = new Audio(url);
-        audio.playbackRate = speed;
+        // The AI creates the requested pace itself. Keeping playback at 1×
+        // preserves its natural pauses, phrasing and voice quality.
+        audio.playbackRate = 1;
         audioRef.current = audio;
 
         await new Promise<void>((resolve, reject) => {
@@ -352,7 +360,7 @@ export function useReadAloud({
         startBrowser(fromWord);
       }
     },
-    [documentId, hdVoiceId, model, speed, tickHd, teardownHd, startBrowser, onFallback]
+    [documentId, hdVoiceId, model, speed, narrationStyle, tickHd, teardownHd, startBrowser, onFallback]
   );
 
   const start = useCallback(
@@ -439,8 +447,12 @@ export function useReadAloud({
   const setSpeed = useCallback(
     (s: number) => {
       setSpeedState(s);
-      // HD: apply to the cached clip live — no regeneration.
-      if (audioRef.current) audioRef.current.playbackRate = s;
+      // AI audio is generated at the chosen pace. Stop the old clip so the
+      // next play is freshly phrased instead of mechanically time-stretched.
+      if (engine === "hd" && audioRef.current) {
+        teardownHd();
+        setStatus("idle");
+      }
       // Browser: rate can't change mid-utterance; restart at the current word
       // so the new speed takes effect immediately if we're playing.
       if (engine === "browser" && status === "playing") {
@@ -450,8 +462,16 @@ export function useReadAloud({
         setTimeout(() => start(from), 0);
       }
     },
-    [engine, status, currentWordIndex, speech, start]
+    [engine, status, currentWordIndex, speech, start, teardownHd]
   );
+
+  const setNarrationStyle = useCallback((style: NarrationStyle) => {
+    setNarrationStyleState(style);
+    if (audioRef.current) {
+      teardownHd();
+      setStatus("idle");
+    }
+  }, [teardownHd]);
 
   // Cleanup on TRUE UNMOUNT ONLY. `speech`/`teardownHd` change identity across
   // renders (useSpeech returns a fresh object every render), so listing them
@@ -477,6 +497,8 @@ export function useReadAloud({
     currentWordIndex,
     speed,
     setSpeed,
+    narrationStyle,
+    setNarrationStyle,
     toggle,
     stop,
     skipBack,

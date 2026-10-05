@@ -8,6 +8,11 @@ const allowedOrigins = new Set([
   "http://127.0.0.1:8080",
 ]);
 const voices = new Set(["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer"]);
+const narrationInstructions: Record<string, string> = {
+  clear: "Speak in Danish with exceptionally clear pronunciation, gentle pauses between clauses, and a calm supportive tone. Keep the delivery natural, never robotic or exaggerated.",
+  natural: "Speak in Danish like a warm, calm human conversation. Use natural phrasing, breathing, pauses, and emphasis. Keep a smooth, reassuring rhythm.",
+  flowing: "Speak in Danish with a fluent, connected and lively rhythm. Join phrases naturally, use expressive but subtle emphasis, and avoid choppy pauses or robotic delivery.",
+};
 
 function cors(req: Request) {
   const origin = req.headers.get("origin") || "";
@@ -43,6 +48,9 @@ Deno.serve(async (req: Request) => {
   const input = await req.json().catch(() => ({}));
   const text = String(input.text || "").trim().slice(0, 10000);
   const requestedVoice = String(input.voice || "sage");
+  const requestedSpeed = Number(input.speed || 1);
+  const speed = Math.min(2, Math.max(0.6, Number.isFinite(requestedSpeed) ? requestedSpeed : 1));
+  const narrationStyle = String(input.narrationStyle || "natural");
   if (!text) return new Response(JSON.stringify({ error: "text_required" }), { status: 400, headers: { ...headers, "Content-Type": "application/json" } });
 
   const upstream = await fetch("https://api.openai.com/v1/audio/speech", {
@@ -52,6 +60,8 @@ Deno.serve(async (req: Request) => {
       model: Deno.env.get("OPENAI_TTS_MODEL") || "gpt-4o-mini-tts",
       voice: voices.has(requestedVoice) ? requestedVoice : "sage",
       input: text,
+      instructions: narrationInstructions[narrationStyle] || narrationInstructions.natural,
+      speed,
       response_format: "mp3",
     }),
   });
