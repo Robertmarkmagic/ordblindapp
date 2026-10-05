@@ -14,7 +14,7 @@ export function PersonalisationSettings() {
     const toolbar = selected
       ? preferences.toolbar.filter((item) => item !== tool)
       : [...preferences.toolbar, tool];
-    setPreferences({ ...preferences, toolbar: toolbar.length ? toolbar : ["riley"] });
+    setPreferences({ ...preferences, toolbar: toolbar.length ? toolbar : ["read"] });
   };
 
   return (

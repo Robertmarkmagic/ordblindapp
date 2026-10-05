@@ -16,8 +16,7 @@ export type ToolbarTool =
   | "dictate"
   | "spelling"
   | "grammar"
-  | "comma"
-  | "riley";
+  | "comma";
 
 export type HighlightMode = "word" | "line" | "sentence";
 export type FocusScope = "off" | "word" | "line" | "two-lines" | "sentence" | "paragraph";
@@ -43,7 +42,7 @@ export const DEFAULT_APP_PREFERENCES: AppPreferences = {
   aesthetic: "cloud",
   decorations: true,
   gentleMessages: true,
-  toolbar: ["read", "highlight", "words", "dictate", "riley"],
+  toolbar: ["read", "highlight", "words", "dictate", "spelling", "grammar", "comma"],
   highlightMode: "word",
   focusScope: "off",
   highlightColor: "yellow",
@@ -89,7 +88,6 @@ export const TOOL_OPTIONS: Array<{
   { value: "spelling", emoji: "✓", label: { da: "Stavning", en: "Spelling" } },
   { value: "grammar", emoji: "✍️", label: { da: "Grammatik", en: "Grammar" } },
   { value: "comma", emoji: "[,]", label: { da: "Komma", en: "Comma" } },
-  { value: "riley", emoji: "✨", label: { da: "Riley", en: "Riley" } },
 ];
 
 const STORAGE_KEY = "reliefread-app-preferences-v1";

@@ -1,4 +1,5 @@
 import React from "react";
+import { Settings2 } from "lucide-react";
 import { TOOL_OPTIONS, type ToolbarTool } from "@/lib/app-preferences";
 import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { useLanguage } from "@/lib/i18n";
@@ -8,6 +9,8 @@ interface PersonalToolbarProps {
   onWords: () => void;
   onNotes: () => void;
   onHighlight: () => void;
+  onWritingHelp: () => void;
+  onSettings: () => void;
 }
 
 const RILEY_PROMPTS: Partial<Record<ToolbarTool, { da: string; en: string }>> = {
@@ -25,7 +28,7 @@ const RILEY_PROMPTS: Partial<Record<ToolbarTool, { da: string; en: string }>> = 
   },
 };
 
-export function PersonalToolbar({ onRead, onWords, onNotes, onHighlight }: PersonalToolbarProps) {
+export function PersonalToolbar({ onRead, onWords, onNotes, onHighlight, onWritingHelp, onSettings }: PersonalToolbarProps) {
   const { preferences } = useAppPreferences();
   const { language } = useLanguage();
 
@@ -34,8 +37,7 @@ export function PersonalToolbar({ onRead, onWords, onNotes, onHighlight }: Perso
     if (tool === "words") return onWords();
     if (tool === "dictate") return onNotes();
     if (tool === "highlight") return onHighlight();
-    const prompt = RILEY_PROMPTS[tool]?.[language];
-    window.dispatchEvent(new CustomEvent("reliefread:open-riley", { detail: { prompt } }));
+    if (RILEY_PROMPTS[tool]) return onWritingHelp();
   };
 
   const selected = TOOL_OPTIONS.filter((tool) => preferences.toolbar.includes(tool.value));
@@ -43,7 +45,7 @@ export function PersonalToolbar({ onRead, onWords, onNotes, onHighlight }: Perso
   return (
     <nav
       aria-label={language === "da" ? "Din værktøjslinje" : "Your toolbar"}
-      className="mb-6 overflow-x-auto rounded-2xl border border-border bg-card/90 p-2 shadow-paper backdrop-blur"
+      className="mb-5 overflow-x-auto rounded-2xl border border-border bg-card/90 p-2 shadow-paper backdrop-blur"
     >
       <div className="flex min-w-max items-center gap-1.5">
         {selected.map((tool) => (
@@ -57,6 +59,14 @@ export function PersonalToolbar({ onRead, onWords, onNotes, onHighlight }: Perso
             {tool.label[language]}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={onSettings}
+          className="ml-1 flex min-h-11 items-center gap-2 rounded-xl border border-border px-3 text-sm font-semibold text-foreground outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Settings2 className="h-4 w-4" aria-hidden="true" />
+          {language === "da" ? "Flere værktøjer" : "More tools"}
+        </button>
       </div>
     </nav>
   );

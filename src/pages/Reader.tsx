@@ -42,8 +42,9 @@ import { HIGHLIGHT_COLORS, type AestheticChoice } from "@/lib/app-preferences";
 import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { DocumentInsightsSheet } from "@/components/reader/DocumentInsightsSheet";
 import { insightsAsText, type DocumentInsights } from "@/lib/document-insights";
-import { ReaderPersonalisationStudio, ReaderThemeChooser } from "@/components/reader/ReaderPersonalisationStudio";
+import { ReaderThemeChooser } from "@/components/reader/ReaderPersonalisationStudio";
 import { ReaderWorkspaceSidebar } from "@/components/reader/ReaderWorkspaceSidebar";
+import { PersonalToolbar } from "@/components/reader/PersonalToolbar";
 
 const THEME_READING_SURFACES: Record<AestheticChoice, string> = {
   strawberry: "#FFEEF3",
@@ -96,6 +97,7 @@ export default function Reader() {
   const [readingVersions, setReadingVersions] = useState<Partial<Record<ReadingVersion, string>>>({});
   const versionRequestRef = useRef(0);
   const [insightsOpen, setInsightsOpen] = useState(false);
+  const [manualHighlights, setManualHighlights] = useState<Array<{ start: number; end: number }>>([]);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -138,6 +140,7 @@ export default function Reader() {
     setReadingVersions({});
     setVersionLoading(null);
     setVersionError(null);
+    setManualHighlights([]);
   }, [doc?.id]);
 
   const displayedText = readingVersion === "original"
@@ -401,6 +404,16 @@ export default function Reader() {
         if (range) playRange(range.start, range.end);
         return;
       }
+      if (action === "highlight") {
+        const range = selectionWordRange(articleRef.current);
+        if (range) {
+          setManualHighlights((current) => {
+            const exists = current.some((item) => item.start === range.start && item.end === range.end);
+            return exists ? current.filter((item) => item.start !== range.start || item.end !== range.end) : [...current, range];
+          });
+        }
+        return;
+      }
       const kind: LookupKind = action;
       setLookupKind(kind);
       setLookupSource(text);
@@ -482,6 +495,14 @@ export default function Reader() {
               <SoftNotice>{error}</SoftNotice>
             ) : doc ? (
               <article ref={articleRef} onMouseUp={captureSelection} className="rr-fade-up">
+                <PersonalToolbar
+                  onRead={() => toggle()}
+                  onWords={openHistory}
+                  onNotes={() => setNotesOpen(true)}
+                  onHighlight={() => setFocusControlsOpen(true)}
+                  onWritingHelp={() => navigate("/write")}
+                  onSettings={() => navigate("/settings")}
+                />
                 <button onClick={() => navigate("/dashboard")} className="mb-3 inline-flex min-h-10 items-center gap-2 rounded-lg text-sm font-semibold text-primary"><ArrowLeft className="h-4 w-4" />Mine filer</button>
                 <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
                   {doc.title}
@@ -533,6 +554,7 @@ export default function Reader() {
                       highlightMode={preferences.highlightMode}
                       focusScope={preferences.focusScope}
                       highlightColor={HIGHLIGHT_COLORS.find((color) => color.value === preferences.highlightColor)?.hex}
+                      manualHighlights={manualHighlights}
                     />
                   ) : (
                     <div
@@ -565,14 +587,6 @@ export default function Reader() {
           </div>
         </section>
 
-        <ReaderPersonalisationStudio
-          preferences={preferences}
-          onPreferences={setPreferences}
-          font={font}
-          onFont={setFontOverride}
-          bionic={bionic}
-          onBionic={setBionic}
-        />
       </main>
 
       {/* Persistent audio bar — only once a document with words is loaded. */}

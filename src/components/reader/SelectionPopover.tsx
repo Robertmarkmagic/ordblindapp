@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Sparkles, Languages, Volume2 } from "lucide-react";
+import { Highlighter, Sparkles, Languages, Volume2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 
-export type LookupAction = "explain" | "translate" | "read";
+export type LookupAction = "explain" | "translate" | "read" | "highlight";
 
 interface SelectionPopoverProps {
   /** The document container whose text selections should trigger the popover. */
@@ -132,6 +132,11 @@ export function SelectionPopover({ containerRef, onAction }: SelectionPopoverPro
         icon={<Volume2 className="h-5 w-5 text-sage" aria-hidden="true" />}
         label={t("lookup.read", "Read this")}
         onClick={() => fire("read")}
+      />
+      <PopButton
+        icon={<Highlighter className="h-5 w-5 text-sage" aria-hidden="true" />}
+        label={t("lookup.highlight", "Highlight")}
+        onClick={() => fire("highlight")}
       />
     </div>
   );

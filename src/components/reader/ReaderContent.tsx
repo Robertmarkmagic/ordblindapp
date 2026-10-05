@@ -27,6 +27,7 @@ interface ReaderContentProps {
   highlightMode?: HighlightMode;
   focusScope?: FocusScope;
   highlightColor?: string;
+  manualHighlights?: Array<{ start: number; end: number }>;
 }
 
 function sentenceIndices(model: ReaderModel, active: number): Set<number> {
@@ -70,6 +71,7 @@ export function ReaderContent({
   highlightMode = "word",
   focusScope = "off",
   highlightColor = "#FEF08A",
+  manualHighlights = [],
 }: ReaderContentProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const wordRefs = useRef(new Map<number, HTMLSpanElement>());
@@ -167,13 +169,14 @@ export function ReaderContent({
                         : focusScope === "paragraph" ? paragraph.has(w.index)
                           : true;
               const dimmed = following && focusScope !== "off" && !inFocus;
+              const manuallyHighlighted = manualHighlights.some((range) => w.index >= range.start && w.index <= range.end);
               return (
                 <React.Fragment key={w.index}>
                   <span
                     ref={(element) => registerWord(w.index, element)}
                     data-word-index={w.index}
                     className={`rr-word${highlighted ? " rr-word-active" : ""}${dimmed ? " rr-word-dimmed" : ""}`}
-                    style={highlighted ? { backgroundColor: highlightColor, color: textColor } : undefined}
+                    style={highlighted || manuallyHighlighted ? { backgroundColor: highlightColor, color: textColor } : undefined}
                     role="button"
                     tabIndex={-1}
                     aria-label={`Read from "${w.text}"`}

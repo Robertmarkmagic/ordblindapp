@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Quote, X } from "lucide-react";
+import { Quote, Sticker, X } from "lucide-react";
 import { backend } from "@/lib/auth";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { usePremium } from "@/hooks/usePremium";
@@ -27,6 +27,7 @@ export function NotesPanel({ documentId, lang, anchorText, onAnchorClick, onClea
   const [loading, setLoading] = useState(true);
   const [save, setSave] = useState<SaveState>("idle");
   const [dictionary, setDictionary] = useState<Set<string>>(new Set());
+  const [sticker, setSticker] = useState(() => window.localStorage.getItem(`reliefread-note-sticker:${documentId}`) || "");
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -120,10 +121,18 @@ export function NotesPanel({ documentId, lang, anchorText, onAnchorClick, onClea
       .catch((err: unknown) => console.warn("[notes] keep word failed:", err));
   }, []);
 
+  const chooseSticker = (next: string) => {
+    setSticker(next);
+    if (next) window.localStorage.setItem(`reliefread-note-sticker:${documentId}`, next);
+    else window.localStorage.removeItem(`reliefread-note-sticker:${documentId}`);
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-display text-lg font-semibold text-foreground">My Notes</h2>
+        <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-foreground">
+          {sticker && <span aria-hidden="true">{sticker}</span>}My Notes
+        </h2>
         <span
           className={`text-xs transition-opacity duration-500 ${
             save === "saved" ? "opacity-100 text-sage" : save === "saving" ? "opacity-70 text-muted-foreground" : "opacity-0"
@@ -132,6 +141,15 @@ export function NotesPanel({ documentId, lang, anchorText, onAnchorClick, onClea
         >
           {save === "saving" ? "Saving…" : "Saved"}
         </span>
+      </div>
+
+      <div className="mb-3 flex items-center gap-1 overflow-x-auto rounded-xl border border-border bg-background/70 p-1.5" aria-label="Stickers til noten">
+        <Sticker className="mx-1 h-4 w-4 shrink-0 text-foreground" aria-hidden="true" />
+        {["", "🍓", "♡", "🎀", "🌼", "⭐", "🦄", "🦕"].map((item) => (
+          <button key={item || "none"} type="button" onClick={() => chooseSticker(item)} aria-pressed={sticker === item} className={`grid h-9 min-w-9 place-items-center rounded-lg border text-lg ${sticker === item ? "border-white bg-accent ring-1 ring-white" : "border-transparent hover:bg-accent"}`} aria-label={item ? `Vælg ${item}` : "Ingen sticker"}>
+            {item || "×"}
+          </button>
+        ))}
       </div>
 
       {anchorText && (
