@@ -57,7 +57,7 @@ export default function Index() {
   ];
   const reliefRead = [
     t("landing.new1", "Reading, speech-to-text, suggestions, grammar and dictionary in one place"),
-    t("landing.new2", "Personal colours, text, notebook, stickers and highlighter"),
+    t("landing.new2", "Five clear backgrounds, notebook, stickers and highlighter"),
     t("landing.new3", "The same toolbar on computer, tablet and mobile"),
     t("landing.new4", "PDFs, scanning, notes and Riley in one workspace"),
   ];
@@ -142,18 +142,18 @@ export default function Index() {
             <MiniReader settings={personalisation} />
             <div className="rr-platform-support">
               <div className="rr-platform-copy">
-                <span>Samme ReliefRead. På tværs af dine enheder.</span>
-                <h3>Kontekstbaserede ordforslag, uanset hvor du arbejder</h3>
-                <p>ReliefRead foreslår ord og fuldender sætninger ud fra den tekst, du allerede har skrevet. Den installerbare webapp giver dig den samme værktøjslinje, det samme design og de samme funktioner på computer, tablet og mobil.</p>
+                <span>{language === "da" ? "Samme ReliefRead. På tværs af dine enheder." : "The same ReliefRead across your devices."}</span>
+                <h3>{language === "da" ? "Kontekstbaserede ordforslag, uanset hvor du arbejder" : "Context-aware word suggestions wherever you work"}</h3>
+                <p>{language === "da" ? "ReliefRead foreslår ord og fuldender sætninger ud fra den tekst, du allerede har skrevet. Den installerbare webapp giver dig den samme værktøjslinje, det samme design og de samme funktioner på computer, tablet og mobil." : "ReliefRead suggests words and completes sentences based on what you have already written. The installable web app gives you the same toolbar, design and features on computer, tablet and mobile."}</p>
               </div>
               <div className="rr-platform-grid" aria-label="Platforme, der understøttes af ReliefRead">
-                <div><Monitor aria-hidden="true" /><b>Windows</b><small>Web og installerbar app</small></div>
-                <div><Laptop aria-hidden="true" /><b>Mac</b><small>Web og installerbar app</small></div>
-                <div><Smartphone aria-hidden="true" /><b>Android</b><small>Mobil webapp</small></div>
-                <div><Smartphone aria-hidden="true" /><b>iOS</b><small>Mobil webapp</small></div>
-                <div><Globe2 aria-hidden="true" /><b>Web</b><small>Direkte i browseren</small></div>
-                <div><Cloud aria-hidden="true" /><b>Cloud</b><small>Tilgængelig online</small></div>
-                <div className="is-coming"><FileText aria-hidden="true" /><b>Google Docs</b><small>Browserudvidelse på vej</small></div>
+                <div><Monitor aria-hidden="true" /><b>Windows</b><small>{language === "da" ? "Web og installerbar app" : "Web and installable app"}</small></div>
+                <div><Laptop aria-hidden="true" /><b>Mac</b><small>{language === "da" ? "Web og installerbar app" : "Web and installable app"}</small></div>
+                <div><Smartphone aria-hidden="true" /><b>Android</b><small>{language === "da" ? "Mobil webapp" : "Mobile web app"}</small></div>
+                <div><Smartphone aria-hidden="true" /><b>iOS</b><small>{language === "da" ? "Mobil webapp" : "Mobile web app"}</small></div>
+                <div><Globe2 aria-hidden="true" /><b>Web</b><small>{language === "da" ? "Direkte i browseren" : "Directly in the browser"}</small></div>
+                <div><Cloud aria-hidden="true" /><b>Cloud</b><small>{language === "da" ? "Tilgængelig online" : "Available online"}</small></div>
+                <div className="is-coming"><FileText aria-hidden="true" /><b>Google Docs</b><small>{language === "da" ? "Browserudvidelse på vej" : "Browser extension coming soon"}</small></div>
               </div>
             </div>
             <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">

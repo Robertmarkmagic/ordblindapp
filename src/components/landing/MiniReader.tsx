@@ -1,6 +1,7 @@
 import React, { type CSSProperties } from "react";
 import { BookOpen, Camera, CheckCheck, FileText, Folder, Highlighter, Mic, NotebookText, PenLine, Play, Search, Settings, Sparkles, Type, UserCircle, Volume2 } from "lucide-react";
 import type { PersonalisationPreview } from "@/components/landing/PersonalisationShowcase";
+import { useLanguage } from "@/lib/i18n";
 
 const SAMPLE = "I ReliefRead bestemmer du selv, hvordan teksten skal se ud. Når skrift, farver og afstand passer til dig, bliver det lettere at læse, forstå og deltage på dine egne præmisser.";
 
@@ -47,6 +48,9 @@ const NOTE_SURFACES = {
 type PreviewStyle = CSSProperties & Record<`--rr-preview-${string}`, string>;
 
 export function MiniReader({ settings }: { settings: PersonalisationPreview }) {
+  const { language } = useLanguage();
+  const en = language === "en";
+  const tr = (da: string, english: string) => en ? english : da;
   const colors = THEME_SURFACES[settings.color];
   const note = NOTE_SURFACES[settings.notebookTheme];
   const enabledTools = TOOL_ITEMS.filter((item) => settings.tools.includes(item.id));
@@ -76,57 +80,57 @@ export function MiniReader({ settings }: { settings: PersonalisationPreview }) {
         <div className="rr-landing-reader-window">
           <div className="rr-landing-windowbar">
             <div className="rr-landing-brand"><span aria-hidden="true">{APP_ICONS[settings.color]}</span><b>ReliefRead</b></div>
-            <div className="flex items-center gap-2 text-sm font-bold"><UserCircle className="h-5 w-5" />Min profil</div>
+            <div className="flex items-center gap-2 text-sm font-bold"><UserCircle className="h-5 w-5" />{tr("Min profil", "My profile")}</div>
           </div>
 
           <div className="rr-landing-app-body">
-            <aside className="rr-landing-reader-nav" aria-label="Eksempel på appmenu">
-              <div className="rr-landing-space-name"><span aria-hidden="true">{APP_ICONS[settings.color]}</span>Min læseplads</div>
+            <aside className="rr-landing-reader-nav" aria-label={tr("Eksempel på appmenu", "Example app menu")}>
+              <div className="rr-landing-space-name"><span aria-hidden="true">{APP_ICONS[settings.color]}</span>{tr("Min læseplads", "My reading space")}</div>
               {enabledNav.map(({ id, label, icon: Icon }, index) => (
-                <div key={id} className={`rr-landing-nav-row ${index === 0 ? "is-active" : ""}`}><Icon />{label}</div>
+                <div key={id} className={`rr-landing-nav-row ${index === 0 ? "is-active" : ""}`}><Icon />{en ? ({ read: "Read", write: "Write", notes: "Notes", dictionary: "Dictionary", scan: "Scan" } as Record<string, string>)[id] : label}</div>
               ))}
-              <div className="rr-landing-nav-row"><Folder />Mine filer</div>
-              <div className="rr-landing-nav-row"><Settings />Indstillinger</div>
+              <div className="rr-landing-nav-row"><Folder />{tr("Mine filer", "My files")}</div>
+              <div className="rr-landing-nav-row"><Settings />{tr("Indstillinger", "Settings")}</div>
             </aside>
 
             <div className="min-w-0 flex-1">
-              <div className="rr-landing-reader-tools" aria-label="Dine valgte værktøjer">
+              <div className="rr-landing-reader-tools" aria-label={tr("Dine valgte værktøjer", "Your selected tools")}>
                 {enabledTools.map(({ id, label, icon: Icon }) => (
-                  <button key={id} type="button" aria-label={label}><Icon className={id === "read" ? "fill-current" : ""} /><span>{label}</span></button>
+                  <button key={id} type="button" aria-label={label}><Icon className={id === "read" ? "fill-current" : ""} /><span>{en ? ({ read: "Read", mark: "Highlight", voice: "Speak", write: "Write", notes: "Notes", dictionary: "Dictionary", scan: "Scan" } as Record<string, string>)[id] : label}</span></button>
                 ))}
               </div>
 
               <div className="rr-landing-workspace">
                 <div className="rr-landing-document">
-                  <div className="rr-landing-document-topline"><span>Prøvetekst</span><span><Type />Aa</span></div>
-                  <h3 className="rr-landing-document-title">Kapitel 1. Introduktion</h3>
-                  <p>{SAMPLE.split("egne præmisser")[0]}<mark>egne præmisser</mark>.</p>
+                  <div className="rr-landing-document-topline"><span>{tr("Prøvetekst", "Sample text")}</span><span><Type />Aa</span></div>
+                  <h3 className="rr-landing-document-title">{tr("Kapitel 1. Introduktion", "Chapter 1. Introduction")}</h3>
+                  <p>{tr(SAMPLE.split("egne præmisser")[0], "In ReliefRead, you choose how text should look. When the font, colours and spacing suit you, it becomes easier to read, understand and participate on ")}<mark>{tr("egne præmisser", "your own terms")}</mark>.</p>
                   <div className="rr-landing-reading-actions">
-                    <button type="button"><Volume2 />Læs højt</button>
-                    <button type="button"><Highlighter />Marker</button>
+                    <button type="button"><Volume2 />{tr("Læs højt", "Read aloud")}</button>
+                    <button type="button"><Highlighter />{tr("Marker", "Highlight")}</button>
                   </div>
                 </div>
 
                 <aside className={`rr-landing-note rr-landing-note-${settings.notebookTheme}`} style={{ background: note.background, color: note.color }}>
                   {settings.sticker && <span className="rr-landing-note-sticker" aria-hidden="true">{settings.sticker}</span>}
-                  <b>Mine noter</b>
-                  <textarea defaultValue={"Vigtigt!\nSpørg om et eksempel\nFind mere information"} aria-label="Eksempel på note" />
+                  <b>{tr("Mine noter", "My notes")}</b>
+                  <textarea defaultValue={tr("Vigtigt!\nSpørg om et eksempel\nFind mere information", "Important!\nAsk for an example\nFind more information")} aria-label={tr("Eksempel på note", "Example note")} />
                   <span aria-hidden="true">♡</span>
                 </aside>
               </div>
 
               <div className="rr-landing-feature-row">
-                <div><Volume2 /><span><b>Oplæsning</b><small>Læs ord, sætninger eller hele teksten højt</small></span></div>
-                <div><Mic /><span><b>Tale-til-tekst</b><small>Indtal dine tanker direkte i skrivefeltet</small></span></div>
-                <div><PenLine /><span><b>Skrivehjælp</b><small>Kontekstbaserede ord- og sætningsforslag</small></span></div>
-                <div><CheckCheck /><span><b>Grammatik og komma</b><small>Stavning, ordklasser, komma og tegnsætning</small></span></div>
-                <div><Search /><span><b>Ordbog</b><small>Betydning, bøjning, oversættelse og udtale</small></span></div>
-                <div><FileText /><span><b>PDF, scan og noter</b><small>Arbejd med dokumenter, billeder og egne noter</small></span></div>
+                <div><Volume2 /><span><b>{tr("Oplæsning", "Read aloud")}</b><small>{tr("Læs ord, sætninger eller hele teksten højt", "Read words, sentences or the entire text aloud")}</small></span></div>
+                <div><Mic /><span><b>{tr("Tale-til-tekst", "Speech to text")}</b><small>{tr("Indtal dine tanker direkte i skrivefeltet", "Dictate your thoughts directly into the writing field")}</small></span></div>
+                <div><PenLine /><span><b>{tr("Skrivehjælp", "Writing support")}</b><small>{tr("Kontekstbaserede ord- og sætningsforslag", "Context-aware word and sentence suggestions")}</small></span></div>
+                <div><CheckCheck /><span><b>{tr("Grammatik og komma", "Grammar and punctuation")}</b><small>{tr("Stavning, ordklasser, komma og tegnsætning", "Spelling, word classes, commas and punctuation")}</small></span></div>
+                <div><Search /><span><b>{tr("Ordbog", "Dictionary")}</b><small>{tr("Betydning, bøjning, oversættelse og udtale", "Meaning, inflection, translation and pronunciation")}</small></span></div>
+                <div><FileText /><span><b>{tr("PDF, scan og noter", "PDF, scan and notes")}</b><small>{tr("Arbejd med dokumenter, billeder og egne noter", "Work with documents, images and your own notes")}</small></span></div>
               </div>
             </div>
           </div>
 
-          <button type="button" className="rr-landing-riley" aria-label="Åbn Riley"><Sparkles /><span>Riley</span></button>
+          <button type="button" className="rr-landing-riley" aria-label={tr("Åbn Riley", "Open Riley")}><Sparkles /><span>Riley</span></button>
         </div>
       </div>
     </div>

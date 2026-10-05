@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import {
   BookOpen,
   Check,
@@ -19,9 +19,11 @@ import {
 import { getWritingSuggestions, insertWritingSuggestion } from "@/lib/writing-tools";
 import { useDictation } from "@/hooks/useDictation";
 import { CommaGuide } from "@/components/landing/CommaGuide";
+import { useLanguage } from "@/lib/i18n";
 
 const CHECKS = ["Stavning", "Grammatik", "Komma", "Tegnsætning", "Ordforslag"];
 const INITIAL_SAMPLE = "I dette afsnit kan du prøve, hvordan ReliefRead gør teksten roligere at læse.";
+const INITIAL_SAMPLE_EN = "In this section, you can try how ReliefRead makes text calmer and easier to read.";
 const HIGHLIGHT_COLORS = ["#ffe868", "#63dce9", "#f58bd3", "#bd8cf2", "#82d78f", "#ff8179"];
 const READING_MODES = ["Læs hele teksten", "Læs ord", "Læs sætning", "Læs bogstavnavn", "Læs bogstavlyd"] as const;
 const SUBJECT_TERMS: Record<string, string[]> = {
@@ -30,6 +32,13 @@ const SUBJECT_TERMS: Record<string, string[]> = {
   Matematik: ["brøk", "procent", "ligning", "geometri", "resultat"],
   Naturfag: ["fotosyntese", "energi", "molekyle", "økosystem", "fordampning"],
   Historie: ["kildekritik", "demokrati", "industrialisering", "revolution", "tidslinje"],
+};
+const SUBJECT_TERMS_EN: Record<string, string[]> = {
+  General: ["message", "explanation", "example", "important", "context"],
+  English: ["noun", "verb", "adjective", "subject", "predicate"],
+  Mathematics: ["fraction", "percent", "equation", "geometry", "result"],
+  Science: ["photosynthesis", "energy", "molecule", "ecosystem", "evaporation"],
+  History: ["source criticism", "democracy", "industrialisation", "revolution", "timeline"],
 };
 const TOOL_BUTTONS = [
   { id: "read", label: "Læs", icon: Play },
@@ -102,6 +111,7 @@ const DICTIONARY_ALIASES: Record<string, string> = {
 };
 
 const SPELLING_FIXES: Record<string, string> = {
+  liek: "like",
   grene: "gerne",
   somer: "sommer",
   tanlæen: "tandlægen",
@@ -142,11 +152,11 @@ function wordAtCaret(text: string, caret: number) {
   return before.match(/([\p{L}æøåÆØÅ]+)$/u)?.[1]?.toLocaleLowerCase() || "";
 }
 
-function speak(text: string, onEnd?: () => void, rate = 0.9) {
+function speak(text: string, onEnd?: () => void, rate = 0.9, lang = "da-DK") {
   if (!("speechSynthesis" in window) || !text.trim()) return false;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "da-DK";
+  utterance.lang = lang;
   utterance.rate = rate;
   utterance.onend = () => onEnd?.();
   utterance.onerror = () => onEnd?.();
@@ -155,6 +165,10 @@ function speak(text: string, onEnd?: () => void, rate = 0.9) {
 }
 
 export function FunctionPlayground() {
+  const { language } = useLanguage();
+  const en = language === "en";
+  const tr = (da: string, english: string) => en ? english : da;
+  const subjectTerms = en ? SUBJECT_TERMS_EN : SUBJECT_TERMS;
   const [checks, setChecks] = useState(() => new Set(CHECKS));
   const [draft, setDraft] = useState("Jeg vil grene skrive en tydelig tekst");
   const [fontSize, setFontSize] = useState(19);
@@ -185,8 +199,19 @@ export function FunctionPlayground() {
   const voiceTextareaRef = useRef<HTMLTextAreaElement>(null);
   const sampleRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const nextSample = en ? INITIAL_SAMPLE_EN : INITIAL_SAMPLE;
+    setSampleText(nextSample);
+    if (sampleRef.current) sampleRef.current.innerText = nextSample;
+    setVoiceText(en ? "Write or paste the text you want to hear read aloud." : "Skriv eller indsæt den tekst, du vil høre læst højt.");
+    setDraft(en ? "I would liek to write a clear text" : "Jeg vil grene skrive en tydelig tekst");
+    setLookup(en ? "accessible" : "tilgængelig");
+    setSubject(en ? "General" : "Generel");
+    setDictionaryEntry(en ? { word: "accessible", meaning: "Easy to reach, use or understand.", translation: "tilgængelig", inflection: "accessible, more accessible, most accessible" } : DICTIONARY_ENTRIES["tilgængelig"]);
+  }, [en]);
+
   const dictation = useDictation({
-    lang: "da-DK",
+    lang: en ? "en-US" : "da-DK",
     onFinal: (spoken) => {
       const current = sampleRef.current?.innerText.trim() || sampleText.trim();
       const next = `${current}${current ? " " : ""}${spoken}`;
@@ -214,13 +239,18 @@ export function FunctionPlayground() {
       : [];
     const corrected = suggestion !== draft ? [suggestion.match(/\bgerne\b/i)?.[0] || "gerne"] : [];
     const nextWords = getWritingSuggestions(draft, caret, "da").nextWords;
-    const relevantTerms = [...SUBJECT_TERMS[subject], ...personalTerms].filter((term) => !prefix || term.startsWith(prefix) || prefix.length < 2);
+    const relevantTerms = [...(subjectTerms[subject] || []), ...personalTerms].filter((term) => !prefix || term.startsWith(prefix) || prefix.length < 2);
     return Array.from(new Set([...(direct || []), ...generated, ...relevantTerms, ...fallback, ...corrected, ...nextWords])).slice(0, 9);
-  }, [caret, draft, personalTerms, subject, suggestion]);
+  }, [caret, draft, personalTerms, subject, subjectTerms, suggestion]);
 
   const sentenceSuggestions = useMemo(() => {
     const corrected = suggestion.trim().replace(/[.!?]+$/, "");
     if (!corrected) return [];
+    if (en) return [
+      `${corrected}.`,
+      `${corrected}, so the message is easier to understand.`,
+      `${corrected}. The most important thing is that the text is clear.`,
+    ];
     const lower = corrected.toLocaleLowerCase("da-DK");
     if (/\bfordi$/.test(lower)) {
       return [`${corrected} det gør teksten lettere at forstå.`, `${corrected} jeg gerne vil forklare det tydeligt.`];
@@ -236,7 +266,7 @@ export function FunctionPlayground() {
       `${corrected}, så budskabet bliver lettere at forstå.`,
       `${corrected}. Det vigtigste er, at teksten er tydelig.`,
     ];
-  }, [suggestion]);
+  }, [en, suggestion]);
 
   const writingResults = useMemo(() => {
     const trimmed = draft.trim();
@@ -249,6 +279,13 @@ export function FunctionPlayground() {
     const needsPunctuation = Boolean(trimmed) && !/[.!?]$/.test(trimmed);
     const suggestions = wordSuggestions.slice(0, 4).join(", ");
 
+    if (en) return [
+      { name: "Stavning", text: spellingChanges.length ? `Suggestions: ${spellingChanges.join(", ")}` : "No obvious spelling errors found." },
+      { name: "Grammatik", text: grammarIssue ? "The sentence may need a different verb form." : "The sentence appears grammatically clear." },
+      { name: "Komma", text: needsComma ? "The sentence may need a comma." : "No obvious comma error found." },
+      { name: "Tegnsætning", text: needsPunctuation ? "Suggestion: Add punctuation at the end." : "The punctuation appears clear." },
+      { name: "Ordforslag", text: suggestions ? `You can continue with: ${suggestions}` : lower ? "Keep writing to receive relevant suggestions." : "Start writing to receive suggestions." },
+    ];
     return [
       { name: "Stavning", text: spellingChanges.length ? `Forslag: ${spellingChanges.join(", ")}` : "Ingen tydelige stavefejl fundet." },
       { name: "Grammatik", text: grammarIssue ? "Sætningen kan bøjes bedre. Prøv for eksempel ‘jeg går’, ‘jeg skriver’ eller ‘jeg læser’." : "Sætningen ser grammatisk tydelig ud." },
@@ -256,15 +293,15 @@ export function FunctionPlayground() {
       { name: "Tegnsætning", text: needsPunctuation ? "Forslag: Sæt punktum til sidst." : "Tegnsætningen ser tydelig ud." },
       { name: "Ordforslag", text: suggestions ? `Du kan fortsætte med: ${suggestions}` : lower ? "Skriv videre for at få relevante ordforslag." : "Begynd at skrive for at få ordforslag." },
     ];
-  }, [draft, wordSuggestions]);
+  }, [draft, en, wordSuggestions]);
 
   const grammarAnalysis = useMemo(() => {
     const words = draft.match(/[\p{L}æøåÆØÅ]+/gu) || [];
     const tokens = words.map((word) => ({ word, wordClass: findWordClass(word) }));
-    const subject = tokens.find((token) => token.wordClass === "pronoun" || token.wordClass === "noun")?.word || "Ikke fundet";
-    const predicate = tokens.find((token) => token.wordClass === "verb")?.word || "Ikke fundet";
+    const subject = tokens.find((token) => token.wordClass === "pronoun" || token.wordClass === "noun")?.word || (en ? "Not found" : "Ikke fundet");
+    const predicate = tokens.find((token) => token.wordClass === "verb")?.word || (en ? "Not found" : "Ikke fundet");
     return { tokens, subject, predicate };
-  }, [draft]);
+  }, [draft, en]);
 
   const updateCaret = () => {
     const next = textareaRef.current?.selectionStart ?? draft.length;
@@ -322,7 +359,7 @@ export function FunctionPlayground() {
     setDictionaryLoading(true);
     setDictionaryMiss(false);
     try {
-      const endpoint = new URL("https://da.wiktionary.org/w/api.php");
+      const endpoint = new URL(`https://${en ? "en" : "da"}.wiktionary.org/w/api.php`);
       endpoint.search = new URLSearchParams({
         action: "query",
         prop: "extracts",
@@ -341,9 +378,9 @@ export function FunctionPlayground() {
       setDictionaryEntry({
         word: page.title?.toLocaleLowerCase("da-DK") || normalized,
         meaning,
-        translation: "Se hele opslaget for oversættelser",
-        inflection: "Se hele opslaget for bøjning og ordklasse",
-        sourceUrl: `https://da.wiktionary.org/wiki/${encodeURIComponent(page.title || normalized)}`,
+        translation: tr("Se hele opslaget for oversættelser", "See the full entry for translations"),
+        inflection: tr("Se hele opslaget for bøjning og ordklasse", "See the full entry for inflection and word class"),
+        sourceUrl: `https://${en ? "en" : "da"}.wiktionary.org/wiki/${encodeURIComponent(page.title || normalized)}`,
       });
       setDictionaryMiss(false);
     } catch {
@@ -383,7 +420,7 @@ export function FunctionPlayground() {
             : selectedText || voiceText.trim();
     if (!textToRead) return;
     setVoiceReading(true);
-    const started = speak(textToRead, () => setVoiceReading(false), readingSpeed);
+    const started = speak(textToRead, () => setVoiceReading(false), readingSpeed, en ? "en-US" : "da-DK");
     if (!started) setVoiceReading(false);
   };
 
@@ -406,7 +443,7 @@ export function FunctionPlayground() {
     const textToRead = selectedOnly ? sampleSelection : current;
     if (!textToRead) return;
     setSampleReading(true);
-    const started = speak(textToRead, () => setSampleReading(false));
+    const started = speak(textToRead, () => setSampleReading(false), 0.9, en ? "en-US" : "da-DK");
     if (!started) setSampleReading(false);
   };
 
@@ -418,23 +455,24 @@ export function FunctionPlayground() {
   };
 
   const resetSample = () => {
-    if (sampleRef.current) sampleRef.current.innerText = INITIAL_SAMPLE;
-    setSampleText(INITIAL_SAMPLE);
+    const initial = en ? INITIAL_SAMPLE_EN : INITIAL_SAMPLE;
+    if (sampleRef.current) sampleRef.current.innerText = initial;
+    setSampleText(initial);
     setSampleSelection("");
   };
 
   return (
     <section className="rr-function-lab" aria-labelledby="function-lab-title">
       <div className="rr-function-lab-heading">
-        <p>Prøv det med det samme</p>
-        <h2 id="function-lab-title">Funktioner, der arbejder sammen</h2>
-        <span>Alt det vigtigste samlet på én rolig arbejdsflade.</span>
+        <p>{tr("Prøv det med det samme", "Try it right now")}</p>
+        <h2 id="function-lab-title">{tr("Funktioner, der arbejder sammen", "Tools that work together")}</h2>
+        <span>{tr("Alt det vigtigste samlet på én rolig arbejdsflade.", "All the essential tools in one calm workspace.")}</span>
       </div>
 
       <div className="rr-function-grid">
         <article className="rr-function-card rr-function-writing">
-          <div className="rr-function-card-title"><Sparkles aria-hidden="true" /><h3>Skrivehjælp</h3></div>
-          <label htmlFor="function-draft">Skriv en sætning</label>
+          <div className="rr-function-card-title"><Sparkles aria-hidden="true" /><h3>{tr("Skrivehjælp", "Writing support")}</h3></div>
+          <label htmlFor="function-draft">{tr("Skriv en sætning", "Write a sentence")}</label>
           <div className="rr-function-writing-field">
             <textarea
               ref={textareaRef}
@@ -454,10 +492,10 @@ export function FunctionPlayground() {
               aria-autocomplete="list"
             />
             {suggestionOpen && wordSuggestions.length > 0 && (
-              <div id="rr-writing-suggestions" className="rr-writing-suggestions" role="listbox" aria-label="Skriveforslag">
+              <div id="rr-writing-suggestions" className="rr-writing-suggestions" role="listbox" aria-label={tr("Skriveforslag", "Writing suggestions")}>
                 <div className="rr-writing-suggestions-head">
-                  <span><Sparkles aria-hidden="true" />Skriveforslag</span>
-                  <button type="button" onClick={() => setSuggestionOpen(false)} aria-label="Luk skriveforslag"><X /></button>
+                  <span><Sparkles aria-hidden="true" />{tr("Skriveforslag", "Writing suggestions")}</span>
+                  <button type="button" onClick={() => setSuggestionOpen(false)} aria-label={tr("Luk skriveforslag", "Close writing suggestions")}><X /></button>
                 </div>
                 <div className="rr-writing-suggestion-list">
                   {wordSuggestions.map((word, index) => (
@@ -465,24 +503,24 @@ export function FunctionPlayground() {
                       <button type="button" className="rr-writing-suggestion-word" onMouseDown={(event) => event.preventDefault()} onClick={() => applyWordSuggestion(word)}>
                         <span>{word}</span><ChevronRight aria-hidden="true" />
                       </button>
-                      <button type="button" className="rr-writing-suggestion-speak" onMouseDown={(event) => event.preventDefault()} onClick={() => speak(word)} aria-label={`Hør ${word}`}>
+                      <button type="button" className="rr-writing-suggestion-speak" onMouseDown={(event) => event.preventDefault()} onClick={() => speak(word, undefined, 0.9, en ? "en-US" : "da-DK")} aria-label={`${tr("Hør", "Hear")} ${word}`}>
                         <Volume2 aria-hidden="true" />
                       </button>
                     </div>
                   ))}
                 </div>
-                <p>Brug piletasterne og Enter, eller vælg et ord.</p>
+                <p>{tr("Brug piletasterne og Enter, eller vælg et ord.", "Use the arrow keys and Enter, or choose a word.")}</p>
               </div>
             )}
           </div>
           {suggestion !== draft && (
             <button type="button" className="rr-function-suggestion" onClick={() => setDraft(suggestion)}>
-              <span><b>Ret hele sætningen:</b> {suggestion}</span><Check aria-hidden="true" />
+              <span><b>{tr("Ret hele sætningen:", "Correct the whole sentence:")}</b> {suggestion}</span><Check aria-hidden="true" />
             </button>
           )}
           {sentenceSuggestions.length > 0 && (
           <div className="rr-sentence-suggestions">
-              <b>Fuldend sætningen</b>
+              <b>{tr("Fuldend sætningen", "Complete the sentence")}</b>
               <div>
                 {sentenceSuggestions.map((sentence) => (
                   <button key={sentence} type="button" onClick={() => { setDraft(sentence); setCaret(sentence.length); setSuggestionOpen(false); }}>
@@ -494,9 +532,9 @@ export function FunctionPlayground() {
           )}
           <div className="rr-subject-words">
             <div>
-              <label htmlFor="function-subject">Fagord</label>
+              <label htmlFor="function-subject">{tr("Fagord", "Subject terms")}</label>
               <select id="function-subject" value={subject} onChange={(event) => setSubject(event.target.value)}>
-                {Object.keys(SUBJECT_TERMS).map((name) => <option key={name}>{name}</option>)}
+                {Object.keys(subjectTerms).map((name) => <option key={name}>{name}</option>)}
               </select>
             </div>
             <form onSubmit={(event) => {
@@ -505,59 +543,59 @@ export function FunctionPlayground() {
               if (value && !personalTerms.includes(value)) setPersonalTerms((current) => [...current, value]);
               setPersonalTerm("");
             }}>
-              <label htmlFor="function-personal-term">Min personlige fagordsliste</label>
-              <div><input id="function-personal-term" value={personalTerm} onChange={(event) => setPersonalTerm(event.target.value)} placeholder="Tilføj et fagord" /><button type="submit">Tilføj</button></div>
+              <label htmlFor="function-personal-term">{tr("Min personlige fagordsliste", "My personal subject word list")}</label>
+              <div><input id="function-personal-term" value={personalTerm} onChange={(event) => setPersonalTerm(event.target.value)} placeholder={tr("Tilføj et fagord", "Add a subject term")} /><button type="submit">{tr("Tilføj", "Add")}</button></div>
             </form>
-            <p>{[...SUBJECT_TERMS[subject], ...personalTerms].join(" · ")}</p>
+            <p>{[...(subjectTerms[subject] || []), ...personalTerms].join(" · ")}</p>
           </div>
           <div className="rr-writing-results" aria-live="polite">
             {writingResults.filter((result) => checks.has(result.name)).map((result) => (
               <div key={result.name}>
-                <b>{result.name}</b>
+                <b>{en ? ({ Stavning: "Spelling", Grammatik: "Grammar", Komma: "Commas", Tegnsætning: "Punctuation", Ordforslag: "Word suggestions" } as Record<string, string>)[result.name] : result.name}</b>
                 <span>{result.text}</span>
               </div>
             ))}
-            {checks.size === 0 && <p>Vælg mindst én type hjælp i boksen nedenfor.</p>}
+            {checks.size === 0 && <p>{tr("Vælg mindst én type hjælp i boksen nedenfor.", "Choose at least one type of support below.")}</p>}
           </div>
           {checks.has("Grammatik") && grammarAnalysis.tokens.length > 0 && (
             <div className="rr-grammar-visual" aria-live="polite">
               <div className="rr-grammar-visual-head">
-                <span><Sparkles aria-hidden="true" /><b>Visuel grammatikanalyse</b></span>
-                <small>Ordklasserne ændrer sig, når du skriver.</small>
+                <span><Sparkles aria-hidden="true" /><b>{tr("Visuel grammatikanalyse", "Visual grammar analysis")}</b></span>
+                <small>{tr("Ordklasserne ændrer sig, når du skriver.", "Word classes update as you type.")}</small>
               </div>
-              <div className="rr-grammar-tokens" aria-label="Ordklasser i din tekst">
+              <div className="rr-grammar-tokens" aria-label={tr("Ordklasser i din tekst", "Word classes in your text")}>
                 {grammarAnalysis.tokens.map((token, index) => (
                   <span key={`${token.word}-${index}`} data-word-class={token.wordClass}>
-                    <b>{token.word}</b><small>{WORD_CLASS_LABELS[token.wordClass]}</small>
-                    {token.word === grammarAnalysis.subject && <em>× Grundled</em>}
-                    {token.word === grammarAnalysis.predicate && <em>○ Udsagnsled</em>}
+                    <b>{token.word}</b><small>{en ? ({ noun: "Noun", verb: "Verb", adjective: "Adjective", pronoun: "Pronoun", other: "Other" } as Record<string, string>)[token.wordClass] : WORD_CLASS_LABELS[token.wordClass]}</small>
+                    {token.word === grammarAnalysis.subject && <em>× {tr("Grundled", "Subject")}</em>}
+                    {token.word === grammarAnalysis.predicate && <em>○ {tr("Udsagnsled", "Verb")}</em>}
                   </span>
                 ))}
               </div>
               <div className="rr-grammar-sentence-parts">
-                <span><b>Grundled</b>{grammarAnalysis.subject}</span>
-                <span><b>Udsagnsled</b>{grammarAnalysis.predicate}</span>
+                <span><b>{tr("Grundled", "Subject")}</b>{grammarAnalysis.subject}</span>
+                <span><b>{tr("Udsagnsled", "Verb")}</b>{grammarAnalysis.predicate}</span>
               </div>
-              <p>Analysen er en enkel prøvevisning. Den fulde skrivehjælp vurderer også sætningen i sammenhæng.</p>
+              <p>{tr("Analysen er en enkel prøvevisning. Den fulde skrivehjælp vurderer også sætningen i sammenhæng.", "This is a simple preview. The full writing support also evaluates the sentence in context.")}</p>
               <CommaGuide sentence={draft} />
             </div>
           )}
         </article>
 
         <article className="rr-function-card rr-function-check-card">
-          <div className="rr-function-card-title"><Check aria-hidden="true" /><h3>Vælg din hjælp</h3></div>
+          <div className="rr-function-card-title"><Check aria-hidden="true" /><h3>{tr("Vælg din hjælp", "Choose your support")}</h3></div>
           <div className="rr-function-checks">
             {CHECKS.map((name) => (
               <button key={name} type="button" aria-pressed={checks.has(name)} onClick={() => toggleCheck(name)}>
-                <span>{checks.has(name) && <Check aria-hidden="true" />}</span>{name}
+                <span>{checks.has(name) && <Check aria-hidden="true" />}</span>{en ? ({ Stavning: "Spelling", Grammatik: "Grammar", Komma: "Commas", Tegnsætning: "Punctuation", Ordforslag: "Word suggestions" } as Record<string, string>)[name] : name}
               </button>
             ))}
           </div>
         </article>
 
         <article className="rr-function-card rr-function-voice">
-          <div className="rr-function-card-title"><Volume2 aria-hidden="true" /><h3>Få teksten læst højt</h3></div>
-          <label htmlFor="function-voice-text">Skriv eller indsæt tekst</label>
+          <div className="rr-function-card-title"><Volume2 aria-hidden="true" /><h3>{tr("Få teksten læst højt", "Have text read aloud")}</h3></div>
+          <label htmlFor="function-voice-text">{tr("Skriv eller indsæt tekst", "Write or paste text")}</label>
           <textarea
             ref={voiceTextareaRef}
             id="function-voice-text"
@@ -565,17 +603,17 @@ export function FunctionPlayground() {
             onChange={(event) => setVoiceText(event.target.value)}
             onSelect={(event) => setVoiceSelection(event.currentTarget.selectionStart !== event.currentTarget.selectionEnd)}
           />
-          <div className="rr-reading-presets" aria-label="Tilpas oplæsningen">
-            <label>Teksttype
+          <div className="rr-reading-presets" aria-label={tr("Tilpas oplæsningen", "Adjust read-aloud settings")}>
+            <label>{tr("Teksttype", "Text type")}
               <select value={readingSpeed} onChange={(event) => setReadingSpeed(Number(event.target.value))}>
-                <option value="1.15">Skønlitteratur. Hurtigere</option>
-                <option value="0.8">Fagtekst. Langsommere</option>
-                <option value="0.9">Almindelig tekst</option>
+                <option value="1.15">{tr("Skønlitteratur. Hurtigere", "Fiction. Faster")}</option>
+                <option value="0.8">{tr("Fagtekst. Langsommere", "Academic text. Slower")}</option>
+                <option value="0.9">{tr("Almindelig tekst", "General text")}</option>
               </select>
             </label>
-            <label>Hvad skal læses?
+            <label>{tr("Hvad skal læses?", "What should be read?")}
               <select value={readingMode} onChange={(event) => setReadingMode(event.target.value as (typeof READING_MODES)[number])}>
-                {READING_MODES.map((mode) => <option key={mode}>{mode}</option>)}
+                {READING_MODES.map((mode) => <option key={mode} value={mode}>{en ? ({ "Læs hele teksten": "Read all text", "Læs ord": "Read word", "Læs sætning": "Read sentence", "Læs bogstavnavn": "Read letter name", "Læs bogstavlyd": "Read letter sound" } as Record<string, string>)[mode] : mode}</option>)}
               </select>
             </label>
           </div>
@@ -583,62 +621,62 @@ export function FunctionPlayground() {
             type="button"
             onClick={readVoiceText}
             className="rr-function-mic"
-            aria-label={voiceReading ? "Stop oplæsning" : voiceSelection ? "Læs den markerede tekst højt" : "Læs hele teksten højt"}
+            aria-label={voiceReading ? tr("Stop oplæsning", "Stop reading") : voiceSelection ? tr("Læs den markerede tekst højt", "Read the selected text aloud") : tr("Læs hele teksten højt", "Read all text aloud")}
           >
             {voiceReading ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
           </button>
           <p>
-            {readingMode} ved {readingSpeed.toFixed(2).replace(".", ",")}×. {voiceSelection
-              ? "Tryk for at læse din markering op."
-              : "Placér markøren i teksten, eller markér det, du vil høre."}
+            {en ? ({ "Læs hele teksten": "Read all text", "Læs ord": "Read word", "Læs sætning": "Read sentence", "Læs bogstavnavn": "Read letter name", "Læs bogstavlyd": "Read letter sound" } as Record<string, string>)[readingMode] : readingMode} {tr("ved", "at")} {readingSpeed.toFixed(2).replace(".", ",")}×. {voiceSelection
+              ? tr("Tryk for at læse din markering op.", "Press to read your selection aloud.")
+              : tr("Placér markøren i teksten, eller markér det, du vil høre.", "Place the cursor in the text or select what you want to hear.")}
           </p>
           <div className="rr-function-wave" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
         </article>
 
         <article className="rr-function-card rr-function-dictionary">
-          <div className="rr-function-card-title"><BookOpen aria-hidden="true" /><h3>Hvad kan en ordbog hjælpe med?</h3></div>
+          <div className="rr-function-card-title"><BookOpen aria-hidden="true" /><h3>{tr("Hvad kan en ordbog hjælpe med?", "What can a dictionary help with?")}</h3></div>
           <form className="rr-dictionary-search" onSubmit={(event) => { event.preventDefault(); void findDictionaryWord(); }}>
-            <label htmlFor="function-lookup">Skriv et ord</label>
+            <label htmlFor="function-lookup">{tr("Skriv et ord", "Enter a word")}</label>
             <div>
               <input id="function-lookup" value={lookup} onChange={(event) => setLookup(event.target.value)} spellCheck="false" />
-              <button type="submit" aria-label="Slå ordet op"><Search aria-hidden="true" /></button>
+              <button type="submit" aria-label={tr("Slå ordet op", "Look up the word")}><Search aria-hidden="true" /></button>
             </div>
           </form>
           {dictionaryLoading ? (
-            <div className="rr-dictionary-miss" role="status"><b>Slår ordet op...</b><span>Vi søger i den danske ordbog.</span></div>
+            <div className="rr-dictionary-miss" role="status"><b>{tr("Slår ordet op...", "Looking up the word...")}</b><span>{tr("Vi søger i den danske ordbog.", "Searching the English dictionary.")}</span></div>
           ) : dictionaryMiss ? (
             <div className="rr-dictionary-miss" role="status">
-              <b>Vi kunne ikke finde ordet.</b>
-              <span>Kontrollér stavningen, eller prøv en anden bøjning af ordet.</span>
+              <b>{tr("Vi kunne ikke finde ordet.", "We could not find the word.")}</b>
+              <span>{tr("Kontrollér stavningen, eller prøv en anden bøjning af ordet.", "Check the spelling or try another form of the word.")}</span>
             </div>
           ) : (
             <dl className="rr-dictionary-result" aria-live="polite">
-              <div><dt>Betydning</dt><dd>{dictionaryEntry.meaning}</dd></div>
-              <div><dt>Stavning</dt><dd>{dictionaryEntry.word}</dd></div>
-              <div><dt>Engelsk</dt><dd>{dictionaryEntry.translation}</dd></div>
-              <div><dt>Bøjning</dt><dd>{dictionaryEntry.inflection}</dd></div>
-              {dictionaryEntry.sourceUrl && <div><dt>Mere information</dt><dd><a href={dictionaryEntry.sourceUrl} target="_blank" rel="noreferrer">Åbn hele ordbogsopslaget</a></dd></div>}
+              <div><dt>{tr("Betydning", "Meaning")}</dt><dd>{dictionaryEntry.meaning}</dd></div>
+              <div><dt>{tr("Stavning", "Spelling")}</dt><dd>{dictionaryEntry.word}</dd></div>
+              <div><dt>{tr("Engelsk", "Danish")}</dt><dd>{dictionaryEntry.translation}</dd></div>
+              <div><dt>{tr("Bøjning", "Inflection")}</dt><dd>{dictionaryEntry.inflection}</dd></div>
+              {dictionaryEntry.sourceUrl && <div><dt>{tr("Mere information", "More information")}</dt><dd><a href={dictionaryEntry.sourceUrl} target="_blank" rel="noreferrer">{tr("Åbn hele ordbogsopslaget", "Open the full dictionary entry")}</a></dd></div>}
             </dl>
           )}
-          <button type="button" disabled={dictionaryMiss || dictionaryLoading} onClick={() => speak(dictionaryEntry.word)}><Volume2 aria-hidden="true" /> Hør udtalen</button>
+          <button type="button" disabled={dictionaryMiss || dictionaryLoading} onClick={() => speak(dictionaryEntry.word, undefined, 0.9, en ? "en-US" : "da-DK")}><Volume2 aria-hidden="true" /> {tr("Hør udtalen", "Hear pronunciation")}</button>
         </article>
 
         <article className="rr-function-card rr-function-reading">
-          <div className="rr-function-card-title"><Type aria-hidden="true" /><h3>Tekststørrelse og afstand</h3></div>
+          <div className="rr-function-card-title"><Type aria-hidden="true" /><h3>{tr("Tekststørrelse og afstand", "Text size and spacing")}</h3></div>
           <div className="rr-function-stepper">
-            <button type="button" onClick={() => setFontSize((value) => Math.max(16, value - 1))} aria-label="Gør teksten mindre"><Minus /></button>
+            <button type="button" onClick={() => setFontSize((value) => Math.max(16, value - 1))} aria-label={tr("Gør teksten mindre", "Make text smaller")}><Minus /></button>
             <span>A <b>{fontSize}</b> A</span>
-            <button type="button" onClick={() => setFontSize((value) => Math.min(30, value + 1))} aria-label="Gør teksten større"><Plus /></button>
+            <button type="button" onClick={() => setFontSize((value) => Math.min(30, value + 1))} aria-label={tr("Gør teksten større", "Make text larger")}><Plus /></button>
           </div>
-          <label>Linjeafstand <input type="range" min="1.4" max="2.5" step="0.1" value={lineHeight} onChange={(event) => setLineHeight(Number(event.target.value))} /></label>
-          <label>Bogstavafstand <input type="range" min="0" max="0.12" step="0.01" value={letterSpacing} onChange={(event) => setLetterSpacing(Number(event.target.value))} /></label>
+          <label>{tr("Linjeafstand", "Line spacing")} <input type="range" min="1.4" max="2.5" step="0.1" value={lineHeight} onChange={(event) => setLineHeight(Number(event.target.value))} /></label>
+          <label>{tr("Bogstavafstand", "Letter spacing")} <input type="range" min="0" max="0.12" step="0.01" value={letterSpacing} onChange={(event) => setLetterSpacing(Number(event.target.value))} /></label>
         </article>
       </div>
 
-      <div className="rr-function-toolbar" aria-label="Prøv værktøjslinjen">
+      <div className="rr-function-toolbar" aria-label={tr("Prøv værktøjslinjen", "Try the toolbar")}>
         {TOOL_BUTTONS.map(({ id, label, icon: Icon }) => (
           <button key={id} type="button" aria-pressed={activeTool === id} onClick={() => setActiveTool(id)}>
-            <Icon aria-hidden="true" /><span>{label}</span>
+            <Icon aria-hidden="true" /><span>{en ? ({ read: "Read", mark: "Highlight", voice: "Speak", font: "Text", words: "Dictionary" } as Record<string, string>)[id] : label}</span>
           </button>
         ))}
       </div>
@@ -646,60 +684,60 @@ export function FunctionPlayground() {
       <div className="rr-function-tool-panel" aria-live="polite">
         {activeTool === "read" && (
           <div>
-            <div><Volume2 aria-hidden="true" /><span><b>Læs teksten højt</b><small>Marker et stykke tekst, eller læs det hele.</small></span></div>
+            <div><Volume2 aria-hidden="true" /><span><b>{tr("Læs teksten højt", "Read text aloud")}</b><small>{tr("Marker et stykke tekst, eller læs det hele.", "Select part of the text or read it all.")}</small></span></div>
             <div className="rr-function-panel-actions">
-              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => readSample(false)}>{sampleReading ? <Pause /> : <Play />} {sampleReading ? "Stop" : "Læs hele teksten"}</button>
-              <button type="button" disabled={!sampleSelection} onMouseDown={(event) => event.preventDefault()} onClick={() => readSample(true)}><Volume2 /> Læs markeringen</button>
+              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => readSample(false)}>{sampleReading ? <Pause /> : <Play />} {sampleReading ? tr("Stop", "Stop") : tr("Læs hele teksten", "Read all text")}</button>
+              <button type="button" disabled={!sampleSelection} onMouseDown={(event) => event.preventDefault()} onClick={() => readSample(true)}><Volume2 /> {tr("Læs markeringen", "Read selection")}</button>
             </div>
           </div>
         )}
 
         {activeTool === "mark" && (
           <div>
-            <div><Highlighter aria-hidden="true" /><span><b>Marker tekst</b><small>Vælg tekst i prøveteksten og tryk på en farve.</small></span></div>
-            <div className="rr-function-highlight-colors" aria-label="Vælg markeringsfarve">
-              {HIGHLIGHT_COLORS.map((color) => <button key={color} type="button" aria-pressed={highlightColor === color} aria-label={`Marker med farven ${color}`} style={{ backgroundColor: color }} onMouseDown={(event) => event.preventDefault()} onClick={() => applyHighlight(color)} />)}
+            <div><Highlighter aria-hidden="true" /><span><b>{tr("Marker tekst", "Highlight text")}</b><small>{tr("Vælg tekst i prøveteksten og tryk på en farve.", "Select text in the sample and choose a colour.")}</small></span></div>
+            <div className="rr-function-highlight-colors" aria-label={tr("Vælg markeringsfarve", "Choose highlight colour")}>
+              {HIGHLIGHT_COLORS.map((color) => <button key={color} type="button" aria-pressed={highlightColor === color} aria-label={`${tr("Marker med farven", "Highlight with colour")} ${color}`} style={{ backgroundColor: color }} onMouseDown={(event) => event.preventDefault()} onClick={() => applyHighlight(color)} />)}
             </div>
           </div>
         )}
 
         {activeTool === "voice" && (
           <div>
-            <div><Mic aria-hidden="true" /><span><b>Tal til prøveteksten</b><small>Det, du siger, bliver skrevet ind nederst i teksten.</small></span></div>
-            <button type="button" className="rr-function-primary-action" onClick={dictation.listening ? dictation.stop : dictation.start}><Mic /> {dictation.listening ? "Stop diktering" : "Start diktering"}</button>
-            {dictation.interim && <p className="rr-function-interim">Jeg hører: {dictation.interim}</p>}
-            {dictation.error && <p className="rr-function-panel-error">Mikrofonen kunne ikke startes. Tillad mikrofonen i browseren, og prøv igen.</p>}
-            {!dictation.supported && <p className="rr-function-panel-error">Diktering virker bedst i Chrome eller Edge.</p>}
+            <div><Mic aria-hidden="true" /><span><b>{tr("Tal til prøveteksten", "Speak into the sample text")}</b><small>{tr("Det, du siger, bliver skrevet ind nederst i teksten.", "What you say is added to the end of the text.")}</small></span></div>
+            <button type="button" className="rr-function-primary-action" onClick={dictation.listening ? dictation.stop : dictation.start}><Mic /> {dictation.listening ? tr("Stop diktering", "Stop dictation") : tr("Start diktering", "Start dictation")}</button>
+            {dictation.interim && <p className="rr-function-interim">{tr("Jeg hører:", "I hear:")} {dictation.interim}</p>}
+            {dictation.error && <p className="rr-function-panel-error">{tr("Mikrofonen kunne ikke startes. Tillad mikrofonen i browseren, og prøv igen.", "The microphone could not start. Allow it in your browser and try again.")}</p>}
+            {!dictation.supported && <p className="rr-function-panel-error">{tr("Diktering virker bedst i Chrome eller Edge.", "Dictation works best in Chrome or Edge.")}</p>}
           </div>
         )}
 
         {activeTool === "font" && (
           <div>
-            <div><Type aria-hidden="true" /><span><b>Rediger teksten</b><small>Klik direkte i prøveteksten for at skrive. Her kan du også ændre visningen.</small></span></div>
+            <div><Type aria-hidden="true" /><span><b>{tr("Rediger teksten", "Edit the text")}</b><small>{tr("Klik direkte i prøveteksten for at skrive. Her kan du også ændre visningen.", "Click directly in the sample to write. You can also adjust the display.")}</small></span></div>
             <div className="rr-function-inline-controls">
-              <button type="button" onClick={() => setFontSize((value) => Math.max(16, value - 1))}><Minus /> Mindre</button>
+              <button type="button" onClick={() => setFontSize((value) => Math.max(16, value - 1))}><Minus /> {tr("Mindre", "Smaller")}</button>
               <b>{fontSize} px</b>
-              <button type="button" onClick={() => setFontSize((value) => Math.min(30, value + 1))}><Plus /> Større</button>
-              <button type="button" onClick={resetSample}><X /> Gendan tekst</button>
+              <button type="button" onClick={() => setFontSize((value) => Math.min(30, value + 1))}><Plus /> {tr("Større", "Larger")}</button>
+              <button type="button" onClick={resetSample}><X /> {tr("Gendan tekst", "Reset text")}</button>
             </div>
           </div>
         )}
 
         {activeTool === "words" && (
           <form onSubmit={(event) => { event.preventDefault(); void findDictionaryWord(); }}>
-            <div><BookOpen aria-hidden="true" /><span><b>Ordbog</b><small>Skriv et ord for at se betydning, stavning, oversættelse og bøjning.</small></span></div>
-            <label htmlFor="function-toolbar-lookup">Slå et ord op</label>
-            <div className="rr-function-panel-search"><input id="function-toolbar-lookup" value={lookup} onChange={(event) => setLookup(event.target.value)} /><button type="submit" aria-label="Slå ordet op"><Search /></button></div>
-            {dictionaryLoading && <p className="rr-function-dictionary-compact">Slår ordet op...</p>}
+            <div><BookOpen aria-hidden="true" /><span><b>{tr("Ordbog", "Dictionary")}</b><small>{tr("Skriv et ord for at se betydning, stavning, oversættelse og bøjning.", "Enter a word to see its meaning, spelling, translation and inflection.")}</small></span></div>
+            <label htmlFor="function-toolbar-lookup">{tr("Slå et ord op", "Look up a word")}</label>
+            <div className="rr-function-panel-search"><input id="function-toolbar-lookup" value={lookup} onChange={(event) => setLookup(event.target.value)} /><button type="submit" aria-label={tr("Slå ordet op", "Look up the word")}><Search /></button></div>
+            {dictionaryLoading && <p className="rr-function-dictionary-compact">{tr("Slår ordet op...", "Looking up the word...")}</p>}
             {!dictionaryLoading && !dictionaryMiss && <p className="rr-function-dictionary-compact"><b>{dictionaryEntry.word}</b><span>{dictionaryEntry.meaning}</span><small>{dictionaryEntry.translation}. {dictionaryEntry.inflection}</small></p>}
-            {!dictionaryLoading && dictionaryMiss && <p className="rr-function-panel-error">Vi kunne ikke finde ordet. Kontrollér stavningen, og prøv igen.</p>}
+            {!dictionaryLoading && dictionaryMiss && <p className="rr-function-panel-error">{tr("Vi kunne ikke finde ordet. Kontrollér stavningen, og prøv igen.", "We could not find the word. Check the spelling and try again.")}</p>}
           </form>
         )}
       </div>
 
       <div className="rr-function-paper" style={{ fontSize, lineHeight, letterSpacing: `${letterSpacing}em` }}>
         <div className="rr-function-paper-main">
-          <span className="rr-function-paper-label">Prøvetekst</span>
+          <span className="rr-function-paper-label">{tr("Prøvetekst", "Sample text")}</span>
           <div
             ref={sampleRef}
             className="rr-function-editable"
@@ -707,19 +745,19 @@ export function FunctionPlayground() {
             suppressContentEditableWarning
             role="textbox"
             aria-multiline="true"
-            aria-label="Redigerbar prøvetekst"
+            aria-label={tr("Redigerbar prøvetekst", "Editable sample text")}
             onInput={(event) => setSampleText(event.currentTarget.innerText)}
             onMouseUp={rememberSampleSelection}
             onKeyUp={rememberSampleSelection}
           >
-            {INITIAL_SAMPLE}
+            {en ? INITIAL_SAMPLE_EN : INITIAL_SAMPLE}
           </div>
-          <small>Valgt værktøj: <b>{TOOL_BUTTONS.find((tool) => tool.id === activeTool)?.label}</b>. Klik i teksten for at redigere.</small>
+          <small>{tr("Valgt værktøj:", "Selected tool:")} <b>{en ? ({ read: "Read", mark: "Highlight", voice: "Speak", font: "Text", words: "Dictionary" } as Record<string, string>)[activeTool] : TOOL_BUTTONS.find((tool) => tool.id === activeTool)?.label}</b>. {tr("Klik i teksten for at redigere.", "Click the text to edit it.")}</small>
         </div>
         <aside className="rr-function-note-preview">
           <NotebookText aria-hidden="true" />
-          <label htmlFor="function-note"><b>Min note</b></label>
-          <textarea id="function-note" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Skriv din note direkte her..." />
+          <label htmlFor="function-note"><b>{tr("Min note", "My note")}</b></label>
+          <textarea id="function-note" value={note} onChange={(event) => setNote(event.target.value)} placeholder={tr("Skriv din note direkte her...", "Write your note here...")} />
         </aside>
       </div>
     </section>
