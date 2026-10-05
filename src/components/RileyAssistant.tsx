@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Bot, Loader2, Mic, RotateCcw, Send, Sparkles, Volume2 } from "lucide-react";
+import { Bot, CircleHelp, Loader2, Mic, RotateCcw, Send, Sparkles, Volume2 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAiChat } from "@/hooks/useAiChat";
 import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { useLanguage } from "@/lib/i18n";
+import { answerReliefReadQuestion } from "@/lib/riley-knowledge";
 
 type QuickAction = {
   icon: React.ReactNode;
@@ -15,6 +16,13 @@ type QuickAction = {
 };
 
 const QUICK_ACTIONS: QuickAction[] = [
+  {
+    icon: <CircleHelp className="h-4 w-4" aria-hidden="true" />,
+    da: "Hvordan virker appen?",
+    en: "How does the app work?",
+    promptDa: "Hvad kan ReliefRead hjælpe mig med, og hvor finder jeg funktionerne?",
+    promptEn: "What can ReliefRead help me with, and where do I find the features?",
+  },
   {
     icon: <Volume2 className="h-4 w-4" aria-hidden="true" />,
     da: "Læs for mig",
@@ -79,13 +87,14 @@ export function RileyAssistant() {
   const systemPrompt = useMemo(
     () =>
       language === "da"
-        ? "Du er Riley, ReliefReads rolige AI-hjælper. Svar på dansk med korte, tydelige sætninger. Hjælp med læsning, forståelse og skrivning uden at dømme. Når du retter tekst, skal den stadig lyde som brugeren. Giv ikke facit på skoleopgaver, hvis brugeren beder om at lære."
-        : "You are Riley, ReliefRead's calm AI helper. Use short, clear sentences. Help with reading, understanding and writing without judgement. When correcting text, keep the user's voice. Do not give away school answers when the user asks to learn.",
+        ? "Du er Riley, ReliefReads rolige AI-hjælper. Svar på dansk med korte, tydelige sætninger. Hjælp med læsning, forståelse og skrivning uden at dømme. Når du retter tekst, skal den stadig lyde som brugeren. Giv ikke facit på skoleopgaver, hvis brugeren beder om at lære. ReliefRead har oplæsning, markering, tale-til-tekst, skrivehjælp med stavning, grammatik, komma, tegnsætning og ordforslag, ordbog, PDF-import, noter, personlige temaer og Riley. Vær ærlig om begrænsninger: OCR til fotos og helt scannede PDF-filer er under udvikling. Forklar altid konkret, hvor i appen brugeren skal gå hen."
+        : "You are Riley, ReliefRead's calm AI helper. Use short, clear sentences. Help with reading, understanding and writing without judgement. When correcting text, keep the user's voice. Do not give away school answers when the user asks to learn. ReliefRead includes read-aloud, highlighting, speech-to-text, writing help for spelling, grammar, commas, punctuation and word suggestions, a dictionary, PDF import, notes, personal themes and Riley. Be honest about limitations: OCR for photos and fully scanned PDFs is still in development. Always explain exactly where the user should go in the app.",
     [language]
   );
 
-  const { messages, sendMessage, loading, error, clearHistory } = useAiChat({ systemPrompt });
-  const availableHere = ["/", "/dashboard", "/new", "/write", "/read", "/settings"].some(
+  const localResponder = useMemo(() => (message: string) => answerReliefReadQuestion(message, language), [language]);
+  const { messages, sendMessage, loading, error, clearHistory } = useAiChat({ systemPrompt, localResponder });
+  const availableHere = ["/", "/login", "/trial", "/pricing", "/dashboard", "/new", "/write", "/read", "/notes", "/settings"].some(
     (path) => location.pathname === path || location.pathname.startsWith(`${path}/`)
   );
 
@@ -116,7 +125,19 @@ export function RileyAssistant() {
 
   const withContext = (prompt: string) => {
     const selected = selection.trim();
-    const parts = [prompt];
+    const pageNames: Record<string, string> = {
+      "/": language === "da" ? "forsiden" : "front page",
+      "/login": language === "da" ? "login" : "sign in",
+      "/trial": language === "da" ? "gratis prøveadgang" : "free trial",
+      "/pricing": language === "da" ? "priser" : "pricing",
+      "/dashboard": language === "da" ? "dashboardet" : "dashboard",
+      "/new": language === "da" ? "ny læsning" : "new reading",
+      "/write": language === "da" ? "skriveværkstedet" : "writing studio",
+      "/notes": language === "da" ? "noter" : "notes",
+      "/settings": language === "da" ? "indstillinger" : "settings",
+    };
+    const currentPage = Object.entries(pageNames).find(([path]) => location.pathname === path || (path !== "/" && location.pathname.startsWith(`${path}/`)))?.[1];
+    const parts = [prompt, `${language === "da" ? "Aktuel side" : "Current page"}: ${currentPage || location.pathname}`];
     if (selected) parts.push(`${language === "da" ? "Markeret tekst:" : "Selected text:"}\n${selected}`);
     if (providedContext && !contextAttached) {
       parts.push(`${language === "da" ? "Dokumentkontekst:" : "Document context:"}\n${providedContext}`);

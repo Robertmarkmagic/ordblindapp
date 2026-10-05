@@ -18,6 +18,7 @@ export interface Citation {
 export interface UseAiChatOptions {
   systemPrompt?: string;
   useRag?: boolean;
+  localResponder?: (message: string) => string | null;
   onMessage?: (message: ChatMessage) => void;
   onError?: (error: string) => void;
 }
@@ -92,6 +93,19 @@ export function useAiChat(options?: UseAiChatOptions) {
     setMessages(prev => [...prev, userMessage]);
 
     try {
+      const localResponse = options?.localResponder?.(content.trim());
+      if (localResponse) {
+        const assistantMessage: ChatMessage = {
+          id: generateId(),
+          role: 'assistant',
+          content: localResponse,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+        options?.onMessage?.(assistantMessage);
+        return assistantMessage;
+      }
+
       // Build request with conversation history
       const conversationHistory = messages.map(m => ({
         role: m.role,
