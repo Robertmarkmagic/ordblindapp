@@ -293,11 +293,11 @@
 .rr-function-editable { min-height: 10rem; border: 1px solid #d6e4ee; border-radius: .75rem; background: #fff; padding: .9rem; font-family: Lora, Georgia, serif; outline: none; }
 .rr-function-editable:focus { border-color: #2988d8; box-shadow: 0 0 0 3px rgb(41 136 216 / .14); }
 .rr-function-paper small { display: block; margin-top: .7rem; color: #171717; font-family: Lexend, sans-serif; font-size: .65rem; letter-spacing: normal; }
-.rr-function-note-preview { align-self: start; border-radius: .8rem; background: #f5a7c4; padding: 1rem; color: #171717; font-family: "Comic Sans MS", cursive; box-shadow: 0 14px 24px -20px rgb(63 38 55 / .7); }
+.rr-function-note-preview { align-self: start; border: 1px solid #9ecce7; border-radius: .8rem; background: #c7e8f8; padding: 1rem; color: #171717; font-family: "Comic Sans MS", cursive; box-shadow: 0 14px 24px -20px rgb(23 59 112 / .55); }
 .rr-function-note-preview > svg { width: 1.1rem; }
 .rr-function-note-preview > label { display: block; margin-top: .25rem; font-size: .8rem; }
-.rr-function-note-preview > textarea { min-height: 8rem; width: 100%; resize: vertical; margin-top: .4rem; border: 1px solid rgb(23 23 23 / .18); border-radius: .55rem; background: rgb(255 255 255 / .5); padding: .55rem; color: #171717; font-family: inherit; font-size: .75rem; line-height: 1.5; outline: none; }
-.rr-function-note-preview > textarea:focus { border-color: #17345e; box-shadow: 0 0 0 3px rgb(255 241 173 / .7); }
+.rr-function-note-preview > textarea { min-height: 8rem; width: 100%; resize: vertical; margin-top: .4rem; border: 1px solid rgb(23 59 112 / .22); border-radius: .55rem; background: rgb(255 255 255 / .64); padding: .55rem; color: #171717; font-family: inherit; font-size: .75rem; line-height: 1.5; outline: none; }
+.rr-function-note-preview > textarea:focus { border-color: #247dd0; box-shadow: 0 0 0 3px rgb(255 255 255 / .8); }
 
 /* Keep the complete interactive feature demo on a calm white canvas. Theme
    colours still belong to the separate personalisation previews below. */
