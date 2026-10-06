@@ -187,28 +187,15 @@ const OptimizedImage = forwardRef<HTMLImageElement, OptimizedImageProps>(({
 
   const config = getConfig();
 
-  // Handle missing src
-  if (!src) {
-    return (
-      <div
-        className={`bg-gray-200 flex items-center justify-center ${className}`}
-        style={{ ...style, width: explicitWidth, height: explicitHeight }}
-        {...props}
-      >
-        <span className="text-gray-400 text-sm">No image</span>
-      </div>
-    );
-  }
-
   // Build the full R2 URL for the original image
-  const originalR2Url = buildR2Url(src, config);
+  const originalR2Url = src ? buildR2Url(src, config) : '';
 
   // Check if optimization is enabled
   const useOptimization = config.enableOptimization && !hasError;
 
   // Generate srcset with optimized URLs
   const generateSrcSet = (): string | undefined => {
-    if (!useOptimization) return undefined;
+    if (!src || !useOptimization) return undefined;
 
     return widths
       .map(w => {
@@ -220,6 +207,7 @@ const OptimizedImage = forwardRef<HTMLImageElement, OptimizedImageProps>(({
 
   // Generate default src (middle size for good balance)
   const getDefaultSrc = (): string => {
+    if (!src) return '';
     if (!useOptimization) {
       // Fallback to worker proxy path for unoptimized
       return src.startsWith('/') ? src : `/assets/images/${src.replace(/^images\//, '')}`;
@@ -252,7 +240,7 @@ const OptimizedImage = forwardRef<HTMLImageElement, OptimizedImageProps>(({
 
   // Preload priority images
   useEffect(() => {
-    if (priority && typeof document !== 'undefined') {
+    if (priority && defaultSrc && typeof document !== 'undefined') {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.as = 'image';
@@ -277,13 +265,26 @@ const OptimizedImage = forwardRef<HTMLImageElement, OptimizedImageProps>(({
   // of layout. A real-dimension below-the-fold image is NOT stuck, so it keeps
   // native lazy loading and the bandwidth win (see @/lib/lazyLoad).
   useEffect(() => {
-    if (priority || forceEager) return; // already eager — nothing to force
+    if (!defaultSrc || priority || forceEager) return;
     return scheduleLazyLoadFallback(
       () => imgRef.current,
       () => setForceEager(true),
       LAZY_LOAD_FALLBACK_MS
     );
   }, [priority, forceEager, defaultSrc]);
+
+  // All hooks run before this return, even when src changes between empty and set.
+  if (!src) {
+    return (
+      <div
+        className={`bg-gray-200 flex items-center justify-center ${className}`}
+        style={{ ...style, width: explicitWidth, height: explicitHeight }}
+        {...props}
+      >
+        <span className="text-gray-400 text-sm">No image</span>
+      </div>
+    );
+  }
 
   // Our JS fallback (forceEager) and the caller's `priority` both mean "load
   // now, don't defer".
