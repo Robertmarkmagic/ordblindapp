@@ -1,7 +1,5 @@
 import React from "react";
-import { Settings2 } from "lucide-react";
-import { TOOL_OPTIONS, type ToolbarTool } from "@/lib/app-preferences";
-import { useAppPreferences } from "@/hooks/useAppPreferences";
+import { BookOpen, Camera, Highlighter, Mic, NotebookText, PenLine, Search, Settings2, SpellCheck2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 
 interface PersonalToolbarProps {
@@ -11,62 +9,42 @@ interface PersonalToolbarProps {
   onHighlight: () => void;
   onWritingHelp: () => void;
   onSettings: () => void;
+  onScan: () => void;
 }
 
-const RILEY_PROMPTS: Partial<Record<ToolbarTool, { da: string; en: string }>> = {
-  spelling: {
-    da: "Kontroller kun stavningen i den tekst, jeg markerer eller indsætter.",
-    en: "Check spelling only in the text I select or paste.",
-  },
-  grammar: {
-    da: "Kontroller grammatikken. Bevar min tone og mine formuleringer.",
-    en: "Check the grammar. Keep my tone and wording.",
-  },
-  comma: {
-    da: "Kontroller kun kommaerne og forklar kort dine forslag.",
-    en: "Check commas only and briefly explain your suggestions.",
-  },
-};
-
-export function PersonalToolbar({ onRead, onWords, onNotes, onHighlight, onWritingHelp, onSettings }: PersonalToolbarProps) {
-  const { preferences } = useAppPreferences();
+export function PersonalToolbar({ onRead, onWords, onNotes, onHighlight, onWritingHelp, onSettings, onScan }: PersonalToolbarProps) {
   const { language } = useLanguage();
-
-  const run = (tool: ToolbarTool) => {
-    if (tool === "read") return onRead();
-    if (tool === "words") return onWords();
-    if (tool === "dictate") return onNotes();
-    if (tool === "highlight") return onHighlight();
-    if (RILEY_PROMPTS[tool]) return onWritingHelp();
-  };
-
-  const selected = TOOL_OPTIONS.filter((tool) => preferences.toolbar.includes(tool.value));
+  const tools = [
+    { id: "read", da: "Læs højt", en: "Read aloud", helpDa: "Ord, sætning eller hele teksten", helpEn: "A word, sentence or the full text", icon: BookOpen, action: onRead },
+    { id: "highlight", da: "Marker", en: "Highlight", helpDa: "Fremhæv vigtige steder", helpEn: "Mark important passages", icon: Highlighter, action: onHighlight },
+    { id: "dictate", da: "Tal", en: "Dictate", helpDa: "Indtal tekst og noter", helpEn: "Dictate text and notes", icon: Mic, action: onNotes },
+    { id: "write", da: "Skrivehjælp", en: "Writing help", helpDa: "Stavning, grammatik og komma", helpEn: "Spelling, grammar and commas", icon: SpellCheck2, action: onWritingHelp },
+    { id: "notes", da: "Noter", en: "Notes", helpDa: "Gem tanker ved teksten", helpEn: "Save thoughts beside the text", icon: NotebookText, action: onNotes },
+    { id: "dictionary", da: "Ordbog", en: "Dictionary", helpDa: "Betydning, bøjning og udtale", helpEn: "Meaning, inflection and pronunciation", icon: Search, action: onWords },
+    { id: "scan", da: "PDF og scan", en: "PDF and scan", helpDa: "Åbn tekst og dokumenter", helpEn: "Open text and documents", icon: Camera, action: onScan },
+  ];
 
   return (
     <nav
       aria-label={language === "da" ? "Din værktøjslinje" : "Your toolbar"}
-      className="mb-5 overflow-x-auto rounded-2xl border border-border bg-card/90 p-2 shadow-paper backdrop-blur"
+      className="rr-core-toolbar mb-5 rounded-2xl border border-border bg-white p-3 shadow-paper"
     >
-      <div className="flex min-w-max items-center gap-1.5">
-        {selected.map((tool) => (
+      <div className="mb-2 flex items-center justify-between gap-3 px-1">
+        <div><b className="text-sm text-black">{language === "da" ? "Værktøjer til teksten" : "Tools for your text"}</b><p className="text-xs text-black/65">{language === "da" ? "Læs, forstå og skriv uden at skifte arbejdsflade." : "Read, understand and write without changing workspace."}</p></div>
+        <button type="button" onClick={onSettings} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-border bg-white px-3 text-xs font-semibold text-black hover:bg-slate-50"><Settings2 className="h-4 w-4" />{language === "da" ? "Indstillinger" : "Settings"}</button>
+      </div>
+      <div className="rr-core-toolbar-grid">
+        {tools.map((tool) => (
           <button
-            key={tool.value}
+            key={tool.id}
             type="button"
-            onClick={() => run(tool.value)}
-            className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-foreground outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={tool.action}
+            className="rr-core-tool"
           >
-            <span aria-hidden="true">{tool.emoji}</span>
-            {tool.label[language]}
+            <tool.icon aria-hidden="true" />
+            <span><b>{language === "da" ? tool.da : tool.en}</b><small>{language === "da" ? tool.helpDa : tool.helpEn}</small></span>
           </button>
         ))}
-        <button
-          type="button"
-          onClick={onSettings}
-          className="ml-1 flex min-h-11 items-center gap-2 rounded-xl border border-border px-3 text-sm font-semibold text-foreground outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Settings2 className="h-4 w-4" aria-hidden="true" />
-          {language === "da" ? "Flere værktøjer" : "More tools"}
-        </button>
       </div>
     </nav>
   );
