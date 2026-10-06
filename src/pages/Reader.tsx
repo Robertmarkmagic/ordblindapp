@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Pencil, BookMarked, Share2, ClipboardList, Play, Languages, Mic, MoreVertical, UserCircle } from "lucide-react";
+import { ArrowLeft, Pencil, BookMarked, Share2, ClipboardList, Play, Languages, Mic, MoreVertical, UserCircle, Search, X } from "lucide-react";
 import { backend, useAuth } from "@/lib/auth";
 import { toast } from "@/components/ui/sonner";
 import { SoftNotice } from "@/components/SoftNotice";
@@ -42,7 +42,6 @@ import { HIGHLIGHT_COLORS, type AestheticChoice } from "@/lib/app-preferences";
 import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { DocumentInsightsSheet } from "@/components/reader/DocumentInsightsSheet";
 import { insightsAsText, type DocumentInsights } from "@/lib/document-insights";
-import { ReaderThemeChooser } from "@/components/reader/ReaderPersonalisationStudio";
 import { ReaderWorkspaceSidebar } from "@/components/reader/ReaderWorkspaceSidebar";
 import { PersonalToolbar } from "@/components/reader/PersonalToolbar";
 
@@ -365,6 +364,8 @@ export default function Reader() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyItems, setHistoryItems] = useState<LookupRow[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [dictionaryOpen, setDictionaryOpen] = useState(false);
+  const [dictionaryWord, setDictionaryWord] = useState("");
 
   // Share formatted view — snapshot the CURRENT reader formatting.
   const [shareOpen, setShareOpen] = useState(false);
@@ -443,12 +444,18 @@ export default function Reader() {
     [doc?.id, lang, user?.id, playRange, refreshHistory]
   );
 
+  const lookUpDictionaryWord = useCallback(() => {
+    const word = dictionaryWord.trim();
+    if (!word) return;
+    setDictionaryOpen(false);
+    void handleAction("explain", word);
+  }, [dictionaryWord, handleAction]);
+
   usePageTitle(doc?.title || t("reader.reading", "Reading"));
 
   return (
     <div className="rr-personal-space">
-      <ReaderThemeChooser value={preferences.aesthetic} onChange={(aesthetic) => { setTintOverride(null); setPreferences({ ...preferences, aesthetic }); }} />
-      <main className="mx-auto max-w-6xl px-3 pb-40 sm:px-6">
+      <main className="mx-auto max-w-7xl px-3 pb-40 pt-5 sm:px-6">
         <section className="rr-reader-shell">
           <div className="rr-reader-windowbar">
             <div className="flex items-center gap-2" aria-hidden="true"><span className="h-3.5 w-3.5 rounded-full bg-pink-300" /><span className="h-3.5 w-3.5 rounded-full bg-amber-300" /><span className="h-3.5 w-3.5 rounded-full bg-emerald-400" /></div>
@@ -497,11 +504,12 @@ export default function Reader() {
               <article ref={articleRef} onMouseUp={captureSelection} className="rr-fade-up">
                 <PersonalToolbar
                   onRead={() => toggle()}
-                  onWords={openHistory}
+                  onWords={() => setDictionaryOpen(true)}
                   onNotes={() => setNotesOpen(true)}
                   onHighlight={() => setFocusControlsOpen(true)}
                   onWritingHelp={() => navigate("/write")}
                   onSettings={() => navigate("/settings")}
+                  onScan={() => navigate("/new")}
                 />
                 <button onClick={() => navigate("/dashboard")} className="mb-3 inline-flex min-h-10 items-center gap-2 rounded-lg text-sm font-semibold text-primary"><ArrowLeft className="h-4 w-4" />Mine filer</button>
                 <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
@@ -637,6 +645,22 @@ export default function Reader() {
       {/* Tap-to-understand: auto-positioning selection popover + result card + history */}
       {!loading && !notFound && !error && doc && (
         <>
+          {dictionaryOpen && (
+            <div className="fixed inset-0 z-[65] grid place-items-center bg-black/25 p-4" role="dialog" aria-modal="true" aria-labelledby="reader-dictionary-title">
+              <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-5 text-black shadow-xl">
+                <div className="flex items-center justify-between gap-3">
+                  <div><h2 id="reader-dictionary-title" className="font-display text-xl font-semibold">{language === "da" ? "Ordbog" : "Dictionary"}</h2><p className="mt-1 text-sm text-slate-600">{language === "da" ? "Få betydning, stavning, bøjning og udtale forklaret." : "Get meaning, spelling, inflection and pronunciation."}</p></div>
+                  <button type="button" onClick={() => setDictionaryOpen(false)} className="grid h-10 w-10 place-items-center rounded-full hover:bg-slate-100" aria-label={language === "da" ? "Luk" : "Close"}><X className="h-5 w-5" /></button>
+                </div>
+                <label htmlFor="reader-dictionary-word" className="mt-5 block text-sm font-semibold">{language === "da" ? "Skriv et ord" : "Enter a word"}</label>
+                <div className="mt-2 flex gap-2">
+                  <input id="reader-dictionary-word" value={dictionaryWord} onChange={(event) => setDictionaryWord(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") lookUpDictionaryWord(); }} autoFocus className="min-h-12 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-base text-black outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100" placeholder={language === "da" ? "For eksempel tilgængelig" : "For example accessible"} />
+                  <button type="button" onClick={lookUpDictionaryWord} disabled={!dictionaryWord.trim()} className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#17345e] px-4 text-sm font-semibold text-white disabled:opacity-40"><Search className="h-4 w-4" />{language === "da" ? "Slå op" : "Look up"}</button>
+                </div>
+                <button type="button" onClick={() => { setDictionaryOpen(false); openHistory(); }} className="mt-3 text-sm font-semibold text-[#17345e] underline underline-offset-4">{language === "da" ? "Se tidligere opslag" : "View previous lookups"}</button>
+              </div>
+            </div>
+          )}
           <SelectionPopover containerRef={articleRef} onAction={handleAction} />
           <LookupCard
             open={lookupOpen}
