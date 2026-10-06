@@ -49,7 +49,7 @@ import {
   saveWritingDraft,
   type WritingDraft,
 } from "@/lib/writing-draft";
-import { analyseDanishGrammar, findDanishCommaSuggestions } from "@/lib/grammar-learning";
+import { GrammarLearningPanel } from "@/components/writing/GrammarLearningPanel";
 
 interface ReviewWithOriginal extends WritingReview {
   originalText: string;
@@ -166,8 +166,6 @@ export default function WritingStudio() {
     () => getWritingSuggestions(text, text.length, language),
     [language, text]
   );
-  const grammarTokens = useMemo(() => analyseDanishGrammar(text), [text]);
-  const commaSuggestions = useMemo(() => findDanishCommaSuggestions(text), [text]);
 
   const addSuggestion = (suggestion: string, replacePrefix: boolean) => {
     const next = insertWritingSuggestion(text, text.length, suggestion, replacePrefix);
@@ -514,33 +512,16 @@ export default function WritingStudio() {
             </section>
 
             {grammarLearningMode && text.trim() && (checks.grammar || checks.comma) && (
-              <section className="rounded-3xl border border-sky-200 bg-white p-5 text-black shadow-paper" aria-live="polite">
-                <h2 className="font-display text-xl font-semibold">{language === "da" ? "Lær af din egen tekst" : "Learn from your text"}</h2>
-                <p className="mt-1 text-sm text-slate-600">{language === "da" ? "Kryds viser grundled. Bolle viser udsagnsled." : "× marks the subject. ○ marks the verb."}</p>
-                {checks.grammar && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {grammarTokens.slice(0, 24).map((token, index) => (
-                      <span key={`${token.word}-${index}`} className={`grid min-w-[4.25rem] rounded-xl border px-2 py-1.5 text-center ${token.sentenceRole ? "border-sky-400 bg-sky-50" : "border-slate-200 bg-white"}`}>
-                        <b className="text-sm">{token.word}</b>
-                        <small className="text-[11px] text-slate-600">{token.role === "verb" ? "Udsagnsord" : token.role === "subject" ? "Stedord" : token.role === "adjective" ? "Tillægsord" : token.role === "noun" ? "Navneord" : "Andet"}</small>
-                        {token.sentenceRole && <em className="text-[11px] font-bold not-italic text-[#17345e]">{token.sentenceRole === "subject" ? "× Grundled" : "○ Udsagnsled"}</em>}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {checks.comma && (
-                  <div className="mt-4 space-y-2">
-                    <b className="text-sm">{language === "da" ? "Kommahjælp i din tekst" : "Comma help in your text"}</b>
-                    {commaSuggestions.length ? commaSuggestions.map((suggestion) => (
-                      <div key={suggestion.index} className="rounded-2xl border border-amber-200 bg-amber-50 p-3">
-                        <p className="text-sm leading-relaxed"><span className="font-bold text-amber-800">{language === "da" ? "Muligt komma:" : "Possible comma:"}</span> {suggestion.corrected}</p>
-                        <p className="mt-1 text-xs text-slate-600">{suggestion.rule}</p>
-                        <button type="button" onClick={() => commitText(suggestion.corrected)} className="mt-2 rounded-full bg-[#17345e] px-3 py-1.5 text-xs font-semibold text-white">{language === "da" ? "Brug dette komma" : "Use this comma"}</button>
-                      </div>
-                    )) : <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">{language === "da" ? "Jeg fandt ikke et tydeligt manglende komma endnu. Skriv gerne en længere sætning med ‘men’, ‘fordi’, ‘når’ eller ‘hvis’." : "No clear missing comma found yet."}</p>}
-                  </div>
-                )}
-              </section>
+              <GrammarLearningPanel
+                text={text}
+                language={language}
+                grammar={checks.grammar}
+                comma={checks.comma}
+                onApply={(next) => {
+                  commitText(next);
+                  setReviewResult(null);
+                }}
+              />
             )}
 
             <section className="rounded-3xl border border-border bg-card p-5 shadow-paper">

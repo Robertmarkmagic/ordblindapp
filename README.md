@@ -40,3 +40,13 @@ Se `supabase/README.md` for driftsopsætning.
 ## Udgivelse
 
 Push til `main` starter typekontrol, tests og produktionsbygning. En godkendt version udgives automatisk til GitHub Pages.
+
+## Grammatikmode
+
+Skriveværkstedets læringspanel viser forslag til grundled (×), udsagnsled (○) og ordklasser i enkle danske og engelske sætninger. Tekstsproget registreres automatisk og kan vælges manuelt, uafhængigt af brugerfladens sprog. Flere ord kan vises med knappen i panelet.
+
+Analysen bruger et begrænset ordforråd. Ukendte ord markeres som uafklarede; panelet er ikke en fuld grammatisk analyse. Den separate funktion **Tjek min tekst** giver en grundigere gennemgang.
+
+Den lokale kommahjælp følger danske regler og foreslår kun enkelte genkendelige sætningsmønstre. Valgfrie startkommaer kræver, at **Med startkomma** vælges. Hvert forslag accepteres aktivt og ændrer kun det foreslåede sted. Ingen forslag er ikke en garanti for korrekt kommatering. Engelske kommaer gennemgås med **Tjek min tekst**.
+
+Regelgrundlag: [Dansk Sprognævns kommaoversigt på sproget.dk](https://sproget.dk/typiske-problemer/komma/).
