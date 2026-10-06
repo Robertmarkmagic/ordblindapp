@@ -571,7 +571,7 @@ export default function Reader() {
 
                 {doc && (
                   <aside className="hidden lg:block">
-                    <div className="rr-reader-notes h-full min-h-[24rem]">
+                    <div className="rr-reader-notes min-h-[20rem] max-h-[31rem]">
                 <NotesPanel
                   documentId={doc.id}
                   lang={lang}
