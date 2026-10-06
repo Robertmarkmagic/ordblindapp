@@ -20,6 +20,7 @@ import { getWritingSuggestions, insertWritingSuggestion } from "@/lib/writing-to
 import { useDictation } from "@/hooks/useDictation";
 import { CommaGuide } from "@/components/landing/CommaGuide";
 import { useLanguage } from "@/lib/i18n";
+import { findDanishCommaSuggestions } from "@/lib/grammar-learning";
 
 const CHECKS = ["Stavning", "Grammatik", "Komma", "Tegnsætning", "Ordforslag"];
 const INITIAL_SAMPLE = "I dette afsnit kan du prøve, hvordan ReliefRead gør teksten roligere at læse.";
@@ -195,6 +196,7 @@ export function FunctionPlayground() {
   const [sampleReading, setSampleReading] = useState(false);
   const [highlightColor, setHighlightColor] = useState(HIGHLIGHT_COLORS[0]);
   const [note, setNote] = useState("");
+  const commaLearningSuggestions = useMemo(() => findDanishCommaSuggestions(draft), [draft]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const voiceTextareaRef = useRef<HTMLTextAreaElement>(null);
   const sampleRef = useRef<HTMLDivElement>(null);
@@ -577,6 +579,16 @@ export function FunctionPlayground() {
                 <span><b>{tr("Udsagnsled", "Verb")}</b>{grammarAnalysis.predicate}</span>
               </div>
               <p>{tr("Analysen er en enkel prøvevisning. Den fulde skrivehjælp vurderer også sætningen i sammenhæng.", "This is a simple preview. The full writing support also evaluates the sentence in context.")}</p>
+              {checks.has("Komma") && (
+                <div className="rr-grammar-comma-demo">
+                  <b>{tr("Kommahjælp direkte i teksten", "Comma guidance in your text")}</b>
+                  {commaLearningSuggestions.length ? commaLearningSuggestions.map((item) => (
+                    <button key={item.index} type="button" onClick={() => { setDraft(item.corrected); setCaret(item.corrected.length); }}>
+                      <span>{item.corrected}</span><small>{item.rule}</small><em>{tr("Brug forslaget", "Use suggestion")}</em>
+                    </button>
+                  )) : <p>{tr("Skriv en længere sætning med ‘men’, ‘fordi’, ‘når’ eller ‘hvis’, så viser ReliefRead, hvor et komma kan mangle.", "Write a longer sentence with a conjunction to see comma guidance.")}</p>}
+                </div>
+              )}
               <CommaGuide sentence={draft} />
             </div>
           )}
