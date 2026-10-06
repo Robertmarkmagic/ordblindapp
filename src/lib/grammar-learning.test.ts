@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyseGrammar, analyseDanishGrammar, applyCommaSuggestion, detectGrammarLanguage, findDanishCommaSuggestions } from "./grammar-learning";
+import { analyseGrammar, analyseDanishGrammar, applyCommaSuggestion, detectGrammarLanguage, findDanishCommaSuggestions, findEnglishCommaSuggestions, commaSuggestionsFromReview } from "./grammar-learning";
 
 const markedWords = (text: string, language: "da" | "en" = "da") => analyseGrammar(text, language)
   .filter((token) => token.sentenceRole)
@@ -113,5 +113,53 @@ describe("Danish comma hints", () => {
     const [suggestion] = findDanishCommaSuggestions(original);
     expect(applyCommaSuggestion(original, suggestion)).toBe("Jeg læser, men du skriver");
     expect(applyCommaSuggestion(original + " videre", suggestion)).toBe(original + " videre");
+  });
+});
+
+describe("inline comma teaching", () => {
+  it("finds a required Danish end comma without start commas", () => {
+    expect(findDanishCommaSuggestions("Hvis du læser skriver jeg.")[0]?.corrected).toBe("Hvis du læser, skriver jeg.");
+    expect(findDanishCommaSuggestions("Når hun kommer går vi.")[0]?.optional).toBe(false);
+    expect(findDanishCommaSuggestions("Hvis du læser, skriver jeg.")).toEqual([]);
+  });
+
+  it("leaves nested introductory clauses to the full text review", () => {
+    expect(findDanishCommaSuggestions("Hvis du læser når hun kommer skriver jeg.")).toEqual([]);
+  });
+});
+
+describe("English comma guidance", () => {
+  it("guides independent clauses and introductory dependent clauses", () => {
+    expect(findEnglishCommaSuggestions("I read but you write.")[0]?.corrected).toBe("I read, but you write.");
+    expect(findEnglishCommaSuggestions("If you read I write.")[0]?.corrected).toBe("If you read, I write.");
+  });
+  it.each(["I read and write.", "I read because you write.", "I read, but you write.", "If I help you read."])("does not add an unnecessary comma to %s", (text) => {
+    expect(findEnglishCommaSuggestions(text)).toEqual([]);
+  });
+});
+
+describe("precise comma locations from a fuller review", () => {
+  const issue = { type: "comma", original: "æbler pærer og bananer", suggestion: "æbler, pærer og bananer", explanation: "Komma mellem de første to dele i opremsningen." };
+  it("maps an insertion into the original text without applying it", () => {
+    const text = "Jeg køber æbler pærer og bananer.";
+    const [hint] = commaSuggestionsFromReview(text, text, [issue]);
+    expect(hint.index).toBe(15);
+    expect(hint.corrected).toBe("Jeg køber æbler, pærer og bananer.");
+    expect(hint.rule).toBe(issue.explanation);
+  });
+  it("skips stale, ambiguous and non-comma rewrites", () => {
+    expect(commaSuggestionsFromReview("ny tekst", "gammel tekst", [issue])).toEqual([]);
+    expect(commaSuggestionsFromReview(issue.original + " " + issue.original, issue.original + " " + issue.original, [issue])).toEqual([]);
+    expect(commaSuggestionsFromReview(issue.original, issue.original, [{ ...issue, suggestion: "æbler, pærer og frugt" }])).toEqual([]);
+  });
+  it("preserves UTF-16 character offsets around emojis", () => {
+    const emojiIssue = { ...issue, original: "📚 æbler pærer", suggestion: "📚 æbler, pærer" };
+    const [hint] = commaSuggestionsFromReview(emojiIssue.original, emojiIssue.original, [emojiIssue]);
+    expect(hint.corrected).toBe(emojiIssue.suggestion);
+  });
+  it("represents multiple added commas as separate choices", () => {
+    const original = "æbler pærer bananer";
+    const hints = commaSuggestionsFromReview(original, original, [{ ...issue, original, suggestion: "æbler, pærer, bananer" }]);
+    expect(hints.map((item) => item.corrected)).toEqual(["æbler, pærer bananer", "æbler pærer, bananer"]);
   });
 });

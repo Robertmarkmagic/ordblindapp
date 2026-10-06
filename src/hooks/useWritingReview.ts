@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useAiObject, type JSONSchema } from "@/hooks/useAiObject";
+import { detectGrammarLanguage } from "@/lib/grammar-learning";
 
 export type WritingIssueType = "spelling" | "grammar" | "comma" | "punctuation";
 
@@ -8,6 +9,7 @@ export interface WritingIssue {
   original: string;
   suggestion: string;
   explanation: string;
+  optional?: boolean;
 }
 
 export interface WritingReview {
@@ -31,8 +33,9 @@ const REVIEW_SCHEMA: JSONSchema = {
           original: { type: "string", description: "Exact text fragment from the original" },
           suggestion: { type: "string", description: "Replacement text fragment" },
           explanation: { type: "string", description: "A short plain-language explanation" },
+          optional: { type: "boolean", description: "Whether the suggested punctuation is optional rather than required" },
         },
-        required: ["type", "original", "suggestion", "explanation"],
+        required: ["type", "original", "suggestion", "explanation", "optional"],
       },
     },
     counts: {
@@ -66,14 +69,15 @@ export function useWritingReview(language: "da" | "en") {
   const { generate, ...aiState } = useAiObject<WritingReview>(REVIEW_SCHEMA, options);
 
   const review = useCallback(
-    (text: string, checks: WritingChecks) => {
+    (text: string, checks: WritingChecks, { startComma = false, textLanguage = detectGrammarLanguage(text, language) }: { startComma?: boolean; textLanguage?: "da" | "en" } = {}) => {
       const enabled = (Object.entries(checks) as Array<[WritingIssueType, boolean]>)
         .filter(([, active]) => active)
         .map(([type]) => type);
       return generate(
-        `${language === "da" ? "Sprog: dansk" : "Language: English"}\n` +
+        `Text language: ${textLanguage === "da" ? "Danish" : "English"}. Explanation language: ${language === "da" ? "Danish" : "English"}.\n` +
+          `Danish start comma preference: ${startComma ? "include optional start commas consistently" : "do not suggest optional start commas"}. Always check required end commas. English texts follow English comma rules.\n` +
           `Allowed correction categories: ${enabled.join(", ") || "none"}.\n` +
-          "Do not change anything outside those categories. Keep line breaks. Return the original unchanged if no correction is needed. Every issue.original must be an exact fragment from the submitted text.\n\n" +
+          "Do not change anything outside those categories. Keep line breaks. Return the original unchanged if no correction is needed. Every issue.original must be an exact fragment from the submitted text. For missing commas, return an insertion-only replacement retaining every original character, including spaces, so the comma can be shown at its precise position. Explain which clause or rule makes the suggestion relevant. Do not present an optional comma as an error.\n\n" +
           text
       );
     },

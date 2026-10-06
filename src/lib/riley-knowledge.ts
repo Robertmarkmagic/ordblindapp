@@ -8,6 +8,11 @@ type KnowledgeEntry = {
 
 const entries: KnowledgeEntry[] = [
   {
+    words: ["grammatikmode", "kryds og bolle", "lær grammatik", "grammar learning mode", "learn grammar"],
+    da: "Åbn Skriv, og slå Grammatikmode til. Under din tekst kan du vælge Min tekst, Regler og eksempler eller Øv selv. Tryk på et gult komma eller et ord for at se vejledningen. Brug Arbejd med min opgave sammen med Riley, hvis du vil øve dig trin for trin i din egen opgave.",
+    en: "Open Write and enable Grammar learning mode. Below your text, choose My text, Rules and examples or Practise. Press a yellow comma or a word for guidance. Use Work on my task with Riley for step-by-step practice with your own task.",
+  },
+  {
     words: ["hvad kan", "funktion", "værktøj", "hvordan virker", "hvad er reliefread", "help with", "what can", "how does"],
     da: "ReliefRead samler oplæsning, markering, tale-til-tekst, skrivehjælp, ordforslag, grammatik, komma, ordbog, PDF-filer og noter. Start på Min ReliefRead, og vælg det værktøj, du vil bruge. Riley er altid tilgængelig nederst på siden.",
     en: "ReliefRead brings together read-aloud, highlighting, speech-to-text, writing help, word suggestions, grammar, commas, a dictionary, PDFs and notes. Start in My ReliefRead and choose the tool you need. Riley stays available at the bottom of the page.",
@@ -75,6 +80,8 @@ function normalize(text: string) {
 
 export function answerReliefReadQuestion(question: string, language: RileyLanguage): string | null {
   const text = normalize(question);
+  // A learner's own task may mention the app. Send coaching prompts to the AI.
+  if (text.startsWith("hjælp mig med at lære grammatik i denne tekst") || text.startsWith("help me learn grammar in this text")) return null;
   if (!text || !appTerms.some((term) => text.includes(term))) return null;
 
   let best: KnowledgeEntry | null = null;

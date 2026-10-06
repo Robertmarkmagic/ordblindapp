@@ -43,10 +43,12 @@ Push til `main` starter typekontrol, tests og produktionsbygning. En godkendt ve
 
 ## Grammatikmode
 
-Skriveværkstedets læringspanel viser forslag til grundled (×), udsagnsled (○) og ordklasser i enkle danske og engelske sætninger. Tekstsproget registreres automatisk og kan vælges manuelt, uafhængigt af brugerfladens sprog. Flere ord kan vises med knappen i panelet.
+Skriveværkstedet og forsiden bruger det samme læringspanel med tre visninger: **Min tekst**, **Regler og eksempler** og **Øv selv**. Grammatikmode kan slås til og fra. Tekstsproget registreres automatisk og kan vælges manuelt, uafhængigt af brugerfladens sprog.
 
-Analysen bruger et begrænset ordforråd. Ukendte ord markeres som uafklarede; panelet er ikke en fuld grammatisk analyse. Den separate funktion **Tjek min tekst** giver en grundigere gennemgang.
+I tekstvisningen kan brugeren trykke på genkendte ord for at undersøge ordklasser, grundled (×) og udsagnsled (○). Hele teksten bevares med tegn og linjeskift. Analysen bruger et begrænset ordforråd og markerer genkendte ord, ikke nødvendigvis hele grundleddet eller udsagnsleddet. Det forklares i panelet og i reglerne. Riley kan vejlede i brugerens egen opgave, ét trin ad gangen, uden automatisk at omskrive teksten.
 
-Den lokale kommahjælp følger danske regler og foreslår kun enkelte genkendelige sætningsmønstre. Valgfrie startkommaer kræver, at **Med startkomma** vælges. Hvert forslag accepteres aktivt og ændrer kun det foreslåede sted. Ingen forslag er ikke en garanti for korrekt kommatering. Engelske kommaer gennemgås med **Tjek min tekst**.
+Mulige manglende kommaer vises som gule, klikbare markeringer på de relevante steder i teksten. Forklaringen åbnes først; brugeren vælger derefter at indsætte ét komma. Den lokale kommahjælp genkender enkle danske og engelske mønstre, blandt andet helsætninger og indledende ledsætninger. Danske startkommaer er et særskilt valg, der også sendes til **Tjek min tekst**. Kommaforslag fra denne grundigere gennemgang vises i teksten, når et forslag kun tilføjer kommaer og kan placeres entydigt i den uændrede original. Flertydige og gamle forslag markeres ikke.
 
-Regelgrundlag: [Dansk Sprognævns kommaoversigt på sproget.dk](https://sproget.dk/typiske-problemer/komma/).
+Reglerne dækker blandt andet ordklasser og sætningsled, hele grundled og udsagnsled, bøjning, tider, dansk nutids-r, engelsk kongruens, helsætninger/ledsætninger og kommaer. Der er 13 danske og 12 engelske emner med eksempler, trin og øvelser samt den eksisterende udvidede kommaoversigt. Øvelser giver hints og lader brugeren prøve igen, før den rigtige løsning forklares. Ingen automatiske kommaforslag er ikke en garanti for korrekt kommatering.
+
+Regelgrundlag: [Dansk Sprognævns kommagrammatik](https://sproget.dk/typiske-problemer/komma/kommagrammatik/), [r-problemer](https://sproget.dk/typiske-problemer/r-problemer/) og [Purdue OWL](https://owl.purdue.edu/owl/general_writing/punctuation/commas/extended_rules_for_commas.html).

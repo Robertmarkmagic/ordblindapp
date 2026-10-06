@@ -50,6 +50,8 @@ import {
   type WritingDraft,
 } from "@/lib/writing-draft";
 import { GrammarLearningPanel } from "@/components/writing/GrammarLearningPanel";
+import { buildGrammarCoachPrompt } from "@/lib/grammar-lessons";
+import { commaSuggestionsFromReview, detectGrammarLanguage, type GrammarLanguage } from "@/lib/grammar-learning";
 
 interface ReviewWithOriginal extends WritingReview {
   originalText: string;
@@ -98,6 +100,8 @@ export default function WritingStudio() {
   });
   const [checkMode, setCheckMode] = useState<"live" | "finished">("finished");
   const [grammarLearningMode, setGrammarLearningMode] = useState(true);
+  const [startComma, setStartComma] = useState(false);
+  const [grammarTextLanguage, setGrammarTextLanguage] = useState<GrammarLanguage | "auto">("auto");
   const [history, setHistory] = useState<string[]>([]);
   const [reviewResult, setReviewResult] = useState<ReviewWithOriginal | null>(null);
   const [resolvedIssues, setResolvedIssues] = useState<Set<number>>(new Set());
@@ -188,7 +192,7 @@ export default function WritingStudio() {
       return;
     }
     setNotice(null);
-    const result = await review(text, checks);
+    const result = await review(text, checks, { startComma, textLanguage: grammarTextLanguage === "auto" ? detectGrammarLanguage(text, language) : grammarTextLanguage });
     if (!result) return;
     setReviewResult({
       correctedText: result.correctedText || text,
@@ -455,6 +459,25 @@ export default function WritingStudio() {
             <p className="mt-3 text-sm text-muted-foreground">
               {language === "da" ? "Kladde gemt på denne enhed" : "Draft saved on this device"}
             </p>
+            {grammarLearningMode && (checks.grammar || checks.comma) && (
+              <div className="mt-5">
+                <GrammarLearningPanel
+                  text={text}
+                  language={language}
+                  grammar={checks.grammar}
+                  comma={checks.comma}
+                  textLanguageSelection={grammarTextLanguage}
+                  onTextLanguageSelectionChange={(value) => { setGrammarTextLanguage(value); setReviewResult(null); }}
+                  startComma={startComma}
+                  onStartCommaChange={(value) => { setStartComma(value); setReviewResult(null); }}
+                  additionalCommaSuggestions={reviewResult ? commaSuggestionsFromReview(text, reviewResult.originalText, reviewResult.issues) : []}
+                  onApply={(next) => { commitText(next); setReviewResult(null); }}
+                  onAskRiley={(topic) => window.dispatchEvent(new CustomEvent("reliefread:open-riley", {
+                    detail: { prompt: buildGrammarCoachPrompt(text, language, topic) },
+                  }))}
+                />
+              </div>
+            )}
           </section>
 
           <aside className="space-y-5 lg:sticky lg:top-5">
@@ -506,23 +529,12 @@ export default function WritingStudio() {
               </p>
 
               <label className="mt-4 flex min-h-14 items-center justify-between gap-3 rounded-2xl border border-border bg-background px-3 py-2.5">
-                <span><b className="block text-sm text-foreground">{language === "da" ? "Grammatikmode" : "Grammar learning mode"}</b><small className="block text-xs text-muted-foreground">{language === "da" ? "Lær kryds, bolle og kommaregler i din egen tekst" : "Learn sentence roles and comma rules in your own text"}</small></span>
+                <span><b className="block text-sm text-foreground">{language === "da" ? "Grammatikmode" : "Grammar learning mode"}</b><small className="block text-xs text-muted-foreground">{language === "da" ? "Vejledning i din tekst, regler og øvelser" : "Guidance in your text, rules and practice"}</small></span>
                 <Switch checked={grammarLearningMode} onCheckedChange={setGrammarLearningMode} aria-label={language === "da" ? "Grammatikmode" : "Grammar learning mode"} />
               </label>
             </section>
 
-            {grammarLearningMode && text.trim() && (checks.grammar || checks.comma) && (
-              <GrammarLearningPanel
-                text={text}
-                language={language}
-                grammar={checks.grammar}
-                comma={checks.comma}
-                onApply={(next) => {
-                  commitText(next);
-                  setReviewResult(null);
-                }}
-              />
-            )}
+
 
             <section className="rounded-3xl border border-border bg-card p-5 shadow-paper">
               <h2 className="font-display text-xl font-semibold text-foreground">
