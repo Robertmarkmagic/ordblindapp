@@ -152,6 +152,13 @@
 .rr-writing-results b { font-size: .72rem; }
 .rr-writing-results span, .rr-writing-results > p { font-size: .68rem; line-height: 1.45; }
 .rr-grammar-visual { margin-top: .7rem; border: 1px solid #b9d6eb; border-radius: .9rem; background: #fff; padding: .75rem; color: #171717; box-shadow: 0 14px 28px -24px rgb(20 55 90 / .65); }
+.rr-grammar-comma-demo { display: grid; gap: .45rem; margin-top: .75rem; border-top: 1px solid #d6e4ee; padding-top: .7rem; }
+.rr-grammar-comma-demo > b { font-size: .74rem; }
+.rr-grammar-comma-demo > p { border-radius: .65rem; background: #f5f8fa; padding: .55rem; color: #526579; font-size: .67rem; line-height: 1.5; }
+.rr-grammar-comma-demo button { display: grid; gap: .2rem; border: 1px solid #e5c66e; border-radius: .7rem; background: #fff9dc; padding: .6rem; color: #171717; text-align: left; }
+.rr-grammar-comma-demo button span { font-size: .72rem; font-weight: 750; line-height: 1.5; }
+.rr-grammar-comma-demo button small { color: #526579; font-size: .62rem; line-height: 1.45; }
+.rr-grammar-comma-demo button em { color: #17345e; font-size: .62rem; font-style: normal; font-weight: 850; text-decoration: underline; }
 .rr-grammar-visual-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .35rem; }
 .rr-grammar-visual-head > span { display: inline-flex; align-items: center; gap: .4rem; }
 .rr-grammar-visual-head svg { width: 1rem; color: #247dd0; }
