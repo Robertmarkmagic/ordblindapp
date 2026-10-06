@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Quote, Sticker, X } from "lucide-react";
+import { Quote, X } from "lucide-react";
 import { backend } from "@/lib/auth";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { usePremium } from "@/hooks/usePremium";
@@ -16,6 +16,15 @@ interface NotesPanelProps {
 
 type SaveState = "idle" | "saving" | "saved";
 
+const NOTE_STICKERS = ["", "🍓", "♡", "🎀", "🌼", "⭐", "✨", "🌈", "☕", "📖", "🍃", "🐚", "🍋", "🌺", "🦄", "🦕", "🚀", "🪐", "🐶", "🐱"];
+const NOTE_COLORS = [
+  { name: "Lyseblå", value: "#c7e8f8" },
+  { name: "Lyserød", value: "#f9d8e3" },
+  { name: "Beige", value: "#efe7da" },
+  { name: "Lysegrøn", value: "#dcebd5" },
+  { name: "Hvid", value: "#ffffff" },
+];
+
 /**
  * NotesPanel — the writing side of the workspace. One note per document (kept
  * simple and calm). Autosaves 2s after you stop typing with a quiet "Saved"
@@ -28,6 +37,7 @@ export function NotesPanel({ documentId, lang, anchorText, onAnchorClick, onClea
   const [save, setSave] = useState<SaveState>("idle");
   const [dictionary, setDictionary] = useState<Set<string>>(new Set());
   const [sticker, setSticker] = useState(() => window.localStorage.getItem(`reliefread-note-sticker:${documentId}`) || "");
+  const [noteColor, setNoteColor] = useState(() => window.localStorage.getItem(`reliefread-note-color:${documentId}`) || NOTE_COLORS[0].value);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -127,11 +137,16 @@ export function NotesPanel({ documentId, lang, anchorText, onAnchorClick, onClea
     else window.localStorage.removeItem(`reliefread-note-sticker:${documentId}`);
   };
 
+  const chooseNoteColor = (next: string) => {
+    setNoteColor(next);
+    window.localStorage.setItem(`reliefread-note-color:${documentId}`, next);
+  };
+
   return (
-    <div className="flex h-full flex-col">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-foreground">
-          {sticker && <span aria-hidden="true">{sticker}</span>}My Notes
+    <div className="rr-compact-note flex h-full min-h-0 flex-col rounded-xl p-3" style={{ backgroundColor: noteColor }}>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h2 className="flex min-w-0 items-center gap-2 text-sm font-semibold text-black">
+          {sticker && <span aria-hidden="true">{sticker}</span>}{lang === "da" ? "Mine noter" : "My notes"}
         </h2>
         <span
           className={`text-xs transition-opacity duration-500 ${
@@ -143,13 +158,23 @@ export function NotesPanel({ documentId, lang, anchorText, onAnchorClick, onClea
         </span>
       </div>
 
-      <div className="mb-3 flex items-center gap-1 overflow-x-auto rounded-xl border border-border bg-background/70 p-1.5" aria-label="Stickers til noten">
-        <Sticker className="mx-1 h-4 w-4 shrink-0 text-foreground" aria-hidden="true" />
-        {["", "🍓", "♡", "🎀", "🌼", "⭐", "🦄", "🦕"].map((item) => (
-          <button key={item || "none"} type="button" onClick={() => chooseSticker(item)} aria-pressed={sticker === item} className={`grid h-9 min-w-9 place-items-center rounded-lg border text-lg ${sticker === item ? "border-white bg-accent ring-1 ring-white" : "border-transparent hover:bg-accent"}`} aria-label={item ? `Vælg ${item}` : "Ingen sticker"}>
+      <div className="mb-2 rounded-xl border border-black/15 bg-white/65 p-1.5">
+        <div className="rr-note-sticker-strip flex items-center gap-1 overflow-x-auto" aria-label={lang === "da" ? "Vælg sticker til noten" : "Choose a sticker for the note"}>
+        {NOTE_STICKERS.map((item) => (
+          <button key={item || "none"} type="button" onClick={() => chooseSticker(item)} aria-pressed={sticker === item} className={`grid h-8 min-w-8 shrink-0 place-items-center rounded-lg border text-base text-black ${sticker === item ? "border-black bg-white ring-1 ring-black/20" : "border-transparent hover:bg-white/80"}`} aria-label={item ? `${lang === "da" ? "Vælg" : "Choose"} ${item}` : lang === "da" ? "Ingen sticker" : "No sticker"}>
             {item || "×"}
           </button>
         ))}
+        </div>
+      </div>
+
+      <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-black/15 bg-white/65 px-2 py-1.5">
+        <span className="shrink-0 text-[12px] font-medium text-black">{lang === "da" ? "Notefarve" : "Note colour"}</span>
+        <div className="flex min-w-0 items-center gap-1 overflow-x-auto" aria-label={lang === "da" ? "Vælg notefarve" : "Choose note colour"}>
+          {NOTE_COLORS.map((color) => (
+            <button key={color.value} type="button" onClick={() => chooseNoteColor(color.value)} aria-pressed={noteColor === color.value} aria-label={color.name} className={`h-7 w-7 shrink-0 rounded-full border ${noteColor === color.value ? "border-black ring-2 ring-white" : "border-black/20"}`} style={{ backgroundColor: color.value }} />
+          ))}
+        </div>
       </div>
 
       {anchorText && (
