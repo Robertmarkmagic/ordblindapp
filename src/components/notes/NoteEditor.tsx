@@ -194,14 +194,14 @@ export function NoteEditor({
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar: dictate + polish */}
-      {showToolbar && <div className="mb-2 flex items-center gap-2">
+      {showToolbar && <div className="mb-2 grid grid-cols-2 gap-2">
         {dictationSupported && (
           <button
             type="button"
             onClick={listening ? stop : start}
             disabled={requesting}
             aria-pressed={listening}
-            className={`inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60 ${
+            className={`inline-flex h-9 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2 text-[12px] font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60 ${
               listening
                 ? "bg-sage text-sage-foreground hover:bg-sage/90"
                 : "border border-border bg-card text-foreground hover:bg-accent"
@@ -220,9 +220,9 @@ export function NoteEditor({
             type="button"
             onClick={handlePolish}
             disabled={polishing || !value.trim()}
-            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50"
+            className="inline-flex h-9 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-black/20 bg-white/80 px-2 text-[12px] font-medium text-black outline-none transition hover:bg-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50"
           >
-            <Sparkles className="h-4 w-4 text-sage" aria-hidden="true" />
+            <Sparkles className="h-4 w-4 shrink-0 text-black" aria-hidden="true" />
             {polishing
               ? language === "da" ? "Læser…" : "Reading…"
               : language === "da" ? "Tjek min note" : "Polish my note"}
@@ -289,7 +289,7 @@ export function NoteEditor({
         <div
           ref={backdropRef}
           aria-hidden="true"
-          className="rr-note-layer pointer-events-none absolute inset-0 overflow-hidden whitespace-pre-wrap break-words rounded-2xl border border-transparent p-4 text-lg leading-relaxed text-transparent"
+          className="rr-note-layer pointer-events-none absolute inset-0 overflow-hidden whitespace-pre-wrap break-words rounded-xl border border-transparent p-3 text-[12px] leading-[1.65] text-transparent"
         >
           {segments.map((seg, i) =>
             seg.flagged && seg.range ? (
@@ -319,7 +319,7 @@ export function NoteEditor({
           placeholder={placeholder || (language === "da"
             ? "Skriv frit. Vi hjælper roligt med stavning uden at ændre din stemme."
             : "Write freely. We'll gently help with spelling, never your voice.")}
-          className="rr-note-layer relative h-full w-full resize-none rounded-2xl border border-input bg-transparent p-4 text-lg leading-relaxed text-foreground caret-sage outline-none placeholder:text-muted-foreground/70 focus:border-sage/50 focus:ring-2 focus:ring-sage/20"
+          className="rr-note-layer relative h-full min-h-32 w-full resize-none rounded-xl border border-black/20 bg-white/45 p-3 text-[12px] leading-[1.65] text-black caret-black outline-none placeholder:text-black/55 focus:border-black/40 focus:ring-2 focus:ring-white/80"
           aria-label="Note text"
           spellCheck={false}
         />
