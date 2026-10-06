@@ -1,5 +1,6 @@
 import { BookOpen, Camera, Folder, NotebookText, PenLine, Search, Settings, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/lib/i18n";
 
 const ITEMS = [
   { label: "Læs", to: "/new", icon: BookOpen, active: true },
@@ -12,21 +13,24 @@ const ITEMS = [
 ] as const;
 
 export function ReaderWorkspaceSidebar({ onDictionary }: { onDictionary: () => void }) {
+  const { language } = useLanguage();
+  const translate: Record<string, string> = { "Læs": "Read", "Skriv": "Write", "Noter": "Notes", "Ordbog": "Dictionary", "Scan": "Scan", "Mine filer": "My files", "Indstillinger": "Settings" };
   return (
     <aside className="rr-workspace-sidebar" aria-label="Min læseplads">
       <Link to="/dashboard" className="mb-5 flex items-center gap-2 px-3 text-sm font-bold text-primary">
         <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-xl" aria-hidden="true">🌊</span>
-        Min læseplads
+        {language === "da" ? "Min læseplads" : "My reading space"}
       </Link>
       <nav className="space-y-1">
         {ITEMS.map(({ label, icon: Icon, ...item }) => {
           const classes = `rr-sidebar-link ${"active" in item && item.active ? "is-active" : ""}`;
-          if ("action" in item) return <button key={label} type="button" onClick={onDictionary} className={classes}><Icon aria-hidden="true" />{label}</button>;
-          return <Link key={label} to={item.to} className={classes}><Icon aria-hidden="true" />{label}</Link>;
+          const shown = language === "da" ? label : translate[label];
+          if ("action" in item) return <button key={label} type="button" onClick={onDictionary} className={classes}><Icon aria-hidden="true" />{shown}</button>;
+          return <Link key={label} to={item.to} className={classes}><Icon aria-hidden="true" />{shown}</Link>;
         })}
       </nav>
       <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("reliefread:open-riley", { detail: { prompt: "Hvad vil du gerne have hjælp til?" } }))} className="rr-sidebar-link mt-1 bg-accent text-accent-foreground">
-        <Sparkles aria-hidden="true" />Spørg Riley
+        <Sparkles aria-hidden="true" />{language === "da" ? "Spørg Riley" : "Ask Riley"}
       </button>
     </aside>
   );
