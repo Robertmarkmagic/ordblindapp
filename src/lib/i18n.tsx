@@ -7,11 +7,14 @@ const STORAGE_KEY = "reliefread-language";
 type Dictionary = Record<string, string>;
 
 const da: Dictionary = {
+  "language.label": "Sprog",
   "language.danish": "Dansk",
   "language.english": "Engelsk",
   "header.home": "ReliefRead startside",
   "header.tagline": "Dit læserum",
   "header.account": "Kontomenu",
+  "header.profile": "Min profil",
+  "header.preferences": "Indstillinger",
   "header.signedIn": "Logget ind",
   "header.settings": "Læseindstillinger",
   "header.signOut": "Log ud",

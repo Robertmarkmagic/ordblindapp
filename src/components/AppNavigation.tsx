@@ -15,7 +15,7 @@ function isActive(pathname: string, to: string) {
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 
-export function AppNavigation() {
+export function AppNavigation({ mobile = true }: { mobile?: boolean }) {
   const { pathname } = useLocation();
   const { t } = useLanguage();
 
@@ -40,15 +40,17 @@ export function AppNavigation() {
 
   return (
     <>
-      <nav className="hidden items-center gap-1 rounded-[1.25rem] border border-border/70 bg-card/75 p-1 shadow-paper md:flex" aria-label={t("appNav.label", "Main navigation")}>
+      <nav className="order-last hidden w-full items-center justify-center gap-1 rounded-[1.25rem] border border-border/70 bg-card/75 p-1 shadow-paper md:flex xl:order-none xl:w-auto" aria-label={t("appNav.label", "Main navigation")}>
         {links}
       </nav>
-      <nav
-        className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 gap-1 rounded-[1.6rem] border border-border/80 bg-card/95 p-1.5 shadow-[0_16px_50px_-18px_hsl(var(--foreground)/0.35)] backdrop-blur-xl md:hidden"
-        aria-label={t("appNav.label", "Main navigation")}
-      >
-        {links}
-      </nav>
+      {mobile && (
+        <nav
+          className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 gap-1 rounded-[1.6rem] border border-border/80 bg-card/95 p-1.5 shadow-[0_16px_50px_-18px_hsl(var(--foreground)/0.35)] backdrop-blur-xl md:hidden"
+          aria-label={t("appNav.label", "Main navigation")}
+        >
+          {links}
+        </nav>
+      )}
     </>
   );
 }

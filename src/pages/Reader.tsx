@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Pencil, BookMarked, Share2, ClipboardList, Play, Languages, Mic, MoreVertical, UserCircle, Search, X } from "lucide-react";
+import { ArrowLeft, Pencil, BookMarked, Share2, ClipboardList, Play, Languages, Mic, MoreVertical, Search, X } from "lucide-react";
 import { backend, useAuth } from "@/lib/auth";
 import { toast } from "@/components/ui/sonner";
 import { SoftNotice } from "@/components/SoftNotice";
@@ -44,6 +44,7 @@ import { DocumentInsightsSheet } from "@/components/reader/DocumentInsightsSheet
 import { insightsAsText, type DocumentInsights } from "@/lib/document-insights";
 import { ReaderWorkspaceSidebar } from "@/components/reader/ReaderWorkspaceSidebar";
 import { PersonalToolbar } from "@/components/reader/PersonalToolbar";
+import { ReliefHeader } from "@/components/ReliefHeader";
 
 const THEME_READING_SURFACES: Record<AestheticChoice, string> = {
   strawberry: "#FFEEF3",
@@ -455,14 +456,9 @@ export default function Reader() {
 
   return (
     <div className="rr-personal-space">
+      <ReliefHeader mobileNavigation={false} />
       <main className="mx-auto max-w-7xl px-3 pb-40 pt-5 sm:px-6">
         <section className="rr-reader-shell">
-          <div className="rr-reader-windowbar">
-            <div className="flex items-center gap-2" aria-hidden="true"><span className="h-3.5 w-3.5 rounded-full bg-pink-300" /><span className="h-3.5 w-3.5 rounded-full bg-amber-300" /><span className="h-3.5 w-3.5 rounded-full bg-emerald-400" /></div>
-            <button type="button" onClick={() => navigate("/settings")} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-foreground hover:bg-accent">
-              <UserCircle className="h-6 w-6" aria-hidden="true" />Min profil
-            </button>
-          </div>
           <div className="flex">
             <ReaderWorkspaceSidebar onDictionary={openHistory} />
             <div className="rr-reader-main flex-1">
