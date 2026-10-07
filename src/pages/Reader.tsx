@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Pencil, BookMarked, Share2, ClipboardList, Play, Languages, Mic, MoreVertical, UserCircle, Search, X } from "lucide-react";
+import { ArrowLeft, Pencil, BookMarked, Share2, ClipboardList, Play, Languages, Mic, MoreVertical, Search, X, ExternalLink } from "lucide-react";
 import { backend, useAuth } from "@/lib/auth";
 import { toast } from "@/components/ui/sonner";
 import { SoftNotice } from "@/components/SoftNotice";
@@ -44,6 +44,8 @@ import { DocumentInsightsSheet } from "@/components/reader/DocumentInsightsSheet
 import { insightsAsText, type DocumentInsights } from "@/lib/document-insights";
 import { ReaderWorkspaceSidebar } from "@/components/reader/ReaderWorkspaceSidebar";
 import { PersonalToolbar } from "@/components/reader/PersonalToolbar";
+import { ReliefHeader } from "@/components/ReliefHeader";
+import { safeWebSourceUrl } from "@/lib/web-import";
 
 const THEME_READING_SURFACES: Record<AestheticChoice, string> = {
   strawberry: "#FFEEF3",
@@ -452,17 +454,13 @@ export default function Reader() {
   }, [dictionaryWord, handleAction]);
 
   usePageTitle(doc?.title || t("reader.reading", "Reading"));
+  const sourceUrl = safeWebSourceUrl(doc?.source_url);
 
   return (
     <div className="rr-personal-space">
+      <ReliefHeader mobileNavigation={false} />
       <main className="mx-auto max-w-7xl px-3 pb-40 pt-5 sm:px-6">
         <section className="rr-reader-shell">
-          <div className="rr-reader-windowbar">
-            <div className="flex items-center gap-2" aria-hidden="true"><span className="h-3.5 w-3.5 rounded-full bg-pink-300" /><span className="h-3.5 w-3.5 rounded-full bg-amber-300" /><span className="h-3.5 w-3.5 rounded-full bg-emerald-400" /></div>
-            <button type="button" onClick={() => navigate("/settings")} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-foreground hover:bg-accent">
-              <UserCircle className="h-6 w-6" aria-hidden="true" />Min profil
-            </button>
-          </div>
           <div className="flex">
             <ReaderWorkspaceSidebar onDictionary={openHistory} />
             <div className="rr-reader-main flex-1">
@@ -520,6 +518,16 @@ export default function Reader() {
                   {doc.content_raw ? ` · ${t("reader.minutes", `${estimateReadingMinutes(doc.content_raw)} min read`, { minutes: estimateReadingMinutes(doc.content_raw) })}` : ""}
                   {` · ${lang === "da" ? "Dansk" : "English"}`}
                 </p>
+
+                {sourceUrl && (
+                  <div className="mt-3 rounded-xl border border-border bg-accent/40 px-3 py-2 text-sm">
+                    <p className="text-muted-foreground">{language === "da" ? "Tekst hentet fra en hjemmeside. Du læser en gemt kopi." : "Text imported from a web page. You are reading a saved copy."}</p>
+                    <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 font-semibold text-primary">
+                      <ExternalLink className="h-4 w-4" aria-hidden="true" />{language === "da" ? "Åbn originalsiden" : "Open original page"}
+                      <span className="max-w-[12rem] truncate font-normal sm:max-w-[20rem]">{new URL(sourceUrl).hostname}</span>
+                    </a>
+                  </div>
+                )}
 
                 <div className="mt-6 space-y-3">
                   <button

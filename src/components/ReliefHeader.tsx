@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { BookOpen, Settings as SettingsIcon, UserRound, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { firstNameFrom } from "@/lib/text-utils";
 import {
@@ -18,10 +18,9 @@ import { AppNavigation } from "@/components/AppNavigation";
 
 /**
  * Calm app header used on all signed-in pages.
- * Provides the three required auth affordances: current user, a link to
- * /settings, and a logout action. Every control is >=44px and has an aria-label.
+ * Keeps the logo, interface language, profile and settings available while reading.
  */
-export function ReliefHeader() {
+export function ReliefHeader({ mobileNavigation = true }: { mobileNavigation?: boolean }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -37,11 +36,11 @@ export function ReliefHeader() {
 
   return (
     <header className="rr-app-header sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3 sm:px-8 sm:py-4">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4">
         <Link
           to="/dashboard"
           aria-label={t("header.home", "ReliefRead home")}
-          className="flex items-center gap-3 rounded-2xl px-1 py-1 outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="flex shrink-0 items-center gap-2 rounded-2xl px-1 py-1 outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <span
             data-app-icon
@@ -59,13 +58,22 @@ export function ReliefHeader() {
           </span>
         </Link>
 
-        <AppNavigation />
+        <AppNavigation mobile={mobileNavigation} />
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
         <LanguageSwitcher compact />
+        <Link
+          to="/settings"
+          aria-label={t("header.preferences", "Settings")}
+          title={t("header.preferences", "Settings")}
+          className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          <SettingsIcon className="h-5 w-5" aria-hidden="true" />
+        </Link>
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={t("header.account", "Account menu")}
+            title={t("header.profile", "My profile")}
             className="flex h-11 items-center gap-2 rounded-full border border-border bg-card px-2 pr-3 outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <Avatar className="h-8 w-8">
@@ -90,6 +98,13 @@ export function ReliefHeader() {
               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="min-h-[44px] cursor-pointer gap-2 rounded-xl"
+              onSelect={() => navigate("/profile")}
+            >
+              <UserRound className="h-4 w-4" aria-hidden="true" />
+              {t("header.profile", "My profile")}
+            </DropdownMenuItem>
             <DropdownMenuItem
               className="min-h-[44px] cursor-pointer gap-2 rounded-xl"
               onSelect={() => navigate("/settings")}

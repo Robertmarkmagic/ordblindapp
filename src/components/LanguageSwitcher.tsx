@@ -25,7 +25,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
     <div
       className="inline-flex min-h-11 items-center gap-0.5 rounded-full border border-border bg-card p-1 shadow-paper"
       role="group"
-      aria-label="Language"
+      aria-label={t("language.label", "Language")}
     >
       {!compact && <Languages className="ml-2 h-4 w-4 text-sage" aria-hidden="true" />}
       {option("da", "DA", "language.danish", "Danish")}

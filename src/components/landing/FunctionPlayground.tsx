@@ -18,9 +18,10 @@ import {
 } from "lucide-react";
 import { getWritingSuggestions, insertWritingSuggestion } from "@/lib/writing-tools";
 import { useDictation } from "@/hooks/useDictation";
-import { CommaGuide } from "@/components/landing/CommaGuide";
+import { GrammarLearningPanel } from "@/components/writing/GrammarLearningPanel";
+import { Switch } from "@/components/ui/switch";
 import { useLanguage } from "@/lib/i18n";
-import { findDanishCommaSuggestions } from "@/lib/grammar-learning";
+import { detectGrammarLanguage, findDanishCommaSuggestions, findEnglishCommaSuggestions } from "@/lib/grammar-learning";
 
 const CHECKS = ["Stavning", "Grammatik", "Komma", "Tegnsætning", "Ordforslag"];
 const INITIAL_SAMPLE = "I dette afsnit kan du prøve, hvordan ReliefRead gør teksten roligere at læse.";
@@ -121,25 +122,6 @@ const SPELLING_FIXES: Record<string, string> = {
   oversettelse: "oversættelse",
 };
 
-const WORD_CLASS_LABELS = {
-  noun: "Navneord",
-  verb: "Udsagnsord",
-  adjective: "Tillægsord",
-  pronoun: "Stedord",
-  other: "Andre ord",
-} as const;
-
-type WordClass = keyof typeof WORD_CLASS_LABELS;
-
-function findWordClass(word: string): WordClass {
-  const normalized = word.toLocaleLowerCase("da-DK");
-  if (["jeg", "du", "han", "hun", "den", "det", "vi", "i", "de", "mig", "dig", "os", "dem"].includes(normalized)) return "pronoun";
-  if (["er", "var", "har", "havde", "vil", "skal", "kan", "må", "bliver", "blev", "går", "gik", "skriver", "skrev", "læser", "læste", "skrive", "læse", "forstå"].includes(normalized) || /(ede|te|er)$/.test(normalized)) return "verb";
-  if (["tydelig", "tydeligt", "rolig", "roligt", "svær", "svært", "let", "nem", "god", "glad", "grøn", "blå", "stor", "lille"].includes(normalized) || /(lig|isk|fuld|løst)$/.test(normalized)) return "adjective";
-  if (["en", "et", "den", "det", "de", "og", "eller", "men", "fordi", "som", "når", "hvis", "på", "i", "til", "fra", "med", "af"].includes(normalized)) return "other";
-  return "noun";
-}
-
 function firstUsefulDictionaryLine(extract: string) {
   const ignored = /^(dansk|substantiv|verbum|adjektiv|udtale|etymologi|bøjning|oversættelser|referencer|se også)$/i;
   return extract
@@ -196,7 +178,7 @@ export function FunctionPlayground() {
   const [sampleReading, setSampleReading] = useState(false);
   const [highlightColor, setHighlightColor] = useState(HIGHLIGHT_COLORS[0]);
   const [note, setNote] = useState("");
-  const commaLearningSuggestions = useMemo(() => findDanishCommaSuggestions(draft), [draft]);
+  const [grammarLearningMode, setGrammarLearningMode] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const voiceTextareaRef = useRef<HTMLTextAreaElement>(null);
   const sampleRef = useRef<HTMLDivElement>(null);
@@ -277,33 +259,26 @@ export function FunctionPlayground() {
       .filter(([wrong]) => new RegExp(`\\b${wrong}\\b`, "i").test(draft))
       .map(([wrong, right]) => `${wrong} → ${right}`);
     const grammarIssue = /\b(jeg|du|vi|de)\s+er\s+(gå|skrive|læse)\b/i.test(draft);
-    const needsComma = /\b(fordi|men|når|hvis|som)\b/i.test(draft) && !/[,;]/.test(draft);
+    const draftLanguage = detectGrammarLanguage(draft, language);
+    const needsComma = (draftLanguage === "da" ? findDanishCommaSuggestions(draft) : findEnglishCommaSuggestions(draft)).length > 0;
     const needsPunctuation = Boolean(trimmed) && !/[.!?]$/.test(trimmed);
     const suggestions = wordSuggestions.slice(0, 4).join(", ");
 
     if (en) return [
       { name: "Stavning", text: spellingChanges.length ? `Suggestions: ${spellingChanges.join(", ")}` : "No obvious spelling errors found." },
-      { name: "Grammatik", text: grammarIssue ? "The sentence may need a different verb form." : "The sentence appears grammatically clear." },
-      { name: "Komma", text: needsComma ? "The sentence may need a comma." : "No obvious comma error found." },
+      { name: "Grammatik", text: grammarIssue ? "The sentence may need a different verb form." : "Explore word classes and sentence roles in Grammar mode." },
+      { name: "Komma", text: needsComma ? "The sentence may need a comma." : "No suggestions from the simple comma rules. Explore the rules in Grammar mode." },
       { name: "Tegnsætning", text: needsPunctuation ? "Suggestion: Add punctuation at the end." : "The punctuation appears clear." },
       { name: "Ordforslag", text: suggestions ? `You can continue with: ${suggestions}` : lower ? "Keep writing to receive relevant suggestions." : "Start writing to receive suggestions." },
     ];
     return [
       { name: "Stavning", text: spellingChanges.length ? `Forslag: ${spellingChanges.join(", ")}` : "Ingen tydelige stavefejl fundet." },
-      { name: "Grammatik", text: grammarIssue ? "Sætningen kan bøjes bedre. Prøv for eksempel ‘jeg går’, ‘jeg skriver’ eller ‘jeg læser’." : "Sætningen ser grammatisk tydelig ud." },
-      { name: "Komma", text: needsComma ? "Sætningen kan mangle et komma ved ledsætningen." : "Ingen tydelig kommafejl fundet." },
+      { name: "Grammatik", text: grammarIssue ? "Sætningen kan bøjes bedre. Prøv for eksempel ‘jeg går’, ‘jeg skriver’ eller ‘jeg læser’." : "Undersøg ordklasser og sætningsled i Grammatikmode." },
+      { name: "Komma", text: needsComma ? "Sætningen kan mangle et komma ved ledsætningen." : "Ingen forslag fra de enkle kommaregler. Undersøg reglerne i Grammatikmode." },
       { name: "Tegnsætning", text: needsPunctuation ? "Forslag: Sæt punktum til sidst." : "Tegnsætningen ser tydelig ud." },
       { name: "Ordforslag", text: suggestions ? `Du kan fortsætte med: ${suggestions}` : lower ? "Skriv videre for at få relevante ordforslag." : "Begynd at skrive for at få ordforslag." },
     ];
-  }, [draft, en, wordSuggestions]);
-
-  const grammarAnalysis = useMemo(() => {
-    const words = draft.match(/[\p{L}æøåÆØÅ]+/gu) || [];
-    const tokens = words.map((word) => ({ word, wordClass: findWordClass(word) }));
-    const subject = tokens.find((token) => token.wordClass === "pronoun" || token.wordClass === "noun")?.word || (en ? "Not found" : "Ikke fundet");
-    const predicate = tokens.find((token) => token.wordClass === "verb")?.word || (en ? "Not found" : "Ikke fundet");
-    return { tokens, subject, predicate };
-  }, [draft, en]);
+  }, [draft, en, language, wordSuggestions]);
 
   const updateCaret = () => {
     const next = textareaRef.current?.selectionStart ?? draft.length;
@@ -559,39 +534,13 @@ export function FunctionPlayground() {
             ))}
             {checks.size === 0 && <p>{tr("Vælg mindst én type hjælp i boksen nedenfor.", "Choose at least one type of support below.")}</p>}
           </div>
-          {checks.has("Grammatik") && grammarAnalysis.tokens.length > 0 && (
-            <div className="rr-grammar-visual" aria-live="polite">
-              <div className="rr-grammar-visual-head">
-                <span><Sparkles aria-hidden="true" /><b>{tr("Visuel grammatikanalyse", "Visual grammar analysis")}</b></span>
-                <small>{tr("Ordklasserne ændrer sig, når du skriver.", "Word classes update as you type.")}</small>
-              </div>
-              <div className="rr-grammar-tokens" aria-label={tr("Ordklasser i din tekst", "Word classes in your text")}>
-                {grammarAnalysis.tokens.map((token, index) => (
-                  <span key={`${token.word}-${index}`} data-word-class={token.wordClass}>
-                    <b>{token.word}</b><small>{en ? ({ noun: "Noun", verb: "Verb", adjective: "Adjective", pronoun: "Pronoun", other: "Other" } as Record<string, string>)[token.wordClass] : WORD_CLASS_LABELS[token.wordClass]}</small>
-                    {token.word === grammarAnalysis.subject && <em>× {tr("Grundled", "Subject")}</em>}
-                    {token.word === grammarAnalysis.predicate && <em>○ {tr("Udsagnsled", "Verb")}</em>}
-                  </span>
-                ))}
-              </div>
-              <div className="rr-grammar-sentence-parts">
-                <span><b>{tr("Grundled", "Subject")}</b>{grammarAnalysis.subject}</span>
-                <span><b>{tr("Udsagnsled", "Verb")}</b>{grammarAnalysis.predicate}</span>
-              </div>
-              <p>{tr("Analysen er en enkel prøvevisning. Den fulde skrivehjælp vurderer også sætningen i sammenhæng.", "This is a simple preview. The full writing support also evaluates the sentence in context.")}</p>
-              {checks.has("Komma") && (
-                <div className="rr-grammar-comma-demo">
-                  <b>{tr("Kommahjælp direkte i teksten", "Comma guidance in your text")}</b>
-                  {commaLearningSuggestions.length ? commaLearningSuggestions.map((item) => (
-                    <button key={item.index} type="button" onClick={() => { setDraft(item.corrected); setCaret(item.corrected.length); }}>
-                      <span>{item.corrected}</span><small>{item.rule}</small><em>{tr("Brug forslaget", "Use suggestion")}</em>
-                    </button>
-                  )) : <p>{tr("Skriv en længere sætning med ‘men’, ‘fordi’, ‘når’ eller ‘hvis’, så viser ReliefRead, hvor et komma kan mangle.", "Write a longer sentence with a conjunction to see comma guidance.")}</p>}
-                </div>
-              )}
-              <CommaGuide sentence={draft} />
-            </div>
-          )}
+          <label className="mt-5 flex items-center justify-between gap-4 rounded-2xl border border-sky-200 bg-white p-4 text-black">
+            <span><b className="block">{tr("Grammatikmode", "Grammar learning mode")}</b><small className="block text-slate-600">{tr("Vejledning i din tekst, regler og øvelser", "Guidance in your text, rules and practice")}</small></span>
+            <Switch checked={grammarLearningMode} onCheckedChange={setGrammarLearningMode} aria-label={tr("Grammatikmode", "Grammar learning mode")} />
+          </label>
+          {grammarLearningMode && (checks.has("Grammatik") || checks.has("Komma")) && <div className="mt-4">
+            <GrammarLearningPanel text={draft} language={language} grammar={checks.has("Grammatik")} comma={checks.has("Komma")} onApply={(next) => { setDraft(next); setCaret(next.length); }} />
+          </div>}
         </article>
 
         <article className="rr-function-card rr-function-check-card">

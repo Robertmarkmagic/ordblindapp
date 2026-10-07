@@ -18,3 +18,8 @@ describe("Riley ReliefRead knowledge", () => {
     expect(answerReliefReadQuestion("Skriv en venlig fødselsdagshilsen", "da")).toBeNull();
   });
 });
+
+it("does not replace grammar coaching for a task mentioning ReliefRead with app instructions", () => {
+  expect(answerReliefReadQuestion("Hjælp mig med at lære grammatik i denne tekst. ReliefRead er en app.", "da")).toBeNull();
+  expect(answerReliefReadQuestion("Help me learn grammar in this text. ReliefRead is an app.", "en")).toBeNull();
+});

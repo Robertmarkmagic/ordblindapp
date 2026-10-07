@@ -7,11 +7,14 @@ const STORAGE_KEY = "reliefread-language";
 type Dictionary = Record<string, string>;
 
 const da: Dictionary = {
+  "language.label": "Sprog",
   "language.danish": "Dansk",
   "language.english": "Engelsk",
   "header.home": "ReliefRead startside",
   "header.tagline": "Dit læserum",
   "header.account": "Kontomenu",
+  "header.profile": "Min profil",
+  "header.preferences": "Indstillinger",
   "header.signedIn": "Logget ind",
   "header.settings": "Læseindstillinger",
   "header.signOut": "Log ud",
@@ -131,7 +134,7 @@ const da: Dictionary = {
   "notes.placeholder": "Skriv det, du gerne vil huske...",
   "new.title": "Ny læsning",
   "new.back": "Tilbage til mit læserum",
-  "new.intro": "Indsæt en tekst eller upload en fil. Vi gør den lettere at læse og læser den højt.",
+  "new.intro": "Indsæt tekst, upload en fil eller indsæt en webadresse. Vi gør teksten lettere at læse og læser den højt.",
   "new.remaining": "{remaining} af {total} gratis læsninger tilbage denne måned.",
   "new.limitTitle": "Du har brugt dine 3 gratis tekster denne måned",
   "new.limitText": "Opgrader til ubegrænset læsning, eller kom tilbage den 1. Dine tekster og gemte lydfiler venter på dig.",
@@ -143,7 +146,7 @@ const da: Dictionary = {
   "form.scannedPdf": "Denne PDF er et scannet billede. Prøv at indsætte teksten i stedet. Fotoscanning kommer snart.",
   "form.noText": "Vi kunne ikke finde tekst i filen. Prøv at indsætte teksten i stedet.",
   "form.readError": "Vi kunne ikke læse filen lige nu. Prøv at indsætte teksten i stedet. Det virker altid.",
-  "form.addText": "Indsæt eller upload først en tekst, så hjælper vi dig videre.",
+  "form.addText": "Indsæt tekst, upload en fil eller hent tekst fra et link, så hjælper vi dig videre.",
   "form.paste": "Indsæt tekst",
   "form.upload": "Upload fil",
   "form.yourText": "Din tekst",

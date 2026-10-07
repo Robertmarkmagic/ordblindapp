@@ -67,7 +67,7 @@ export default function Dashboard() {
 
   const openRiley = () => window.dispatchEvent(new Event("reliefread:open-riley"));
   const actionCards = [
-    { key: "dashboard.read", english: "Read", danish: "Læs", descriptionDa: "Indsæt en tekst eller åbn en PDF og få den læst højt.", descriptionEn: "Paste text or open a PDF and have it read aloud.", icon: <BookOpen className="h-6 w-6" />, sticker: "📖", onClick: () => navigate("/new") },
+    { key: "dashboard.read", english: "Read", danish: "Læs", descriptionDa: "Indsæt tekst, åbn en fil eller hent tekst fra en webadresse og få den læst højt.", descriptionEn: "Paste text, open a file or fetch text from a web address and have it read aloud.", icon: <BookOpen className="h-6 w-6" />, sticker: "📖", onClick: () => navigate("/new") },
     { key: "dashboard.highlight", english: "Highlight", danish: "Marker", descriptionDa: "Fremhæv det vigtigste med din valgte highlighterfarve.", descriptionEn: "Highlight key passages with your chosen color.", icon: <Highlighter className="h-6 w-6" />, sticker: "🖍️", onClick: () => navigate("/new") },
     { key: "dashboard.dictate", english: "Dictate", danish: "Tal", descriptionDa: "Indtal dine tanker, og få dem skrevet som tekst.", descriptionEn: "Speak your thoughts and turn them into text.", icon: <Mic className="h-6 w-6" />, sticker: "🎙️", onClick: () => navigate("/write") },
     { key: "dashboard.write", english: "Write", danish: "Skriv", descriptionDa: "Få hjælp til stavning, grammatik, komma og ordforslag.", descriptionEn: "Get spelling, grammar, comma and word suggestions.", icon: <PenLine className="h-6 w-6" />, sticker: "✍️", onClick: () => navigate("/write") },

@@ -1448,3 +1448,35 @@
   }
   .rr-skeleton::after { animation: none; }
 }
+
+/* Shared grammar learning surface in the app and public demonstration. */
+.rr-learning-text {
+  max-height: 24rem;
+  overflow: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 1rem;
+  background: #fff;
+  color: #172b46;
+  padding: 1rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 1.05rem;
+  line-height: 3;
+}
+.rr-learning-text .rr-learning-word {
+  display: inline;
+  position: relative;
+  padding: 0;
+  border: 0;
+  border-radius: .25rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+.rr-learning-text .rr-learning-word.is-marked { background: #e0f2fe; }
+.rr-learning-text .rr-learning-word[aria-pressed="true"] { outline: 2px solid #0369a1; outline-offset: 2px; }
+.rr-learning-text .rr-learning-symbol { position: absolute; bottom: -1.1rem; left: 50%; transform: translateX(-50%); color: #0369a1; font: bold .85rem/1 sans-serif; }
+.rr-learning-text .rr-learning-comma { display: inline; padding: 0 .2rem; border: 1px dashed #b45309; border-radius: .3rem; background: #fef08a; color: #713f12; font-family: inherit; font-size: 1.1rem; font-weight: bold; line-height: 1.5; cursor: pointer; }
+.rr-learning-text button:focus-visible { outline: 2px solid #0369a1; outline-offset: 3px; }
