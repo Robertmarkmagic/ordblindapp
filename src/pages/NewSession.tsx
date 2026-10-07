@@ -18,7 +18,7 @@ import {
 import { useLanguage } from "@/lib/i18n";
 
 /**
- * New Reading Session — paste text OR upload a .txt/.pdf, auto-titled and
+ * New Reading Session — paste text, upload .txt/.pdf or import a public web page, auto-titled and
  * language-detected, then opens straight into the reader. Free readers get 3
  * fresh readings a month; hitting the limit shows a warm invitation (never a
  * wall) with "See Premium" and "come back on the 1st" given equal weight.
@@ -63,6 +63,7 @@ export default function NewSession() {
         content_raw: data.content,
         language: data.language,
         listened: false,
+        ...(data.sourceUrl ? { source_url: data.sourceUrl } : {}),
       });
       await recordDocumentCreated();
       navigate(`/read/${doc.id}`);
@@ -104,7 +105,7 @@ export default function NewSession() {
                 {t("new.title", "New reading session")}
               </h1>
               <p className="mt-2 text-lg text-muted-foreground">
-                {t("new.intro", "Paste anything or upload a file. We'll make it easy to read and read it aloud.")}
+                {t("new.intro", "Paste text, upload a file or add a web address. We'll make the text easy to read and read it aloud.")}
               </p>
               {gatesResolved && !premium && (
                 <p className="mt-3 text-sm text-muted-foreground">

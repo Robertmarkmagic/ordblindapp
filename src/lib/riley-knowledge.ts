@@ -19,8 +19,8 @@ const entries: KnowledgeEntry[] = [
   },
   {
     words: ["læst højt", "oplæs", "læse", "stemme", "høre tekst", "read aloud", "voice", "listen"],
-    da: "Vælg Læs på dashboardet, indsæt tekst eller upload en PDF, og åbn den i læseren. Her kan du læse hele teksten, en sætning, et ord eller en markering højt og tilpasse tempoet.",
-    en: "Choose Read on the dashboard, paste text or upload a PDF, and open it in the reader. You can hear the whole text, a sentence, a word or a selection and adjust the speed.",
+    da: "Vælg Læs på dashboardet. Du kan indsætte tekst, uploade en tekstfil eller PDF, eller vælge Indsæt link og hente teksten fra en offentlig webadresse. Kontrollér teksten, og tryk på Start læsning. Her kan du læse hele teksten, en sætning, et ord eller en markering højt og tilpasse tempoet. På Wattpad skal du bruge linket til det konkrete kapitel. Hvis siden kræver login eller blokerer hentning, kan du kopiere teksten og indsætte den selv.",
+    en: "Choose Read on the dashboard. Paste text, upload a text file or PDF, or choose Paste link to fetch text from a public web address. Check the text and choose Start reading. You can hear the whole text, a sentence, a word or a selection and adjust the speed. On Wattpad, use the specific chapter link. If the page requires a login or blocks extraction, copy the text and paste it yourself.",
   },
   {
     words: ["skrivehjælp", "stav", "grammatik", "komma", "tegnsæt", "ordforslag", "write", "spelling", "grammar", "comma", "suggestion"],

@@ -8,6 +8,7 @@ export interface DocumentRecord {
   id: string;
   title: string;
   content_raw?: string;
+  source_url?: string | null;
   language?: string;
   listened?: boolean;
   created_at?: string;

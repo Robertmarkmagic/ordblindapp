@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BookOpen } from "lucide-react";
+import { useLanguage } from "@/lib/i18n";
 
 export default function Privacy() {
+  const { language } = useLanguage();
   useEffect(() => {
     document.title = "Privacy · ReliefRead";
   }, []);
@@ -37,6 +39,13 @@ export default function Privacy() {
           <p className="mt-2 leading-relaxed text-muted-foreground">
             We never sell your data, and we never require a medical diagnosis to use the app. Your
             reading is yours.
+          </p>
+
+          <h2 className="mt-8 font-display text-xl font-semibold text-foreground">{language === "da" ? "Tekst fra webadresser" : "Text from web addresses"}</h2>
+          <p className="mt-2 leading-relaxed text-muted-foreground">
+            {language === "da"
+              ? "Når du vælger at hente en hjemmeside, sender vi den offentlige webadresse til Jina AI, som henter sidens tekst. Vi sender ikke dine ReliefRead-loginoplysninger, cookies, noter eller andre gemte tekster til Jina AI. Når du starter læsningen, gemmes den hentede tekst og kildeadressen på din konto. Sider bag login eller betaling kan ikke nødvendigvis hentes."
+              : "When you choose to fetch a web page, we send its public address to Jina AI to extract the text. We do not send your ReliefRead login credentials, cookies, notes or other saved texts to Jina AI. When you start reading, the extracted text and source address are saved to your account. Pages requiring a login or payment may not be accessible."}
           </p>
 
           <h2 className="mt-8 font-display text-xl font-semibold text-foreground">Deleting your data</h2>

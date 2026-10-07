@@ -41,6 +41,16 @@ Se `supabase/README.md` for driftsopsætning.
 
 Push til `main` starter typekontrol, tests og produktionsbygning. En godkendt version udgives automatisk til GitHub Pages.
 
+## Læs tekst, filer og webadresser
+
+Ny læsning har tre valg: **Indsæt tekst**, **Upload fil** (.txt og PDF med markerbar tekst) og **Indsæt link**. Linkimport henter den offentligt tilgængelige læsetekst fra én side, viser en redigerbar forhåndsvisning og bruger sidens titel. Efter Start læsning gemmes teksten privat på kontoen og åbnes med de samme oplæsnings-, markerings-, ordbogs- og noteværktøjer. Kildeadressen gemmes i `documents.source_url`, og læseren har et link til originalsiden.
+
+Den beskyttede `web-import`-funktion bruger Jina AI Reader med browserrendering og ren tekst. Kun den valgte offentlige URL sendes til Jina AI. Brugerens session, cookies og andre gemte tekster sendes ikke. Funktionen kontrollerer brugerens session, afviser lokale adresser/IP-adresser/loginoplysninger og begrænser svartid, svarstørrelse og tekstlængde. Backend laver ingen direkte netværkskald til det brugerangivne domæne. HTML/scripts afvikles ikke i ReliefRead.
+
+På Wattpad bruges kapitlets URL, ikke `/story/`-forsiden. Der er ingen automatisk hentning af en hel bog eller alle kapitler. Login, betalingsmure, botblokering og sider uden læsetekst giver vejledning om at åbne originalsiden og indsætte tekst selv. Funktionen indlejrer ikke tredjepartssiden i appen og overtager ikke en Wattpad-session. Til oplæsning direkte på en allerede indlogget tredjepartsside kræves en særskilt browserudvidelse.
+
+Backend-funktionen og migrationen skal være tilgængelige før frontend-udgivelse. Se `supabase/README.md`.
+
 ## Grammatikmode
 
 Skriveværkstedet og forsiden bruger det samme læringspanel med tre visninger: **Min tekst**, **Regler og eksempler** og **Øv selv**. Grammatikmode kan slås til og fra. Tekstsproget registreres automatisk og kan vælges manuelt, uafhængigt af brugerfladens sprog.

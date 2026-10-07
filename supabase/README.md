@@ -30,6 +30,7 @@ Følgende hemmelige værdier hører kun hjemme under Supabase Edge Functions > S
 - `OPENAI_API_KEY`
 - Valgfrit `OPENAI_MODEL`
 - Valgfrit `OPENAI_TTS_MODEL`
+- Valgfrit `JINA_READER_API_KEY` til højere kapacitet ved linkimport. Grundlæggende Jina Reader-adgang fungerer også uden en nøgle; rate limit deles da på serverens IP.
 
 Supabase leverer selv projektets publishable og secret keys til funktionerne. De må ikke kopieres til kildekoden.
 
@@ -40,3 +41,11 @@ Supabase leverer selv projektets publishable og secret keys til funktionerne. De
 - `public-share` er offentlig, men returnerer kun data for et gyldigt, tilfældigt delings-id.
 - RLS er slået til på alle tabeller i det offentlige skema.
 - Importerede gamle poster ligger i `private` og har ingen klientrettigheder.
+
+## Import fra hjemmesider
+
+Deploy `web-import` med platformens `verify_jwt = false`, da funktionen selv validerer brugersessionen via `auth.getUser(token)`, ligesom appens øvrige beskyttede funktioner. Bevar altid dette sessionstjek. Deploy-filerne er `web-import/index.ts`, `web-import/handler.ts` og `_shared/web-source.ts`. Supabase SDK er fastlåst til 2.116.0 i den nye funktion.
+
+Migrationen `20261006235502_add_document_source_url.sql` tilføjer en valgfri kildeadresse til eksisterende private dokumenter. De nuværende ejerbaserede RLS-politikker gælder også denne kolonne.
+
+Jina AI Reader er ekstern databehandler for de offentlige webadresser, som brugeren vælger at hente. Appen viser dette inden hentning og på privatlivssiden. Der sendes ingen Supabase-token eller cookies til Jina. Funktionen udleverer kun ren tekst, har 25 sekunders upstream-timeout, højst 2 MB svar og højst 100.000 tegn i en læsning. Adgangsblokering, login, rate limits og manglende tekst giver særskilte fejlmeddelelser. Der logges ikke ind på tredjepartssider.
